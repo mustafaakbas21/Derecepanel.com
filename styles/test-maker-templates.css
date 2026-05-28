@@ -1,0 +1,399 @@
+﻿/* ESKİ test-olusturucu.html satır 227-624 — ŞABLON MOTORU (birebir port) */
+      /* ═══════════════════════════════════════
+         ŞABLON MOTORU — CSS Değişkenleri
+         ═══════════════════════════════════════ */
+
+      /* Varsayılan değişkenler */
+      #tm-a4-page {
+        --tm-hdr-bg:#1e293b; --tm-hdr-color:#ffffff; --tm-accent:#1e293b;
+        --tm-border-h:1px; --tm-q-gap:1.5rem;
+        --tm-font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+        --tm-font-head:"Inter",ui-sans-serif,system-ui,sans-serif;
+        --tm-divider-color:#94a3b8; --tm-divider-h:1px;
+      }
+
+      /* Değişken uygulama kuralları */
+      #tm-a4-page .tm-tpl-hdr-bg        { background-color:var(--tm-hdr-bg)!important; color:var(--tm-hdr-color)!important; }
+      #tm-a4-page .tm-tpl-hdr-bg span   { color:var(--tm-hdr-color)!important; }
+      #tm-a4-page .tm-tpl-divider        { border-color:var(--tm-divider-color)!important; border-bottom-width:var(--tm-divider-h)!important; }
+      #tm-a4-page .tm-tpl-accent-border  { border-top-color:var(--tm-accent)!important; border-top-width:var(--tm-border-h)!important; }
+      #tm-a4-page .tm-tpl-font-head      { font-family:var(--tm-font-head)!important; }
+      #tm-a4-page .tm-tpl-font-body      { font-family:var(--tm-font-body)!important; }
+      #tm-a4-page .tm-tpl-gap            { gap:var(--tm-q-gap)!important; }
+
+      /* ── 1. Derece Kurumsal: Serif · Ortalanmış başlık · Çift çizgi ── */
+      #tm-a4-page[data-tpl="derece"] {
+        --tm-hdr-bg:#0d47a1; --tm-hdr-color:#e3f2fd; --tm-accent:#1565c0;
+        --tm-border-h:3px; --tm-q-gap:1.5rem;
+        --tm-divider-color:#1565c0; --tm-divider-h:2px;
+        --tm-font-head:Georgia,"Times New Roman",serif;
+        --tm-font-body:Georgia,"Times New Roman",serif;
+      }
+      #tm-a4-page[data-tpl="derece"] .tm-tpl-hdr-bg {
+        text-align:center!important; justify-content:center!important; gap:.75rem;
+      }
+      #tm-a4-page[data-tpl="derece"] .tm-tpl-divider {
+        border-bottom-style:double!important; border-bottom-width:4px!important;
+        border-color:#1565c0!important;
+      }
+      #tm-a4-page[data-tpl="derece"] .tm-q-num { font-family:Georgia,serif!important; }
+
+      /* ── 2. Üç Boyutlu Vizyon: Kalın üst çizgi · Sola dayalı · Siyah rozet ── */
+      #tm-a4-page[data-tpl="uc-boyutlu"] {
+        --tm-hdr-bg:transparent; --tm-hdr-color:#1e293b; --tm-accent:#1e293b;
+        --tm-border-h:0; --tm-q-gap:1.25rem;
+        --tm-divider-color:#94a3b8; --tm-divider-h:1px;
+        --tm-font-head:"Inter",sans-serif; --tm-font-body:"Inter",sans-serif;
+      }
+      #tm-a4-page[data-tpl="uc-boyutlu"] .tm-tpl-hdr-bg {
+        background:transparent!important; color:#1e293b!important;
+        border-top:6px solid #1e293b!important; border-bottom:1px solid #e2e8f0!important;
+        justify-content:flex-start!important; gap:.5rem; padding-top:.5rem!important;
+      }
+      #tm-a4-page[data-tpl="uc-boyutlu"] .tm-tpl-hdr-bg span { color:#1e293b!important; }
+      #tm-a4-page[data-tpl="uc-boyutlu"] .tm-q-num {
+        background:#1e293b!important; color:#fff!important;
+        padding:2px 8px!important; border-radius:2px!important; font-weight:700!important;
+        font-family:"Inter",sans-serif!important;
+      }
+
+      /* ── 3. Sarmal Dinamik: Ortalanmış · Kesik çizgi · Turuncu oval rozet ── */
+      #tm-a4-page[data-tpl="sarmal"] {
+        --tm-hdr-bg:#e65100; --tm-hdr-color:#fff; --tm-accent:#ef6c00;
+        --tm-border-h:2px; --tm-q-gap:1rem;
+        --tm-divider-color:#e65100; --tm-divider-h:2px;
+      }
+      #tm-a4-page[data-tpl="sarmal"] .tm-tpl-hdr-bg {
+        text-align:center!important; justify-content:center!important;
+      }
+      #tm-a4-page[data-tpl="sarmal"] .tm-tpl-divider {
+        border-bottom-style:dashed!important; border-bottom-width:2px!important;
+        border-color:#e65100!important;
+      }
+      #tm-a4-page[data-tpl="sarmal"] .tm-q-num {
+        background:#ef6c00!important; color:#fff!important;
+        padding:2px 10px!important; border-radius:9999px!important; font-weight:700!important;
+      }
+
+      /* ── 4. Yeni Nesil 3-4-5: İnce font · Mikro başlık · Sağa yaslı ── */
+      #tm-a4-page[data-tpl="yeni-nesil"] {
+        --tm-hdr-bg:transparent; --tm-hdr-color:#9ca3af; --tm-accent:#374151;
+        --tm-border-h:1px; --tm-q-gap:0.75rem;
+        --tm-divider-color:#f3f4f6; --tm-divider-h:1px;
+        --tm-font-body:"Inter",sans-serif; --tm-font-head:"Inter",sans-serif;
+      }
+      #tm-a4-page[data-tpl="yeni-nesil"] .tm-tpl-hdr-bg {
+        background:transparent!important; color:#9ca3af!important;
+        border-top:none!important; border-bottom:1px solid #f3f4f6!important;
+        font-size:.55rem!important; letter-spacing:.12em!important;
+        text-transform:uppercase!important; justify-content:flex-end!important;
+        padding-top:.375rem!important; padding-bottom:.375rem!important;
+      }
+      #tm-a4-page[data-tpl="yeni-nesil"] .tm-tpl-hdr-bg span {
+        color:#9ca3af!important; font-weight:300!important;
+      }
+      #tm-a4-page[data-tpl="yeni-nesil"] .tm-tpl-font-body {
+        font-weight:300!important; letter-spacing:.025em!important;
+      }
+      #tm-a4-page[data-tpl="yeni-nesil"] .tm-q-num {
+        font-weight:300!important; color:#9ca3af!important;
+        letter-spacing:.05em!important; font-size:.7rem!important;
+      }
+
+      /* ── 5. Limitless Format: Siyah · Geniş aralık ── */
+      #tm-a4-page[data-tpl="limitless"] {
+        --tm-hdr-bg:#212121; --tm-hdr-color:#fff; --tm-accent:#424242;
+        --tm-border-h:4px; --tm-q-gap:2rem;
+        --tm-divider-color:#bdbdbd; --tm-divider-h:1px;
+      }
+
+      /* ── 6. Hız ve Renk Tarzı: Kırmızı dinamik ── */
+      #tm-a4-page[data-tpl="hiz-renk"] {
+        --tm-hdr-bg:#c62828; --tm-hdr-color:#fff; --tm-accent:#e53935;
+        --tm-border-h:2px; --tm-q-gap:1rem;
+        --tm-divider-color:#ef9a9a; --tm-divider-h:2px;
+      }
+      #tm-a4-page[data-tpl="hiz-renk"] .tm-q-num {
+        color:#c62828!important; font-weight:700!important;
+      }
+
+      /* ── 7. Orijinal Mat: Koyu gri, temiz ── */
+      #tm-a4-page[data-tpl="orijinal-mat"] {
+        --tm-hdr-bg:#37474f; --tm-hdr-color:#eceff1; --tm-accent:#455a64;
+        --tm-border-h:1px; --tm-q-gap:1.5rem;
+        --tm-divider-color:#78909c; --tm-divider-h:1px;
+      }
+
+      /* ── 8. Karekök Klasik: Yeşil · Serif başlık ── */
+      #tm-a4-page[data-tpl="karekök"] {
+        --tm-hdr-bg:#2e7d32; --tm-hdr-color:#f1f8e9; --tm-accent:#388e3c;
+        --tm-border-h:2px; --tm-q-gap:1.5rem;
+        --tm-divider-color:#66bb6a; --tm-divider-h:2px;
+        --tm-font-head:"Playfair Display",Georgia,serif;
+      }
+
+      /* ── 9. Aydınlık Sayfalar: Açık gri · Ferah ── */
+      #tm-a4-page[data-tpl="aydinlik"] {
+        --tm-hdr-bg:#f5f5f5; --tm-hdr-color:#212121; --tm-accent:#1565c0;
+        --tm-border-h:1px; --tm-q-gap:1.75rem;
+        --tm-divider-color:#90caf9; --tm-divider-h:1px;
+      }
+      #tm-a4-page[data-tpl="aydinlik"] .tm-tpl-hdr-bg span { color:#212121!important; }
+
+      /* ── 10. Paraf Özel: Mor · Serif başlık ── */
+      #tm-a4-page[data-tpl="paraf"] {
+        --tm-hdr-bg:#4a148c; --tm-hdr-color:#f3e5f5; --tm-accent:#6a1b9a;
+        --tm-border-h:2px; --tm-q-gap:1.25rem;
+        --tm-divider-color:#ce93d8; --tm-divider-h:2px;
+        --tm-font-head:"Playfair Display",Georgia,serif;
+      }
+      #tm-a4-page[data-tpl="paraf"] .tm-q-num {
+        color:#6a1b9a!important; font-weight:700!important;
+        font-family:"Playfair Display",Georgia,serif!important;
+      }
+
+      /* ────────────────────────────────────────────────────────
+         YAPIŞAL TEMPLATE KURALLARI — Kapak & genel font
+         ──────────────────────────────────────────────────────── */
+
+      /* ── DERECE KURUMSAL: Tüm A4 serif · kapakta çift çizgi ── */
+      #tm-a4-page[data-tpl="derece"] * { font-family: Georgia, "Times New Roman", serif !important; }
+      #tm-a4-page[data-tpl="derece"] code,
+      #tm-a4-page[data-tpl="derece"] pre { font-family: monospace !important; }
+      /* Kapak — ince çizgiyi çift kenara çevir */
+      #tm-a4-page[data-tpl="derece"] #tm-sheet-cover .mx-auto.h-px {
+        height: 0 !important;
+        background: none !important;
+        border: none !important;
+        border-top: 4px double #1e293b !important;
+        margin-top: 1rem !important;
+      }
+
+      /* ── ÜÇ BOYUTLU VİZYON: Kalın Sans · kapakta üstte koyu blok ── */
+      #tm-a4-page[data-tpl="uc-boyutlu"] * { font-family: "Inter", "Arial Black", sans-serif !important; }
+      /* Kapak sheet'inin en üstüne koyu sert blok çizgi */
+      #tm-a4-page[data-tpl="uc-boyutlu"] #tm-sheet-cover {
+        border-top: 8px solid #0f172a !important;
+      }
+      /* Kapak — ince çizgiyi gizle (zaten üst border var) */
+      #tm-a4-page[data-tpl="uc-boyutlu"] #tm-sheet-cover .mx-auto.h-px {
+        display: none !important;
+      }
+
+      /* ── SARMAL DİNAMİK: Yumuşak Sans · kapakta turuncu kesik çizgi ── */
+      #tm-a4-page[data-tpl="sarmal"] * { font-family: "Inter", "Segoe UI", sans-serif !important; }
+      /* Kapak — çizgiyi turuncu kesik (dashed) yap */
+      #tm-a4-page[data-tpl="sarmal"] #tm-sheet-cover .mx-auto.h-px {
+        height: 0 !important;
+        background: none !important;
+        border: none !important;
+        border-top: 2px dashed #f97316 !important;
+        margin-top: 1rem !important;
+      }
+
+      /* ── YENİ NESİL: Ultra-light izli font · kapakta soluk çizgi ── */
+      #tm-a4-page[data-tpl="yeni-nesil"] * { font-family: "Inter", "Helvetica Neue", sans-serif !important; font-weight: 300 !important; }
+      #tm-a4-page[data-tpl="yeni-nesil"] strong,
+      #tm-a4-page[data-tpl="yeni-nesil"] b,
+      #tm-a4-page[data-tpl="yeni-nesil"] .font-bold,
+      #tm-a4-page[data-tpl="yeni-nesil"] .font-black,
+      #tm-a4-page[data-tpl="yeni-nesil"] .font-semibold { font-weight: 500 !important; }
+      #tm-a4-page[data-tpl="yeni-nesil"] #tm-sheet-cover .mx-auto.h-px {
+        background: #e5e7eb !important;
+      }
+
+      /* ────────────────────────────────────────────────────────────
+         ADAY BİLGİ FORMU + FOOTER — Her şablon için tam tema
+         ──────────────────────────────────────────────────────────── */
+
+      /* ── 1. DERECE KURUMSAL: Sert köşe · Çift beyaz çizgili siyah footer ── */
+      #tm-a4-page[data-tpl="derece"] #tm-cover-student-form {
+        border-radius: 0 !important;
+        border: 2px solid #000 !important;
+        background: transparent !important;
+      }
+      #tm-a4-page[data-tpl="derece"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="derece"] .tm-q-footer {
+        background-color: #000 !important;
+        border-top: 4px double #fff !important;
+      }
+
+      /* ── 2. ÜÇ BOYUTLU VİZYON: Sadece sol koyu çizgi · Lacivert footer ── */
+      #tm-a4-page[data-tpl="uc-boyutlu"] #tm-cover-student-form {
+        border-radius: 0 !important;
+        border: none !important;
+        border-left: 8px solid #0f172a !important;
+        background-color: #f8fafc !important;
+        padding-left: 1.25rem !important;
+      }
+      #tm-a4-page[data-tpl="uc-boyutlu"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="uc-boyutlu"] .tm-q-footer {
+        background-color: #0f172a !important;
+        border-top: none !important;
+      }
+
+      /* ── 3. SARMAL DİNAMİK: Turuncu dashed · Yuvarlak footer şeridi ── */
+      #tm-a4-page[data-tpl="sarmal"] #tm-cover-student-form {
+        border-radius: 1rem !important;
+        border: 2px dashed #f97316 !important;
+        background: transparent !important;
+      }
+      #tm-a4-page[data-tpl="sarmal"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="sarmal"] .tm-q-footer {
+        background-color: #e65100 !important;
+        border-top: none !important;
+      }
+      /* Sadece kapak footer'ında yuvarlak köşe — soru sayfası footerında düz */
+      #tm-a4-page[data-tpl="sarmal"] #tm-cover-footer {
+        border-radius: 1rem 1rem 0 0 !important;
+      }
+
+      /* ── 4. YENİ NESİL: Çerçevesiz aday formu · Soluk footer ── */
+      #tm-a4-page[data-tpl="yeni-nesil"] #tm-cover-student-form {
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      #tm-a4-page[data-tpl="yeni-nesil"] #tm-cover-student-form .border-b {
+        border-color: #d1d5db !important;
+      }
+      #tm-a4-page[data-tpl="yeni-nesil"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="yeni-nesil"] .tm-q-footer {
+        background-color: #374151 !important;
+        font-weight: 300 !important;
+        letter-spacing: 0.08em !important;
+        font-size: 0.65rem !important;
+      }
+
+      /* ── 5. LIMITLESS: Çerçevesiz · Bembeyaz footer · İnce siyah üst çizgi ── */
+      #tm-a4-page[data-tpl="limitless"] * {
+        font-weight: 300 !important;
+        letter-spacing: 0.05em !important;
+      }
+      #tm-a4-page[data-tpl="limitless"] .font-black,
+      #tm-a4-page[data-tpl="limitless"] .font-extrabold { font-weight: 600 !important; }
+      #tm-a4-page[data-tpl="limitless"] #tm-cover-student-form {
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      #tm-a4-page[data-tpl="limitless"] #tm-cover-student-form .border-b {
+        border-style: solid !important;
+        border-color: #000 !important;
+      }
+      #tm-a4-page[data-tpl="limitless"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="limitless"] .tm-q-footer {
+        background: #fff !important;
+        color: #000 !important;
+        border-top: 1px solid #000 !important;
+      }
+      #tm-a4-page[data-tpl="limitless"] #tm-cover-footer span,
+      #tm-a4-page[data-tpl="limitless"] .tm-q-footer span { color: #000 !important; }
+      /* Kapak çizgisini çok ince, tek çizgili yap */
+      #tm-a4-page[data-tpl="limitless"] #tm-sheet-cover .mx-auto.h-px {
+        background: #000 !important;
+        height: 1px !important;
+      }
+      #tm-a4-page[data-tpl="limitless"] .tm-q-num { font-weight: 300 !important; }
+
+      /* ── 6. HIZ VE RENK: Kırmızı çerçeve · Kırmızı footer · Kırmızı başlık ── */
+      #tm-a4-page[data-tpl="hiz-renk"] #live-cover-title {
+        color: #dc2626 !important;
+        text-align: left !important;
+        padding-left: 1rem !important;
+      }
+      #tm-a4-page[data-tpl="hiz-renk"] #tm-sheet-cover .flex.flex-col.items-center.px-8 {
+        align-items: flex-start !important;
+        padding-left: 2rem !important;
+      }
+      #tm-a4-page[data-tpl="hiz-renk"] #tm-cover-student-form {
+        border: 3px solid #dc2626 !important;
+        border-radius: 0.375rem !important;
+        background: transparent !important;
+      }
+      #tm-a4-page[data-tpl="hiz-renk"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="hiz-renk"] .tm-q-footer {
+        background-color: #c62828 !important;
+        border-top: none !important;
+      }
+      #tm-a4-page[data-tpl="hiz-renk"] #tm-sheet-cover .mx-auto.h-px {
+        background: #dc2626 !important;
+        height: 3px !important;
+      }
+
+      /* ── 7. ORİJİNAL MAT: Daktilo font · Minimalist · Gri footer ── */
+      #tm-a4-page[data-tpl="orijinal-mat"] { font-family: "Courier New", Courier, monospace !important; }
+      #tm-a4-page[data-tpl="orijinal-mat"] * { font-family: "Courier New", Courier, monospace !important; }
+      #tm-a4-page[data-tpl="orijinal-mat"] #tm-cover-student-form {
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        border-top: 1px solid #78909c !important;
+        border-bottom: 1px solid #78909c !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      #tm-a4-page[data-tpl="orijinal-mat"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="orijinal-mat"] .tm-q-footer {
+        background-color: #37474f !important;
+        font-family: "Courier New", monospace !important;
+        letter-spacing: 0.06em !important;
+      }
+      #tm-a4-page[data-tpl="orijinal-mat"] #tm-sheet-cover .mx-auto.h-px {
+        background: #78909c !important;
+      }
+
+      /* ── 8. KAREKÖK KLASİK: Yeşil footer ── */
+      #tm-a4-page[data-tpl="karekök"] #tm-cover-student-form {
+        border: 2px solid #2e7d32 !important;
+        border-radius: 0.25rem !important;
+        background: transparent !important;
+      }
+      #tm-a4-page[data-tpl="karekök"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="karekök"] .tm-q-footer {
+        background-color: #1b5e20 !important;
+        border-top: 2px solid #a5d6a7 !important;
+      }
+      #tm-a4-page[data-tpl="karekök"] #tm-sheet-cover .mx-auto.h-px {
+        background: #2e7d32 !important;
+        height: 2px !important;
+      }
+
+      /* ── 9. AYDINLIK SAYFALAR: Açık mavi footer ── */
+      #tm-a4-page[data-tpl="aydinlik"] #tm-cover-student-form {
+        border: 1px solid #90caf9 !important;
+        border-radius: 0.5rem !important;
+        background: #e3f2fd !important;
+      }
+      #tm-a4-page[data-tpl="aydinlik"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="aydinlik"] .tm-q-footer {
+        background-color: #1565c0 !important;
+        color: #fff !important;
+        border-top: none !important;
+      }
+      #tm-a4-page[data-tpl="aydinlik"] #tm-cover-footer span,
+      #tm-a4-page[data-tpl="aydinlik"] .tm-q-footer span { color: #fff !important; }
+      #tm-a4-page[data-tpl="aydinlik"] #tm-sheet-cover .mx-auto.h-px {
+        background: #90caf9 !important;
+        height: 1px !important;
+      }
+
+      /* ── 10. PARAF ÖZEL: Mor çerçeve · Mor footer ── */
+      #tm-a4-page[data-tpl="paraf"] #tm-cover-student-form {
+        border: 2px solid #6a1b9a !important;
+        border-radius: 0.5rem !important;
+        background: #f3e5f5 !important;
+      }
+      #tm-a4-page[data-tpl="paraf"] #tm-cover-footer,
+      #tm-a4-page[data-tpl="paraf"] .tm-q-footer {
+        background-color: #4a148c !important;
+        border-top: 2px solid #ce93d8 !important;
+      }
+      #tm-a4-page[data-tpl="paraf"] #tm-sheet-cover .mx-auto.h-px {
+        background: #ce93d8 !important;
+        height: 2px !important;
+      }

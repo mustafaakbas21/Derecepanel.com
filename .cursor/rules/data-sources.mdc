@@ -1,0 +1,28 @@
+---
+description: Kanonik müfredat ve üniversite veri kaynakları — DerecePanel
+alwaysApply: true
+---
+
+# Veri kaynakları (zorunlu)
+
+## YKS müfredat
+
+- **Tek kaynak:** `data/yks-mufredat.json`
+- **Kod:** `@/lib/mufredat` (`getSubjects`, `getTopics`, `getDerslerByTrack`, …)
+- **API:** `GET /api/mufredat?track=TYT|AYT|all` ve `?dersId=…` (konular)
+- Eski `lib/test-maker/mufredat.ts` veya gömülü ders/konu listeleri **kullanma / ekleme**
+- Test Maker, deneme, reçete, konu MR vb. tüm müfredat ihtiyacında bu paketi kullan
+
+## Üniversite / bölüm (YÖK Atlas)
+
+- **Tek kaynaklar:**
+  - `data/yok-atlas-lisans.json` — lisans programları
+  - `data/yok-atlas-onlisans.json` — önlisans programları
+- **Kod (sunucu):** `@/lib/universities/atlas-server`
+- **API:** `GET /api/universities?level=lisans|onlisans` (liste) ve `&university=…` (bölümler)
+- Eski `lib/students/universities.ts` veya sabit `UNIVERSITY_ATLAS` **kullanma**
+- Öğrenci hedefi, tercih, import şablonu: her zaman `level` + atlas verisi
+
+## Referans (salt okunur)
+
+- `ESKİ DERECEPANEL/` — arşiv; yeni özelliklerde veri kopyalamak yerine `data/` altındaki dosyaları güncelle

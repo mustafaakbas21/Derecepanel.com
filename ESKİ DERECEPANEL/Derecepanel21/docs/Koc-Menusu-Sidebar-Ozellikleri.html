@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Derecepanel — Koç Menüsü Sidebar Özellikleri (MVP)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a1226;
+      --muted: #5c5368;
+      --line: #e6e0ef;
+      --panel: #f6f2fb;
+      --brand: #2d1f3d;
+      --accent: #6b4d9e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12mm 16mm;
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: var(--ink);
+      background: #fff;
+    }
+    @page { size: A4; margin: 14mm 16mm; }
+    @media print {
+      .page-break { page-break-before: always; }
+      a { color: inherit; text-decoration: none; }
+    }
+    h1 {
+      font-size: 20pt;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 4mm;
+      color: var(--brand);
+    }
+    .meta {
+      font-size: 9.5pt;
+      color: var(--muted);
+      margin-bottom: 8mm;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 4mm;
+    }
+    h2 {
+      font-size: 12pt;
+      font-weight: 700;
+      margin: 6mm 0 2mm;
+      color: var(--brand);
+    }
+    h3 {
+      font-size: 10.5pt;
+      font-weight: 600;
+      margin: 4mm 0 1.5mm;
+      color: var(--accent);
+    }
+    p { margin: 0 0 2.5mm; }
+    ul { margin: 0 0 3mm; padding-left: 5mm; }
+    li { margin-bottom: 1.5mm; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin: 2mm 0 4mm;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 2mm 2.5mm;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: var(--panel); font-weight: 600; }
+    .badge {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.8mm 2mm;
+      border-radius: 3px;
+      margin-left: 2mm;
+    }
+    .badge-beta { background: #fef3c7; color: #92400e; }
+    .badge-soon { background: #e5e7eb; color: #374151; }
+    .lead {
+      font-size: 11pt;
+      color: var(--muted);
+      margin-bottom: 5mm;
+    }
+    .footer-note {
+      font-size: 9pt;
+      color: var(--muted);
+      margin-top: 6mm;
+      padding-top: 3mm;
+      border-top: 1px solid var(--line);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Koç menüsü — sidebar özellikleri (MVP)</h1>
+  <p class="meta">Derecepanel · Koç paneli (<code>koc-paneli.html</code>) sidebar sırası · Yatırımcı sunumu notu</p>
+
+  <p class="lead">
+    Koç menüsü, kurumun öğrenci portföyünü yönetmek, görüşme ve randevu akışını bağlamak, YKS ve deneme verisini işlemek,
+    haftalık plan ve içerik üretmek ile hata ve tarama döngüsünü kapatmak için modüllere ayrılmıştır. Üst satırlar modül aileleri,
+    alt satırlar somut ekranlardır.
+  </p>
+
+  <h2>1. Dashboard</h2>
+  <p>Koçun giriş ekranı: YKS geri sayım, özet kartlar ve hızlı durum. Kurum için komuta merkezi; diğer modüllerden gelen işin üstünde tek bakışta durum.</p>
+
+  <h2>2. Öğrencilerim</h2>
+  <p>Koçun atanmış öğrenci listesi ve profil/operasyon katmanı. Kayıt, takip, koç–öğrenci eşlemesi ve panel genelinde filtrelerin merkezi veri kaynağı.</p>
+
+  <h2>3. Görüşme Odası</h2>
+  <ul>
+    <li><strong>Yeni Görüşme:</strong> Görüşme akışı; notlar ve özetlerin kayda geçmesi.</li>
+    <li><strong>Görüşme Arşivi:</strong> Geçmiş görüşmelerin listelenmesi ve tekrar kullanım.</li>
+  </ul>
+  <p>Koçluk hizmetinin dijitalleşmesi ve denetlenebilirliği (kalite, süreklilik, kurumsal hafıza).</p>
+
+  <h2>4. Koçlar</h2>
+  <p>Kurum içi koç kadrosu yönetimi: ekleme, düzenleme, arama/filtre, detay. Çok koçlu kurumlar için insan kapasitesi envanteri.</p>
+
+  <h2>5. Randevular</h2>
+  <p>Öğrenci–koç veya kurum içi zaman planlama; operasyonel koordinasyon.</p>
+
+  <h2>6. Pazarlama Asistanı <span class="badge badge-beta">BETA</span></h2>
+  <p>Kurumun iletişim, kampanya ve metin üretimi tarafına yakın asistan modülü. Erken aşama; CAC ve marka mesajını düşürmeye yönelik ürün genişlemesi olarak konumlandırılabilir.</p>
+
+  <h2 class="page-break">7. YKS Simülasyon</h2>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Tercih Sihirbazı</td><td>Tercih listesi, senaryo ve üniversite–bölüm tarafında karar desteği.</td></tr>
+      <tr><td>YKS Konuları</td><td>Müfredat/konu haritasına yakın referans; planlama ve içerikle bağlantı.</td></tr>
+      <tr><td>Net Sihirbazı</td><td>Net–hedef ilişkisi; hedef banda yaklaşma kestirimi ve motivasyon.</td></tr>
+      <tr><td>Puan Hesaplama</td><td>Ham/yerleştirme puanı mantığına yakın hesaplayıcılar (ÖSYM parametreleri güncellenince ürün güncellenir).</td></tr>
+    </tbody>
+  </table>
+  <p>YKS odaklı kurumların Excel ve dağınık araç ihtiyacını ürün içine alır.</p>
+
+  <h2>8. Denemeler</h2>
+  <p>Kurumun ölçme–değerlendirme operasyonunun omurgası.</p>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Sonuç Merkezi</td><td>Deneme sonuçlarının toplanıp görüntülendiği merkez ekran.</td></tr>
+      <tr><td>Analiz ve Raporlama Merkezi <span class="badge badge-beta">BETA</span></td><td>Derinlemesine analiz ve rapor; veri ürünü.</td></tr>
+      <tr><td>Global Deneme Takvimi</td><td>Yaygın/sektörel deneme tarihlerine hizalama.</td></tr>
+      <tr><td>Kurum Deneme Takvimi</td><td>Kurumun kendi iç takvimi.</td></tr>
+      <tr><td>Deneme Sonuçları Yükleme</td><td>Toplu veya dosya üzerinden sonuç girişi.</td></tr>
+      <tr><td>Optik Okuyucu</td><td>Optikten veri okuma ve işleme hattı.</td></tr>
+      <tr><td>Okutulan Denemeler</td><td>Okutma sonrası kayıtların izi.</td></tr>
+    </tbody>
+  </table>
+  <p>Deneme, Türk özel öğretimde sık tekrarlanan iş; burada uçtan uca kapatılır.</p>
+
+  <h2 class="page-break">9. Haftalık Program</h2>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Haftalık Program Oluşturucu</td><td>Haftalık etüt, konu ve süre planı tasarımı.</td></tr>
+      <tr><td>Kayıtlı Haftalık Programlar</td><td>Şablon ve geçmiş program arşivi.</td></tr>
+      <tr><td>Öğrenciye program gönder</td><td>Planın öğrenci paneline düşmesi.</td></tr>
+    </tbody>
+  </table>
+  <p>Koçun Excel’de yaptığı işi ürün içi akışa taşır.</p>
+
+  <h2>10. MR</h2>
+  <p>Mental / mood rapor ürün dilinde kısaltma.</p>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Konu MR</td><td>Konu bazlı ruh hâli, yorgunluk ve işaretler.</td></tr>
+      <tr><td>Soru MR</td><td>Soru çözümü sırasındaki deneyim takibi.</td></tr>
+      <tr><td>Deneme MR</td><td>Deneme sonrası psiko-duygusal geri bildirim.</td></tr>
+    </tbody>
+  </table>
+  <p>Sadece not değil; öğrenme verimliliği ve churn riski için yumuşak sinyaller.</p>
+
+  <h2>11. Kitap Kütüphanesi</h2>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Kitap Listesi &amp; Kayıt</td><td>Kurum kataloğu; kapak ve PDF ile kaynak merkezi.</td></tr>
+      <tr><td>Kaynak Atama</td><td>Kitabı veya kaynağı öğrenciye atama.</td></tr>
+    </tbody>
+  </table>
+  <p>İçerik dağıtımı ve kurumsal IP (kendi PDF kütüphanesi).</p>
+
+  <h2 class="page-break">12. Test Maker</h2>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Test Oluşturucu</td><td>Özel test üretimi.</td></tr>
+      <tr><td>Otomatik Soru Kırpıcı</td><td>Görsel veya PDF’den soru görüntüsü ayıklama.</td></tr>
+      <tr><td>Soru Havuzu</td><td>Soru bankası ve yeniden kullanım.</td></tr>
+    </tbody>
+  </table>
+  <p>Kurumların kendi sınav içeriğini ölçekli üretmesi.</p>
+
+  <h2>13. Hata Reçetesi</h2>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Ne işe yarar</th></tr></thead>
+    <tbody>
+      <tr><td>Reçete Yaz</td><td>Hata tipine göre koç reçetesi yazma.</td></tr>
+      <tr><td>Reçete Deposu</td><td>Şablon ve arşiv.</td></tr>
+      <tr><td>Hatalı Soru Havuzu</td><td>Tekrarlayan hataların havuzlanması.</td></tr>
+    </tbody>
+  </table>
+  <p>Hedefli tekrar ve kişiselleştirme için operasyonel araç.</p>
+
+  <h2>14. Taramalar ve Fasiküller</h2>
+  <table>
+    <thead><tr><th>Alt öğe</th><th>Durum / işlev</th></tr></thead>
+    <tbody>
+      <tr><td>Tarama Analiz ve Raporlama</td><td>Tarama sonuçlarının analizi ve raporu.</td></tr>
+      <tr><td>Tarama Oluşturma</td><td>Yeni tarama tanımı.</td></tr>
+      <tr><td>Tarama Deposu</td><td>Arşiv ve yeniden kullanım.</td></tr>
+      <tr><td>Fasikül Oluşturma</td><td><span class="badge badge-soon">Yakında</span> Yol haritası.</td></tr>
+      <tr><td>Fasikül Deposu</td><td><span class="badge badge-soon">Yakında</span> Yol haritası.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Sidebar altı: Tema ve çıkış</h2>
+  <ul>
+    <li><strong>Tema:</strong> Koyu, açık, okyanus, gün batımı — ergonomi.</li>
+    <li><strong>Çıkış:</strong> Oturum kapatma.</li>
+  </ul>
+
+  <h2>Yatırımcı özeti (üç cümle)</h2>
+  <ol>
+    <li><strong>Operasyon:</strong> Öğrenci, koç, randevu, görüşme ve kitap/test akışı tek panelde.</li>
+    <li><strong>Sınav ekonomisi:</strong> YKS araçları ve deneme hattı (yükleme, optik, takvim, analiz) kurumun ana gelir kalebiyle hizalı.</li>
+    <li><strong>Ürün derinliği:</strong> Pazarlama asistanı ve analiz merkezi BETA; fasikül tarafı yol haritasında — MVP ile tam ürün arası şeffaf anlatılır.</li>
+  </ol>
+
+  <p class="footer-note">
+    Bu belge Derecepanel koç paneli sidebar yapısına göre hazırlanmıştır. PDF oluşturma: <code>docs/Koc-Menusu-Sidebar-Ozellikleri.html</code> dosyasından yazdır veya Edge headless ile dışa aktar.
+  </p>
+
+</body>
+</html>

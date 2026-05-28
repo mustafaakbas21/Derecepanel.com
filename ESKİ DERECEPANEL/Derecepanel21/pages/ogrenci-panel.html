@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="tr" class="og-student-shell-html">
+  <head>
+    <!--
+      ÖĞRENCİ PANEL — KAYDIRMA: tek akış = tarayıcı (window) dikey kaydırma çubuğu.
+      - Kabuk html/body kilidi yok; iframe yüksekliği içerikle ayarlanır (aynı köken), böylece iframe içinde ikinci dikey çubuk oluşmaz.
+      - Yan menü: genel .sidebar kuralları (style.css); menü nav içinde ayrı overflow-y kaydırması yok.
+      - Yeni partial sayfalar: mümkünse gövdeyi doğal yükseklikte bırakın; gereksiz h-screen / overflow-hidden zinciri kurmayın.
+    -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anasayfa – Öğrenci paneli – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        corePlugins: { preflight: false },
+      };
+    </script>
+    <style>
+      html.og-student-shell-html,
+      body.og-student-shell-body {
+        margin: 0;
+        min-height: 100%;
+      }
+      body.og-student-shell-body {
+        background: #f9f7f2;
+        --bg-page: #f9f7f2;
+      }
+      body.og-student-shell-body #og-panel-shell.app.og-student-app {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        min-height: 100dvh;
+        height: auto;
+        max-height: none;
+        padding: var(--shell-pad);
+        gap: var(--shell-gap);
+        box-sizing: border-box;
+        background: #f9f7f2;
+      }
+      body.og-student-shell-body aside.sidebar.og-student-sidebar {
+        flex-shrink: 0;
+        overflow: visible;
+        background: #e4e8ee;
+        color: #334155;
+        border: 1px solid #d1d8e3;
+        box-shadow:
+          0 12px 40px rgba(15, 23, 42, 0.12),
+          0 4px 14px rgba(15, 23, 42, 0.07),
+          0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+        border-radius: 24px;
+        padding: 20px 14px 16px;
+        --sidebar-bg: #e4e8ee;
+        --sidebar-text: #1e293b;
+        --sidebar-link: #475569;
+        --sidebar-link-muted: #64748b;
+        --sidebar-hover-bg: rgba(255, 255, 255, 0.72);
+        --sidebar-logo-bg: #ffffff;
+        --sidebar-logo-icon: #334155;
+        --nav-active-bg: #ffffff;
+        --nav-active-text: #0f172a;
+        --nav-active-icon: #334155;
+        --nav-active-left: transparent;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .sidebar__brand {
+        padding-bottom: 1.25rem;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .sidebar__title {
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 1rem;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .nav-item {
+        border-radius: 14px;
+        font-weight: 500;
+        padding: 10px 12px;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .nav-item--active:not(.nav-group__trigger) {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+        font-weight: 600;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .nav-item--active:not(.nav-group__trigger)::after {
+        content: "›";
+        margin-left: auto;
+        font-size: 1.1rem;
+        line-height: 1;
+        color: #94a3b8;
+        font-weight: 400;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .nav-group--open > .nav-group__trigger {
+        background: rgba(255, 255, 255, 0.65);
+        color: #0f172a;
+        box-shadow: none;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .nav-sub {
+        border-radius: 10px;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .nav-sub.nav-sub--active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 1px 6px rgba(15, 23, 42, 0.06);
+        font-weight: 600;
+      }
+      body.og-student-shell-body aside.og-student-sidebar .btn-logout {
+        border-color: #c9d1dc;
+        background: rgba(255, 255, 255, 0.85);
+        color: #475569;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      }
+      body.og-student-shell-body aside.og-student-sidebar .btn-logout:hover {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      }
+      body.og-student-shell-body aside.og-student-sidebar .sidebar__nav {
+        max-height: none !important;
+      }
+      body.og-student-shell-body .main.og-student-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        padding: 8px 20px 0 20px;
+        background: #f9f7f2;
+      }
+      body.og-student-shell-body .main.og-student-main > header.dp-topbar-sheet {
+        margin-bottom: 0.75rem;
+        padding: 0.35rem 0 1rem;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+      }
+      body.og-student-shell-body .og-student-topbar-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 12px;
+        border: 1px solid #ebe4d8;
+        background: #ffffff;
+        color: #57534e;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      body.og-student-shell-body .og-student-topbar-btn:hover {
+        background: #faf7f2;
+        border-color: #e8dfd4;
+      }
+      body.og-student-shell-body #fm-global-search {
+        border-radius: 9999px;
+        border-color: #ebe4d8;
+        background: #ffffff;
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+        box-shadow: 0 1px 2px rgba(120, 113, 108, 0.05);
+      }
+      body.og-student-shell-body #fm-global-search:focus {
+        outline: none;
+        border-color: #c5d8eb;
+        box-shadow: 0 0 0 3px rgba(168, 191, 212, 0.28);
+      }
+      body.og-student-shell-body .main.og-student-main .topbar {
+        flex-shrink: 0;
+      }
+      .og-student-shell__scroll {
+        display: block;
+        position: relative;
+        padding: 0 0 1.5rem;
+        overflow: visible;
+        overflow-x: hidden;
+        background: #f9f7f2;
+        border-radius: 20px;
+      }
+      .og-student-frame {
+        display: block;
+        width: 100%;
+        min-height: 32rem;
+        height: auto;
+        border: 0;
+        border-radius: 0;
+        background: #f9f7f2;
+        box-shadow: none;
+        overflow: hidden;
+      }
+      .og-frame-loading {
+        margin: 0 0 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        color: #57534e;
+        background: #fff;
+        border: 1px solid #ebe4d8;
+        border-radius: 12px;
+      }
+      .og-frame-loading.is-error {
+        color: #991b1b;
+        border-color: #fecaca;
+        background: #fef2f2;
+      }
+      html.og-student-shell-html {
+        background: #f9f7f2;
+      }
+      .og-notify-wrap {
+        position: relative;
+      }
+      .og-notify-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 9999px;
+        box-shadow: 0 0 0 2px var(--surface-elevated, #fff);
+        pointer-events: none;
+        animation: og-notify-pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes og-notify-pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.72;
+          transform: scale(1.08);
+        }
+      }
+      .og-notify-dropdown {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        min-width: 260px;
+        padding: 0.4rem;
+        border-radius: 12px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface-elevated, #fff);
+        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.12);
+        z-index: 40;
+      }
+      .og-notify-dropdown__item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        border-radius: 10px;
+        padding: 0.75rem 0.85rem;
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--text-primary, #0f172a);
+        background: transparent;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+      .og-notify-dropdown__item:hover {
+        background: color-mix(in srgb, #a8bfd4 14%, transparent);
+      }
+      .og-notify-list {
+        max-height: 320px;
+        overflow-y: auto;
+      }
+      .og-notify-list__empty {
+        margin: 0;
+        padding: 0.85rem 0.65rem;
+        font-size: 0.88rem;
+        color: var(--text-muted, #64748b);
+        text-align: center;
+        line-height: 1.45;
+      }
+      .og-notify-item__row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+      }
+      .og-notify-item__text {
+        font-size: 0.88rem;
+        line-height: 1.35;
+      }
+      .og-notify-item__meta {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--text-muted, #64748b);
+      }
+      .og-notify-dropdown__item.og-notify-item--unread {
+        font-weight: 700;
+        background: color-mix(in srgb, #a8bfd4 18%, transparent);
+      }
+      /* html.dark: ana alan açık krem (koç paneliyle uyumlu) */
+      html.dark body.og-student-shell-body,
+      html.dark body.og-student-shell-body #og-panel-shell.app.og-student-app,
+      html.dark body.og-student-shell-body .main.og-student-main,
+      html.dark .og-student-shell__scroll,
+      html.dark .og-student-frame {
+        background: #f9f7f2;
+      }
+      .og-target-toast {
+        position: fixed;
+        bottom: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(120%);
+        z-index: 9999;
+        max-width: min(28rem, calc(100vw - 2rem));
+        padding: 0.75rem 1.15rem;
+        border-radius: 0.75rem;
+        background: #fff;
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.2);
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0f172a;
+        transition: transform 0.28s ease;
+        pointer-events: none;
+      }
+      .og-target-toast.is-on {
+        transform: translateX(-50%) translateY(0);
+      }
+      html.dark .og-target-toast {
+        background: #1e293b;
+        color: #f1f5f9;
+        border-color: rgba(129, 140, 248, 0.45);
+      }
+    </style>
+  </head>
+  <body class="og-student-shell-body">
+    <script src="../js/maintenance-guard.js"></script>
+    <div id="og-panel-shell" class="app og-student-app">
+      <aside class="sidebar og-student-sidebar" aria-label="Öğrenci menüsü">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span class="sidebar__title">Derecepanel</span>
+        </div>
+
+        <nav class="sidebar__nav">
+          <a href="ogrenci-panel.html" class="nav-item nav-item--active" id="og-nav-home" aria-current="page">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+            Anasayfa
+          </a>
+
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="og-nav-gelisim-sub" id="og-nav-gelisim-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Gelişim Karnem
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="og-nav-gelisim-sub" role="group" aria-label="Gelişim Karnem alt menü">
+              <a href="ogrenci-deneme-sonuclari.html" class="nav-sub" target="og-student-frame" rel="opener">Deneme Sonuçları</a>
+              <a href="ogrenci-global-deneme.html" class="nav-sub" target="og-student-frame" rel="opener">Global Deneme Takvimi</a>
+              <a href="ogrenci-kurum-deneme.html" class="nav-sub" target="og-student-frame" rel="opener">Kurum Deneme Sınavları</a>
+            </div>
+          </div>
+
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="og-nav-mr-sub" id="og-nav-mr-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+              MR (Kişisel Analiz)
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="og-nav-mr-sub" role="group" aria-label="MR alt menü">
+              <a href="ogrenci-mr-matrix.html" class="nav-sub" target="og-student-frame" rel="opener">Akademik Matrix</a>
+              <a href="ogrenci-mr-efor.html" class="nav-sub" target="og-student-frame" rel="opener">Efor Günlüğüm</a>
+              <a href="ogrenci-mr-trend.html" class="nav-sub" target="og-student-frame" rel="opener">Gelişim Trendi</a>
+            </div>
+          </div>
+
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="og-nav-yks-sub" id="og-nav-yks-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 14v7M9 18h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              YKS Simülasyon
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="og-nav-yks-sub" role="group" aria-label="YKS Simülasyon alt menü">
+              <a href="tercih-sihirbazi.html" class="nav-sub" target="og-student-frame" rel="opener">Tercih Sihirbazı</a>
+              <a href="net-sihirbazi.html" class="nav-sub" target="og-student-frame" rel="opener">Net Sihirbazı</a>
+              <a href="puan-hesaplama.html" class="nav-sub" target="og-student-frame" rel="opener">Puan Hesaplama</a>
+              <a href="yks-konulari.html" class="nav-sub" target="og-student-frame" rel="opener">YKS Konuları</a>
+            </div>
+          </div>
+
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="og-nav-weekly-sub" id="og-nav-weekly-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Haftalık Programım
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="og-nav-weekly-sub" role="group" aria-label="Haftalık program alt menü">
+              <a href="ogrenci-aktif-program.html" class="nav-sub" target="og-student-frame" rel="opener" id="og-nav-weekly-aktif">Aktif Programım</a>
+              <a href="ogrenci-gecmis-programlar.html" class="nav-sub" target="og-student-frame" rel="opener">Geçmiş Programlarım</a>
+            </div>
+          </div>
+
+          <a href="ogrenci-randevular.html" class="nav-item" target="og-student-frame" rel="opener">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Randevularım
+          </a>
+          <a href="ogrenci-kutuphane.html" class="nav-item" target="og-student-frame" rel="opener">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+            </svg>
+            Kütüphane
+          </a>
+        </nav>
+
+        <div class="theme-switcher" role="group" aria-label="Görünüm teması">
+          <span class="theme-switcher__label">Tema</span>
+          <div class="theme-switcher__swatches">
+            <button type="button" class="theme-swatch theme-swatch--dark" data-theme="dark" aria-pressed="false" aria-label="Koyu tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--light" data-theme="light" aria-pressed="false" aria-label="Açık tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--blue" data-theme="blue" aria-pressed="false" aria-label="Okyanus teması"></button>
+            <button type="button" class="theme-swatch theme-swatch--orange" data-theme="orange" aria-pressed="false" aria-label="Gün batımı teması"></button>
+          </div>
+        </div>
+
+        <div class="sidebar__logout">
+          <button type="button" class="btn-logout">
+            Çıkış
+            <span class="btn-logout__arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main og-student-main">
+                <header class="dp-topbar-sheet flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap w-full">
+
+          <div class="flex items-center gap-4 flex-1 max-w-2xl">
+            <button type="button" onclick="window.history.back()" class="og-student-topbar-btn shrink-0 flex items-center justify-center" aria-label="Geri">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input type="text" id="fm-global-search" class="w-full pl-10 pr-4 py-2.5 text-sm transition-all text-stone-700 placeholder:text-stone-400" placeholder="Öğrenci, deneme, koç veya konu ara...">
+
+              <div id="fm-search-results" class="absolute w-full bg-white shadow-2xl border border-slate-100 rounded-2xl mt-2 z-50 hidden max-h-[400px] overflow-y-auto p-2" role="listbox" aria-label="Arama sonuçları"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-4">
+
+            <button type="button" id="dp-header-notify" class="og-student-topbar-btn shrink-0 flex items-center justify-center" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+
+            <button type="button" id="dp-header-theme" class="og-student-topbar-btn shrink-0 flex items-center justify-center" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+
+        <div class="og-student-shell__scroll">
+          <p id="og-frame-loading" class="og-frame-loading" role="status">Anasayfa yükleniyor…</p>
+          <iframe
+            id="og-student-frame"
+            name="og-student-frame"
+            class="og-student-frame"
+            src="ogrenci-dashboard.html?og_embed=1"
+            title="Öğrenci anasayfası ve içerik"
+          ></iframe>
+        </div>
+      </main>
+    </div>
+
+    <div id="og-target-toast" class="og-target-toast" hidden role="status" aria-live="polite"></div>
+
+    <script src="../js/og-student-perf.js"></script>
+    <script src="../js/theme-switcher.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script src="../js/student-catalog.js"></script>
+    <script src="../js/ogrenci-notifications.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script>
+      (function () {
+        /*
+         * Kaydırma: iframe yüksekliği içerikle eşitlenir; dikey kaydırma tarayıcı penceresinde tek kalır.
+         * İç sayfalar postMessage({ type: "og-iframe-content" }) gönderdiğinde yeniden ölçülür.
+         */
+        try {
+          var raw = localStorage.getItem("currentUser");
+          if (!raw || !String(raw).trim()) {
+            window.location.replace("../login.html");
+            return;
+          }
+        } catch (e) {
+          window.location.replace("../login.html");
+          return;
+        }
+
+        var frame = document.getElementById("og-student-frame");
+
+        function ogApplyEmbedNoScroll(doc) {
+          if (!doc) return;
+          var de = doc.documentElement;
+          var b = doc.body;
+          if (!de || !b) return;
+          de.classList.add("og-student-embed-root");
+          b.classList.add("og-student-embed");
+          de.setAttribute("data-theme", "light");
+          de.classList.remove("dark");
+          var flow = { overflow: "visible", overflowX: "hidden", overflowY: "visible", height: "auto", minHeight: "0", maxHeight: "none" };
+          Object.keys(flow).forEach(function (k) {
+            de.style[k] = flow[k];
+            b.style[k] = flow[k];
+          });
+        }
+
+        function ogMeasureEmbedHeight(doc) {
+          if (!doc || !doc.body) return 320;
+          var b = doc.body;
+          var de = doc.documentElement;
+          var h = Math.max(
+            b.scrollHeight || 0,
+            de.scrollHeight || 0,
+            b.offsetHeight || 0,
+            de.offsetHeight || 0
+          );
+          var bodyTop = b.getBoundingClientRect().top;
+          var nodes = b.children;
+          for (var i = 0; i < nodes.length; i++) {
+            var el = nodes[i];
+            if (!el || el.nodeType !== 1) continue;
+            var rect = el.getBoundingClientRect();
+            var bottom = rect.bottom - bodyTop + (b.scrollTop || 0);
+            if (bottom > h) h = bottom;
+          }
+          return Math.max(320, Math.ceil(h + 12));
+        }
+
+        var ogResizeTimer = null;
+
+        function ogResizeStudentFrame() {
+          if (!frame) return;
+          try {
+            var win = frame.contentWindow;
+            var doc = frame.contentDocument || (win && win.document);
+            if (!doc || !doc.body) return;
+            ogApplyEmbedNoScroll(doc);
+            frame.style.height = ogMeasureEmbedHeight(doc) + "px";
+            frame.setAttribute("scrolling", "no");
+          } catch (e) {
+            /* cross-origin */
+          }
+        }
+
+        function ogScheduleResize() {
+          if (ogResizeTimer) clearTimeout(ogResizeTimer);
+          ogResizeTimer = setTimeout(function () {
+            ogResizeTimer = null;
+            ogResizeStudentFrame();
+          }, 90);
+        }
+
+        function ogWatchEmbedResize() {
+          if (!frame || typeof ResizeObserver === "undefined") return;
+          try {
+            var doc = frame.contentDocument;
+            if (!doc || !doc.body) return;
+            if (frame._ogResizeObs) {
+              frame._ogResizeObs.disconnect();
+            }
+            frame._ogResizeObs = new ResizeObserver(function () {
+              ogScheduleResize();
+            });
+            frame._ogResizeObs.observe(doc.body);
+          } catch (eObs) {}
+        }
+
+        function ogSetAnasayfaActive() {
+          var sidebar = document.querySelector("aside.sidebar.og-student-sidebar");
+          if (!sidebar) return;
+          sidebar.querySelectorAll("a.nav-item").forEach(function (el) {
+            el.classList.remove("nav-item--active");
+            el.removeAttribute("aria-current");
+          });
+          sidebar.querySelectorAll("a.nav-sub").forEach(function (el) {
+            el.classList.remove("nav-sub--active");
+          });
+          var homeLink = document.getElementById("og-nav-home");
+          if (homeLink) {
+            homeLink.classList.add("nav-item--active");
+            homeLink.setAttribute("aria-current", "page");
+          }
+        }
+
+        function ogShowTargetToast(msg) {
+          var el = document.getElementById("og-target-toast");
+          if (!el || !msg) return;
+          el.hidden = false;
+          el.removeAttribute("hidden");
+          el.textContent = String(msg);
+          el.classList.add("is-on");
+          window.clearTimeout(ogShowTargetToast._t);
+          ogShowTargetToast._t = window.setTimeout(function () {
+            el.classList.remove("is-on");
+          }, 4500);
+        }
+
+        function ogRefreshDashboardCareer() {
+          if (!frame) return;
+          try {
+            frame.contentWindow.postMessage({ type: "derece-student-target-updated" }, "*");
+          } catch (eRf) {}
+        }
+
+        function ogGoAnasayfa(forceReload) {
+          if (!frame) return;
+          var base = "ogrenci-dashboard.html?og_embed=1";
+          var needReload = !!forceReload;
+          try {
+            if (sessionStorage.getItem("og_force_dashboard_reload") === "1") {
+              needReload = true;
+              sessionStorage.removeItem("og_force_dashboard_reload");
+            }
+          } catch (eFl) {}
+          var cur = "";
+          try {
+            cur = String(frame.contentWindow.location.pathname || "");
+          } catch (ePath) {
+            cur = String(frame.getAttribute("src") || "");
+          }
+          var onDash = cur.indexOf("ogrenci-dashboard") !== -1;
+          if (needReload || onDash) {
+            frame.src = base + "?_=" + Date.now();
+          } else {
+            frame.src = base;
+          }
+          ogSetAnasayfaActive();
+        }
+
+        try {
+          var nav = new URLSearchParams(window.location.search).get("nav");
+          if (nav === "weekly" && frame) {
+            frame.src = "ogrenci-aktif-program.html";
+          }
+        } catch (e2) {}
+
+        var home = document.getElementById("og-nav-home");
+        if (home && frame) {
+          home.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ogGoAnasayfa();
+          });
+        }
+
+        var topHome = document.getElementById("og-topbar-anasayfa");
+        if (topHome && frame) {
+          topHome.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ogGoAnasayfa();
+          });
+        }
+
+        function ogSyncSidebarToIframe() {
+          var sb = document.querySelector("aside.sidebar.og-student-sidebar");
+          if (!sb || !frame) return;
+          try {
+            var raw = String(frame.contentWindow.location.pathname || "").replace(/\\/g, "/");
+            var parts = raw.split("/").filter(Boolean);
+            var file = (parts[parts.length - 1] || "").split("?")[0].toLowerCase();
+            try {
+              file = decodeURIComponent(file);
+            } catch (eDec) {}
+            sb.querySelectorAll("[data-nav-group]").forEach(function (g) {
+              g.classList.remove("nav-group--open");
+              var tr = g.querySelector(".nav-group__trigger");
+              if (tr) tr.setAttribute("aria-expanded", "false");
+            });
+            sb.querySelectorAll("a.nav-sub").forEach(function (a) {
+              a.classList.remove("nav-sub--active");
+            });
+            sb.querySelectorAll("a.nav-item").forEach(function (a) {
+              a.classList.remove("nav-item--active");
+              a.removeAttribute("aria-current");
+            });
+            if (file.indexOf("ogrenci-dashboard") !== -1 || !file) {
+              ogSetAnasayfaActive();
+              return;
+            }
+            var homeEl = document.getElementById("og-nav-home");
+            if (homeEl) {
+              homeEl.classList.remove("nav-item--active");
+              homeEl.removeAttribute("aria-current");
+            }
+            var matched = null;
+            sb.querySelectorAll('a[target="og-student-frame"]').forEach(function (a) {
+              var h = (a.getAttribute("href") || "").split("?")[0].toLowerCase();
+              var hf = h.split("/").pop() || "";
+              if (hf && hf === file) matched = a;
+            });
+            if (matched) {
+              if (matched.classList.contains("nav-sub")) {
+                matched.classList.add("nav-sub--active");
+              } else {
+                matched.classList.add("nav-item--active");
+              }
+              var grp = matched.closest("[data-nav-group]");
+              if (grp) {
+                grp.classList.add("nav-group--open");
+                var btn = grp.querySelector(".nav-group__trigger");
+                if (btn) btn.setAttribute("aria-expanded", "true");
+              }
+            }
+          } catch (err) {
+            /* cross-origin veya dosya: URL */
+          }
+        }
+
+        function ogHideFrameLoading(ok) {
+          var el = document.getElementById("og-frame-loading");
+          if (!el) return;
+          if (ok) {
+            el.hidden = true;
+            el.setAttribute("hidden", "");
+            return;
+          }
+          el.hidden = false;
+          el.removeAttribute("hidden");
+          el.classList.add("is-error");
+          el.textContent =
+            "İçerik yüklenemedi. Çıkış yapıp tekrar giriş yapın veya sayfayı Ctrl+F5 ile yenileyin.";
+        }
+
+        function ogIframeLooksLikeLogin() {
+          try {
+            var p = String(frame.contentWindow.location.pathname || "")
+              .replace(/\\/g, "/")
+              .toLowerCase();
+            return p.indexOf("login") !== -1;
+          } catch (eLogin) {
+            return false;
+          }
+        }
+
+        function ogReloadDashboardIframe() {
+          if (!frame) return;
+          frame.src = "ogrenci-dashboard.html?og_embed=1&_=" + Date.now();
+        }
+
+        if (frame) {
+          frame.addEventListener("load", function () {
+            if (ogIframeLooksLikeLogin()) {
+              ogHideFrameLoading(false);
+              ogReloadDashboardIframe();
+              return;
+            }
+            ogHideFrameLoading(true);
+            ogScheduleResize();
+            ogWatchEmbedResize();
+            setTimeout(ogScheduleResize, 350);
+            setTimeout(ogScheduleResize, 900);
+            ogSyncSidebarToIframe();
+          });
+          window.addEventListener("resize", ogScheduleResize);
+          window.addEventListener(
+            "message",
+            function (ev) {
+              try {
+                var d = ev && ev.data;
+                if (d && d.type === "og-iframe-content") ogScheduleResize();
+                if (d && d.type === "og-iframe-auth-missing") {
+                  ogHideFrameLoading(false);
+                  try {
+                    window.location.replace("../login.html");
+                  } catch (eAuth) {
+                    window.location.href = "../login.html";
+                  }
+                  return;
+                }
+                if (d && d.type === "derece-student-target-updated") {
+                  try {
+                    sessionStorage.setItem("derece_student_target_rev", String(Date.now()));
+                    sessionStorage.setItem("og_force_dashboard_reload", "1");
+                  } catch (eRev) {}
+                  if (d.toast) ogShowTargetToast(d.toast);
+                  ogRefreshDashboardCareer();
+                  var src = (frame.getAttribute("src") || "").toLowerCase();
+                  var onDash = false;
+                  try {
+                    onDash =
+                      (frame.contentWindow.location.pathname || "")
+                        .toLowerCase()
+                        .indexOf("ogrenci-dashboard") !== -1;
+                  } catch (eDash) {
+                    onDash = src.indexOf("ogrenci-dashboard") !== -1;
+                  }
+                  if (onDash) {
+                    ogGoAnasayfa(true);
+                  }
+                }
+              } catch (e3) {}
+            },
+            false
+          );
+          setTimeout(function () {
+            ogScheduleResize();
+            ogSyncSidebarToIframe();
+          }, 0);
+        }
+      })();
+    </script>
+  </body>
+</html>

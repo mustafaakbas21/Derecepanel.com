@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pazarlama Asistanı – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap&subset=latin-ext" rel="stylesheet" />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        important: "#pm-scope",
+        corePlugins: { preflight: false },
+        darkMode: ["selector", '[data-theme="dark"]'],
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"] },
+            colors: {
+              brand: { 50: "#eef2ff", 100: "#e0e7ff", 200: "#c7d2fe", 400: "#818cf8", 500: "#6366f1", 600: "#4f46e5", 700: "#4338ca" },
+            },
+            boxShadow: {
+              soft: "0 12px 42px -16px rgba(15,23,42,0.24)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Pazarlama sayfası – premium iki sütun layout */
+      #pm-scope .pm-card {
+        background: color-mix(in srgb, var(--surface) 88%, transparent);
+        border: 1px solid color-mix(in srgb, var(--header-border) 80%, transparent);
+        box-shadow: 0 10px 40px color-mix(in srgb, var(--text-primary) 12%, transparent);
+      }
+      #pm-scope .pm-muted {
+        color: var(--text-muted);
+      }
+      #pm-scope .pm-btn {
+        border-radius: 14px;
+        padding: 0.72rem 1rem;
+        font-weight: 850;
+        letter-spacing: -0.015em;
+        transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      #pm-scope .pm-btn:active {
+        transform: translateY(1px);
+      }
+      #pm-scope .pm-btn-primary {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(167, 139, 250, 0.95));
+        color: #ffffff;
+        box-shadow: 0 18px 60px -34px rgba(99, 102, 241, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+      }
+      #pm-scope .pm-btn-primary:hover {
+        filter: brightness(1.02);
+        box-shadow: 0 22px 70px -36px rgba(99, 102, 241, 0.40);
+      }
+      #pm-scope .pm-btn-ghost {
+        border: 1px solid rgba(15, 23, 42, 0.10);
+        background: rgba(255, 255, 255, 0.70);
+        color: var(--text-primary);
+      }
+      #pm-scope .pm-btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.86);
+        border-color: rgba(15, 23, 42, 0.14);
+      }
+
+      /* 9:16 preview: storyRoot gerçek ölçekte; wrapper scale ile küçültür */
+      #pm-story-root {
+        /* Pastel theme vars (V2) */
+        --bg-from: #f3e8ff;
+        --bg-to: #ffedd5;
+        --bg-gradient: linear-gradient(135deg, var(--bg-from), var(--bg-to));
+        --card-bg: rgba(255, 255, 255, 0.55);
+        --card-border: rgba(255, 255, 255, 0.60);
+        --text-main: #312e81;
+        --text-muted: rgba(49, 46, 129, 0.62);
+        --accent-color: #a78bfa;
+        --accent-rgb: 167 139 250;
+
+        width: 1080px;
+        height: 1920px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 40px;
+        transform: translateZ(0);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        /* Light airy pastel background (html2canvas uyumlu) */
+        background:
+          radial-gradient(1200px 900px at 18% 12%, rgba(var(--accent-rgb) / 0.22), transparent 58%),
+          radial-gradient(980px 760px at 88% 18%, rgba(var(--accent-rgb) / 0.16), transparent 60%),
+          var(--bg-gradient);
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+          0 40px 120px -90px rgba(15, 23, 42, 0.18);
+        /* typography rendering (html2canvas + screen) */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: geometricPrecision;
+      }
+
+      #pm-story-root .pm-watermark {
+        position: absolute;
+        inset: 0;
+        /* Subtle noise-like highlight (no blend modes) */
+        background:
+          radial-gradient(circle at 24% 26%, rgba(255, 255, 255, 0.28), transparent 44%),
+          radial-gradient(circle at 68% 64%, rgba(255, 255, 255, 0.22), transparent 48%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.30), transparent 36%, rgba(255, 255, 255, 0.22));
+        pointer-events: none;
+        opacity: 0.7;
+      }
+      #pm-story-root::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        /* Vignette + depth */
+        background:
+          radial-gradient(1200px 1100px at 50% 45%, transparent 46%, rgba(15, 23, 42, 0.10) 100%);
+        opacity: 1;
+      }
+      #pm-story-root::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: 40px;
+        /* Hairline ring */
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+        opacity: 1;
+      }
+      #pm-story-root .pm-topbar {
+        position: relative;
+        padding: 76px 82px 36px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      #pm-story-root .pm-brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+      }
+      #pm-story-root .pm-logo {
+        width: 84px;
+        height: 84px;
+        border-radius: 26px;
+        flex: 0 0 auto;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.10);
+        display: grid;
+        place-items: center;
+        color: var(--text-main);
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+      #pm-story-root .pm-brand-text {
+        min-width: 0;
+        padding-top: 2px;
+      }
+      #pm-story-root .pm-kurum {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--text-main);
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 640px;
+      }
+      #pm-story-root .pm-exam {
+        margin: 10px 0 0;
+        font-size: 20px;
+        font-weight: 650;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 640px;
+      }
+      #pm-story-root .pm-badge {
+        flex-shrink: 0;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.70);
+        background: rgba(255, 255, 255, 0.55);
+        padding: 14px 18px;
+        color: var(--text-main);
+        font-weight: 800;
+        font-size: 16px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.10);
+      }
+      #pm-story-root .pm-title {
+        padding: 0 82px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      #pm-story-root .pm-title h1 {
+        margin: 0;
+        font-size: 92px;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: var(--text-main);
+        line-height: 1;
+        text-shadow:
+          0 14px 48px rgba(var(--accent-rgb) / 0.12);
+        -webkit-font-smoothing: antialiased;
+      }
+      #pm-story-root .pm-date {
+        margin: 0;
+        font-size: 18px;
+        color: var(--text-muted);
+        font-weight: 700;
+      }
+      /* Board artık "cam kart listesi": header + cards grid */
+      #pm-story-root .pm-board {
+        margin: 52px 82px 0;
+        border-radius: 34px;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.40);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 16px 60px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+      }
+      #pm-story-root .pm-board-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 26px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+      }
+      #pm-story-root .pm-board-head-title {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        min-width: 0;
+      }
+      #pm-story-root .pm-board-head-title strong {
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-main);
+      }
+      #pm-story-root .pm-board-head-title span {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-board-head-metric {
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-rows {
+        padding: 18px 18px 20px;
+        display: grid;
+        gap: 14px;
+      }
+
+      /* =========================================================
+        Template Styles (V3): 3 kategori × 3 layout = 9 varyant
+        Not: Renkler pastel vars ile uyumlu; farklar yapısal.
+      ========================================================= */
+
+      /* --- Kategori 1: Liderlik Tablosu --- */
+      #pm-story-root .pm-kind--leaderboard.pm-style--1 .pm-board { background: rgba(255, 255, 255, 0.34); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+      #pm-story-root .pm-rows--glasslist { gap: 0; padding: 10px 16px 16px; }
+      #pm-story-root .pm-glassLine { display: grid; grid-template-columns: minmax(0, 158px) minmax(0, 1fr) minmax(0, 172px); align-items: center; gap: 12px; padding: 18px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.55); }
+      #pm-story-root .pm-glassLine:last-child { border-bottom: 0; }
+      /* center: html2canvas baseline hizası ekranla sık uyuşmaz */
+      #pm-story-root .pm-glassRank { display: flex; align-items: center; gap: 10px; color: var(--text-main); font-weight: 900; }
+      #pm-story-root .pm-glassRank strong { font-size: 30px; letter-spacing: -0.02em; line-height: 1; }
+      #pm-story-root .pm-glassMedal { width: 54px; height: 54px; border-radius: 18px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.55); border: 1px solid rgba(255, 255, 255, 0.70); box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08); font-size: 22px; line-height: 1; }
+      #pm-story-root .pm-glassName { min-width: 0; min-height: 0; align-self: center; overflow: hidden; }
+      #pm-story-root .pm-glassNameMain { display: block; max-width: 100%; font-size: 22px; font-weight: 900; letter-spacing: -0.04em; line-height: 1.12; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #pm-story-root .pm-glassNameSub { margin-top: 5px; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.2; color: var(--text-muted); }
+      #pm-story-root .pm-glassNet { text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; min-height: 0; align-self: center; }
+      #pm-story-root .pm-glassNetVal { font-size: 34px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; color: var(--text-main); }
+      #pm-story-root .pm-glassNetLbl { font-size: 12px; font-weight: 900; letter-spacing: 0.12em; line-height: 1; text-transform: uppercase; color: var(--text-muted); }
+
+      /* Floating cards */
+      #pm-story-root .pm-kind--leaderboard.pm-style--2 .pm-board { background: transparent; border-color: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      #pm-story-root .pm-kind--leaderboard.pm-style--2 .pm-board-head { border-radius: 28px; margin: 0 8px 10px; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08); }
+      #pm-story-root .pm-rows--floatcards { padding: 14px 10px 16px; gap: 18px; }
+      #pm-story-root .pm-floatCard { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px; border-radius: 30px; background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(15, 23, 42, 0.08); box-shadow: 0 22px 70px -44px rgba(15, 23, 42, 0.35); }
+      #pm-story-root .pm-floatLeft { min-width: 0; display: grid; gap: 10px; }
+      #pm-story-root .pm-floatRank { display: inline-flex; align-items: center; gap: 10px; color: rgba(15, 23, 42, 0.88); }
+      #pm-story-root .pm-floatRank strong { font-size: 30px; font-weight: 900; letter-spacing: -0.03em; }
+      #pm-story-root .pm-floatBadge { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent-color) 18%, white); border: 1px solid rgba(15, 23, 42, 0.08); font-size: 20px; }
+      #pm-story-root .pm-floatName { display: block; min-width: 0; max-width: 100%; font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: rgba(15, 23, 42, 0.90); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #pm-story-root .pm-floatRight { flex: 0 0 auto; text-align: right; display: grid; gap: 6px; }
+      #pm-story-root .pm-floatNet { font-size: 44px; font-weight: 900; letter-spacing: -0.05em; color: rgba(15, 23, 42, 0.92); }
+      #pm-story-root .pm-floatCode { font-size: 13px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(15, 23, 42, 0.55); }
+
+      /* Minimalist kurumsal */
+      #pm-story-root .pm-kind--leaderboard.pm-style--3 .pm-board { background: transparent; border-color: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      #pm-story-root .pm-board-head--minimal { border-bottom: 1px solid rgba(49, 46, 129, 0.18); background: transparent; box-shadow: none; }
+      #pm-story-root .pm-rows--minimal { padding: 10px 8px 0; gap: 0; }
+      #pm-story-root .pm-minRow { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 8px; border-bottom: 1px solid rgba(49, 46, 129, 0.14); }
+      #pm-story-root .pm-minRow:last-child { border-bottom: 0; }
+      #pm-story-root .pm-minLeft { min-width: 0; display: flex; align-items: center; gap: 14px; }
+      #pm-story-root .pm-minRank { font-size: 18px; font-weight: 900; color: rgba(49, 46, 129, 0.55); width: 36px; }
+      #pm-story-root .pm-minName { flex: 1; min-width: 0; display: block; max-width: 100%; font-size: 24px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #pm-story-root .pm-minRight { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 10px; }
+      #pm-story-root .pm-minNet { font-size: 36px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); }
+      #pm-story-root .pm-minUnit { font-size: 12px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(49, 46, 129, 0.55); }
+      #pm-story-root .pm-foot--minimal .pm-pill { background: transparent; border-color: rgba(49, 46, 129, 0.14); }
+      #pm-story-root .pm-minEmpty { padding: 110px 24px; text-align: center; color: var(--text-main); font-weight: 900; display: grid; gap: 10px; }
+      #pm-story-root .pm-minEmpty div:last-child { color: var(--text-muted); font-weight: 850; }
+
+      /* --- Kategori 2: Haftanın Yıldızı --- */
+      #pm-story-root .pm-star--polaroid { padding: 22px 82px 0; }
+      #pm-story-root .pm-polaroid { margin: 18px auto 0; width: min(820px, 100%); border-radius: 34px; background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(15, 23, 42, 0.10); box-shadow: 0 30px 90px -56px rgba(15, 23, 42, 0.38); padding: 24px 24px 26px; transform: rotate(-3deg); }
+      #pm-story-root .pm-polaroid-photo { border-radius: 28px; background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.14), rgba(255, 255, 255, 0.75)); border: 1px solid rgba(15, 23, 42, 0.08); height: 560px; display: grid; place-items: center; }
+      #pm-story-root .pm-polaroid-avatar { width: 280px; height: 280px; border-radius: 999px; background: rgba(255, 255, 255, 0.70); border: 1px solid rgba(15, 23, 42, 0.08); box-shadow: 0 18px 60px rgba(15, 23, 42, 0.10); display: grid; place-items: center; }
+      #pm-story-root .pm-polaroid-avatarInner { font-size: 110px; font-weight: 900; letter-spacing: -0.06em; color: rgba(15, 23, 42, 0.86); }
+      #pm-story-root .pm-polaroid-name { margin-top: 18px; text-align: center; font-size: 54px; font-weight: 900; letter-spacing: -0.05em; color: rgba(15, 23, 42, 0.90); font-family: ui-rounded, "Segoe Print", "Comic Sans MS", "Inter", system-ui, sans-serif; }
+
+      /* Devasa tipografi */
+      #pm-story-root .pm-star--bigtype { padding: 40px 82px 0; display: grid; gap: 22px; position: relative; }
+      #pm-story-root .pm-star--bigtype #pm-star-title, #pm-story-root .pm-star--bigtype #pm-star-sub, #pm-story-root .pm-star--bigtype #pm-star-metrics { display: none !important; }
+      #pm-story-root .pm-star-watermark { position: absolute; left: 82px; right: 82px; top: 170px; font-size: 132px; font-weight: 900; letter-spacing: -0.08em; color: rgba(49, 46, 129, 0.12); z-index: 0; line-height: 0.9; }
+      #pm-story-root .pm-bigName { position: relative; z-index: 1; font-size: 164px; font-weight: 900; letter-spacing: -0.08em; line-height: 0.92; color: var(--text-main); text-shadow: 0 14px 48px rgba(var(--accent-rgb) / 0.12); }
+      #pm-story-root .pm-bigMeta { position: relative; z-index: 1; width: min(860px, 100%); display: grid; gap: 10px; }
+      #pm-story-root .pm-bigMetaLine { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 14px; border-bottom: 1px solid rgba(49, 46, 129, 0.16); }
+      #pm-story-root .pm-bigMetaK { font-size: 14px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(49, 46, 129, 0.55); }
+      #pm-story-root .pm-bigMetaV { font-size: 52px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-main); }
+      #pm-story-root .pm-bigAvatar { position: relative; z-index: 1; width: 220px; height: 220px; border-radius: 999px; background: rgba(255, 255, 255, 0.55); border: 1px solid rgba(255, 255, 255, 0.75); box-shadow: 0 20px 80px rgba(15, 23, 42, 0.10); display: grid; place-items: center; }
+      #pm-story-root .pm-bigAvatarInner { font-size: 84px; font-weight: 900; letter-spacing: -0.06em; color: var(--text-main); }
+
+      /* Pastel spotlight */
+      #pm-story-root .pm-star--spotlight { padding: 44px 82px 0; display: grid; gap: 18px; place-items: center; text-align: center; position: relative; }
+      #pm-story-root .pm-spotGlow { position: absolute; width: 960px; height: 960px; border-radius: 999px; background: radial-gradient(circle, rgba(var(--accent-rgb) / 0.34), transparent 62%); opacity: 0.9; top: 380px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+      #pm-story-root .pm-spotAvatar { width: 320px; height: 320px; border-radius: 999px; background: rgba(255, 255, 255, 0.50); border: 1px solid rgba(255, 255, 255, 0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: grid; place-items: center; box-shadow: 0 20px 80px rgba(15, 23, 42, 0.10); z-index: 1; }
+      #pm-story-root .pm-spotAvatarInner { font-size: 108px; font-weight: 900; letter-spacing: -0.06em; color: var(--text-main); }
+      #pm-story-root .pm-spotName { z-index: 1; font-size: 58px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-main); }
+      #pm-story-root .pm-spotMetrics { z-index: 1; margin-top: 10px; width: min(860px, 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      #pm-story-root .pm-spotMetric { border-radius: 26px; border: 1px solid rgba(255, 255, 255, 0.55); background: rgba(255, 255, 255, 0.40); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 18px 20px; display: grid; gap: 10px; }
+      #pm-story-root .pm-spotMetric span { font-size: 12px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+      #pm-story-root .pm-spotMetric strong { font-size: 52px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-main); }
+
+      /* --- Kategori 3: Geri Sayım --- */
+      #pm-story-root .pm-countdown--huge { padding: 70px 82px 0; display: grid; gap: 14px; }
+      #pm-story-root .pm-hugeDays { font-size: 420px; font-weight: 900; letter-spacing: -0.10em; line-height: 0.82; color: var(--text-main); text-shadow: 0 18px 70px rgba(var(--accent-rgb) / 0.16); }
+      #pm-story-root .pm-hugeLabel { font-size: 18px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-top: 10px; }
+      #pm-story-root .pm-hugeHeadline { font-size: 46px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-main); margin-top: 12px; }
+      #pm-story-root .pm-hugeSub { font-size: 22px; font-weight: 850; color: var(--text-muted); }
+      #pm-story-root .pm-hugeQuote { margin-top: 28px; font-size: 44px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-main); line-height: 1.08; }
+      #pm-story-root .pm-countdown--zen { padding: 82px 82px 0; display: grid; gap: 34px; }
+      #pm-story-root .pm-zenQuote { margin: 0; font-size: 40px; font-weight: 850; letter-spacing: -0.03em; color: var(--text-main); font-family: ui-serif, Georgia, "Times New Roman", serif; line-height: 1.18; }
+      #pm-story-root .pm-zenDaysRow { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: center; }
+      #pm-story-root .pm-zenDays { font-size: 150px; font-weight: 900; letter-spacing: -0.08em; color: var(--text-main); line-height: 0.95; }
+      #pm-story-root .pm-zenMeta { display: grid; gap: 10px; }
+      #pm-story-root .pm-zenLabel { font-size: 18px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+      #pm-story-root .pm-zenSub { font-size: 22px; font-weight: 850; color: var(--text-muted); }
+      #pm-story-root .pm-zenProgressWrap { position: relative; height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.0); }
+      #pm-story-root .pm-zenTrack { position: absolute; inset: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.55); }
+      #pm-story-root .pm-zenFill { position: absolute; inset: 0 auto 0 0; height: 100%; border-radius: 999px; background: rgba(var(--accent-rgb) / 0.85); box-shadow: 0 10px 30px rgba(var(--accent-rgb) / 0.24); }
+      #pm-story-root .pm-countdown--calendar { padding: 72px 82px 0; display: grid; gap: 22px; justify-items: center; }
+      #pm-story-root .pm-calCard { width: min(720px, 100%); border-radius: 34px; background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(15, 23, 42, 0.10); box-shadow: 0 26px 90px -56px rgba(15, 23, 42, 0.40); overflow: hidden; }
+      #pm-story-root .pm-calTop { background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.55), rgba(var(--accent-rgb) / 0.20)); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; }
+      #pm-story-root .pm-calDots { display: inline-flex; gap: 8px; }
+      #pm-story-root .pm-calDots span { width: 12px; height: 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.72); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55); }
+      #pm-story-root .pm-calMonth { font-size: 14px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255, 255, 255, 0.92); }
+      #pm-story-root .pm-calDay { padding: 54px 22px 20px; text-align: center; font-size: 200px; font-weight: 900; letter-spacing: -0.10em; color: rgba(15, 23, 42, 0.88); line-height: 0.92; }
+      #pm-story-root .pm-calBottom { padding: 0 22px 46px; text-align: center; font-size: 16px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(15, 23, 42, 0.55); }
+      #pm-story-root .pm-calQuote { width: min(860px, 100%); text-align: center; font-size: 32px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-main); line-height: 1.15; }
+      #pm-story-root .pm-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 140px 1fr 210px;
+        gap: 18px;
+        padding: 20px 20px;
+        align-items: center;
+        border-radius: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.40);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      #pm-story-root .pm-row::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 28px;
+        pointer-events: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.40);
+        opacity: 0.9;
+      }
+      #pm-story-root .pm-rank {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-main);
+        font-weight: 900;
+        font-size: 30px;
+        letter-spacing: -0.02em;
+      }
+      #pm-story-root .pm-medal {
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        font-size: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.55);
+        color: var(--text-main);
+      }
+      #pm-story-root .pm-name {
+        color: var(--text-main);
+        font-weight: 920;
+        font-size: 30px;
+        letter-spacing: -0.03em;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #pm-story-root .pm-sub {
+        margin-top: 8px;
+        color: var(--text-muted);
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: 0.03em;
+      }
+      #pm-story-root .pm-net {
+        text-align: right;
+        color: var(--text-main);
+        font-weight: 900;
+        font-size: 36px;
+        letter-spacing: -0.04em;
+      }
+      #pm-story-root .pm-net small {
+        display: block;
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      /* İlk 3: özel parlamalı hero kartlar */
+      #pm-story-root .pm-row--1 {
+        border-color: rgba(var(--accent-rgb) / 0.45);
+        background: rgba(255, 255, 255, 0.52);
+        box-shadow:
+          0 20px 80px rgba(var(--accent-rgb) / 0.18),
+          0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      #pm-story-root .pm-row--2 {
+        border-color: rgba(255, 255, 255, 0.70);
+        background: rgba(255, 255, 255, 0.46);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      #pm-story-root .pm-row--3 {
+        border-color: rgba(var(--accent-rgb) / 0.35);
+        background: rgba(255, 255, 255, 0.44);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      #pm-story-root .pm-medal--1 {
+        background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.35), rgba(255, 255, 255, 0.75));
+        color: var(--text-main);
+        border-color: rgba(255, 255, 255, 0.70);
+      }
+      #pm-story-root .pm-medal--2 {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.52));
+        color: var(--text-main);
+        border-color: rgba(255, 255, 255, 0.70);
+      }
+      #pm-story-root .pm-medal--3 {
+        background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.26), rgba(255, 255, 255, 0.72));
+        color: var(--text-main);
+        border-color: rgba(255, 255, 255, 0.70);
+      }
+      #pm-story-root .pm-crown {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        font-size: 22px;
+        filter: none;
+        opacity: 0.95;
+      }
+
+      /* Empty state (premium) */
+      #pm-story-root .pm-empty {
+        margin: 22px 18px 24px;
+        border-radius: 34px;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.40);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 130px 64px;
+        text-align: center;
+        box-shadow: 0 16px 60px rgba(15, 23, 42, 0.08);
+      }
+      #pm-story-root .pm-empty .pm-empty-ico {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 22px;
+        border-radius: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 42px;
+      }
+      #pm-story-root .pm-empty h2 {
+        margin: 0;
+        font-size: 52px;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: var(--text-main);
+        text-shadow: 0 14px 48px rgba(var(--accent-rgb) / 0.12);
+      }
+      #pm-story-root .pm-empty p {
+        margin: 18px 0 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-foot {
+        position: absolute;
+        left: 82px;
+        right: 82px;
+        bottom: 74px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        color: var(--text-muted);
+        font-size: 16px;
+        font-weight: 750;
+      }
+      /* Hide technical data pill on exports/previews */
+      #pm-story-root #pm-foot-left,
+      #pm-story-root .pm-hairline {
+        display: none !important;
+      }
+      #pm-story-root .pm-foot {
+        justify-content: flex-end;
+      }
+      #pm-story-root .pm-pill {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        background: rgba(255, 255, 255, 0.50);
+      }
+      #pm-story-root .pm-hairline {
+        height: 1px;
+        flex: 1;
+        background: linear-gradient(90deg, transparent, rgba(49, 46, 129, 0.18), transparent);
+      }
+
+      /* Template: Haftanın Yıldızı */
+      #pm-story-root .pm-star {
+        position: relative;
+        padding: 34px 82px 0;
+        display: grid;
+        gap: 18px;
+      }
+      #pm-story-root .pm-star-kicker {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-star-title {
+        margin: 0;
+        font-size: 88px;
+        font-weight: 900;
+        letter-spacing: -0.06em;
+        line-height: 0.98;
+        color: var(--text-main);
+        text-shadow:
+          0 14px 48px rgba(var(--accent-rgb) / 0.14);
+      }
+      #pm-story-root .pm-star-sub {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 820;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-star-avatar {
+        width: 520px;
+        height: 520px;
+        border-radius: 999px;
+        margin: 26px auto 0;
+        background:
+          radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.50), transparent 56%),
+          radial-gradient(circle at 70% 70%, rgba(var(--accent-rgb) / 0.20), transparent 58%),
+          rgba(255, 255, 255, 0.40);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 20px 80px rgba(15, 23, 42, 0.10);
+        display: grid;
+        place-items: center;
+      }
+      #pm-story-root .pm-star-avatar-inner {
+        width: 420px;
+        height: 420px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-size: 132px;
+        font-weight: 900;
+        letter-spacing: -0.06em;
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: 0 14px 60px rgba(15, 23, 42, 0.10);
+      }
+      #pm-story-root .pm-star-name {
+        margin: 18px 0 0;
+        text-align: center;
+        font-size: 58px;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: var(--text-main);
+        text-shadow: 0 14px 48px rgba(var(--accent-rgb) / 0.12);
+      }
+      #pm-story-root .pm-star-metrics {
+        margin: 22px auto 0;
+        width: min(860px, 100%);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      #pm-story-root .pm-star-metric {
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.40);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px 24px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      #pm-story-root .pm-star-metric-label {
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-star-metric-value {
+        margin-top: 10px;
+        font-size: 54px;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: var(--text-main);
+      }
+
+      /* Template: Countdown */
+      #pm-story-root .pm-countdown {
+        padding: 54px 82px 0;
+        display: grid;
+        gap: 26px;
+      }
+      #pm-story-root .pm-countdown-card {
+        border-radius: 34px;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.40);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 16px 60px rgba(15, 23, 42, 0.08);
+        padding: 72px 64px;
+        text-align: center;
+      }
+      #pm-story-root .pm-countdown-label {
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-countdown-days {
+        margin-top: 18px;
+        font-size: 170px;
+        font-weight: 900;
+        letter-spacing: -0.06em;
+        line-height: 0.9;
+        color: var(--text-main);
+        text-shadow:
+          0 14px 48px rgba(var(--accent-rgb) / 0.14);
+      }
+      #pm-story-root .pm-countdown-days small {
+        display: inline-block;
+        margin-left: 18px;
+        font-size: 36px;
+        letter-spacing: 0.05em;
+        font-weight: 900;
+        color: var(--text-muted);
+        vertical-align: middle;
+      }
+      #pm-story-root .pm-countdown-sub {
+        margin-top: 22px;
+        font-size: 26px;
+        font-weight: 850;
+        color: var(--text-muted);
+      }
+      #pm-story-root .pm-countdown-quote {
+        margin: 0;
+        font-size: 46px;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: var(--text-main);
+        text-align: left;
+        padding: 10px 8px 0;
+        text-shadow: 0 14px 48px rgba(var(--accent-rgb) / 0.12);
+        line-height: 1.1;
+      }
+
+      /* Prevent weird glyph overlap on some renderers */
+      #pm-story-root h1,
+      #pm-story-root h2,
+      #pm-story-root p,
+      #pm-story-root div {
+        font-kerning: normal;
+        font-feature-settings: "kern" 1, "liga" 1;
+      }
+
+      /* html2canvas: letter-spacing/kerning stabilizer (isim sütunları hariç: ellipsis için block + min-width:0 gerekir) */
+      #pm-story-root .pm-kurum,
+      #pm-story-root .pm-exam,
+      #pm-story-root .pm-title h1,
+      #pm-story-root .pm-star-title,
+      #pm-story-root .pm-bigName,
+      #pm-story-root .pm-hugeDays,
+      #pm-story-root .pm-calMonth,
+      #pm-story-root .pm-glassNetVal,
+      #pm-story-root .pm-floatNet,
+      #pm-story-root .pm-minNet {
+        display: inline-block;
+      }
+
+      /* Countdown progress bar (zarif pill) */
+      #pm-story-root .pm-progress {
+        margin-top: 26px;
+        height: 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.30);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      }
+      #pm-story-root .pm-progress-fill {
+        height: 100%;
+        width: 50%;
+        border-radius: 999px;
+        background: rgba(var(--accent-rgb) / 0.85);
+        box-shadow: 0 10px 30px rgba(var(--accent-rgb) / 0.24);
+      }
+
+      #pm-preview {
+        background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.08), transparent 60%),
+          radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.08), transparent 60%);
+      }
+      #pm-canvas {
+        width: min(620px, 100%);
+        aspect-ratio: 9 / 16;
+        border-radius: 1.25rem;
+        border: 1px solid color-mix(in srgb, var(--header-border) 85%, transparent);
+        background: color-mix(in srgb, var(--surface) 92%, transparent);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        box-shadow: 0 18px 70px -44px rgba(15, 23, 42, 0.35);
+      }
+      #pm-preview-inner {
+        width: 1080px;
+        height: 1920px;
+        transform-origin: top left;
+        will-change: transform;
+      }
+
+      /* Tabs (sol panel) */
+      #pm-scope .pm-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.70);
+        box-shadow: 0 10px 34px rgba(15, 23, 42, 0.06);
+        height: 74px; /* lock segmented control height */
+      }
+      #pm-scope .pm-tab {
+        flex: 1;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        height: 100%;
+        padding: 10px 10px;
+        min-height: 0;
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: -0.015em;
+        color: rgba(15, 23, 42, 0.86);
+        background: transparent;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        gap: 3px;
+        text-align: center;
+        transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, transform 0.12s ease;
+        line-height: 1.05;
+        overflow: hidden;
+      }
+      #pm-scope .pm-tabTitle {
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: -0.015em;
+        color: rgba(15, 23, 42, 0.86);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        max-height: 2.2em; /* 2 lines */
+      }
+      #pm-scope .pm-tab span {
+        font-weight: 850;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(15, 23, 42, 0.52);
+        line-height: 1;
+      }
+      #pm-scope .pm-tab[aria-selected="true"] {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(99, 102, 241, 0.18);
+        box-shadow:
+          0 14px 44px rgba(15, 23, 42, 0.08),
+          0 0 0 3px rgba(99, 102, 241, 0.10);
+        color: rgba(15, 23, 42, 0.92);
+      }
+      #pm-scope .pm-tab:hover {
+        background: rgba(255, 255, 255, 0.84);
+        border-color: rgba(15, 23, 42, 0.10);
+      }
+      #pm-scope .pm-tabpanel[hidden] {
+        display: none !important;
+      }
+      #pm-scope .pm-field {
+        display: grid;
+        gap: 8px;
+      }
+      #pm-scope .pm-field-label {
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      #pm-scope .pm-control {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(15, 23, 42, 0.10);
+        background: rgba(255, 255, 255, 0.80);
+        color: var(--text-primary);
+        padding: 0.70rem 0.85rem;
+        font-weight: 700;
+        font-size: 14px;
+        outline: none;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      }
+      #pm-scope .pm-control:focus {
+        border-color: rgba(99, 102, 241, 0.40);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.14);
+        background: rgba(255, 255, 255, 0.92);
+      }
+      #pm-scope textarea.pm-control {
+        line-height: 1.35;
+        resize: vertical;
+      }
+      #pm-scope .pm-file {
+        padding: 0.62rem 0.85rem;
+      }
+      #pm-scope .pm-fileInput {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      #pm-scope .pm-uploader {
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+      #pm-scope .pm-uploaderRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      #pm-scope .pm-uploaderBtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(15, 23, 42, 0.10);
+        background: rgba(255, 255, 255, 0.86);
+        color: rgba(15, 23, 42, 0.86);
+        font-weight: 900;
+        font-size: 13px;
+        cursor: pointer;
+        transition: box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        user-select: none;
+      }
+      #pm-scope .pm-uploaderBtn:hover {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(15, 23, 42, 0.14);
+        box-shadow: 0 12px 34px -26px rgba(15, 23, 42, 0.22);
+      }
+      #pm-scope .pm-uploaderFile {
+        min-width: 0;
+        flex: 1;
+        text-align: right;
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(15, 23, 42, 0.62);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #pm-scope .pm-uploaderHint {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.35;
+      }
+      #pm-scope .pm-divider {
+        height: 1px;
+        background: rgba(15, 23, 42, 0.06);
+        margin: 8px 0 2px;
+      }
+      #pm-scope .pm-row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      #pm-scope .pm-color {
+        height: 44px;
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid color-mix(in srgb, var(--header-border) 80%, transparent);
+        background: var(--surface);
+        padding: 6px;
+        cursor: pointer;
+      }
+      #pm-scope .pm-palettes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      #pm-scope .pm-paletteItem {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+      }
+      #pm-scope .pm-palette {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: 0 12px 34px -26px rgba(15, 23, 42, 0.20);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        background: #f8fafc;
+        flex: 0 0 auto;
+      }
+      #pm-scope .pm-palette::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        opacity: 0.9;
+        pointer-events: none;
+      }
+      #pm-scope .pm-paletteMeta {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+      }
+      #pm-scope .pm-paletteName {
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: -0.01em;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #pm-scope .pm-paletteDesc {
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #pm-scope .pm-help {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.35;
+      }
+
+      /* Sol panel sticky action bar */
+      #pm-scope .pm-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 0;
+      }
+      #pm-scope .pm-panelBody {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-bottom: 0;
+      }
+      #pm-scope .pm-actionbar {
+        position: sticky;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-top: 12px;
+        margin-top: auto;
+        padding-bottom: 6px;
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.0), rgba(248, 250, 252, 0.92) 18%, rgba(248, 250, 252, 0.98));
+      }
+      #pm-scope .pm-actionrow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      #pm-scope .pm-actionrow > * {
+        min-width: 0;
+      }
+      #pm-scope .pm-btn-sm {
+        padding: 0.64rem 0.9rem;
+        font-size: 13px;
+        border-radius: 14px;
+      }
+      #pm-scope .pm-kbd {
+        font-weight: 900;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.10);
+        background: rgba(255, 255, 255, 0.70);
+        color: rgba(15, 23, 42, 0.70);
+      }
+
+      /* Brand preview card */
+      #pm-scope .pm-brandPreview {
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.70);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      #pm-scope .pm-brandPreviewLeft {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      #pm-scope .pm-brandPreviewLogo {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: 0 12px 34px -26px rgba(15, 23, 42, 0.20);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        flex: 0 0 auto;
+        color: rgba(15, 23, 42, 0.70);
+        font-weight: 900;
+      }
+      #pm-scope .pm-brandPreviewText {
+        min-width: 0;
+        display: grid;
+        gap: 1px;
+      }
+      #pm-scope .pm-brandPreviewName {
+        font-weight: 900;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #pm-scope .pm-brandPreviewHint {
+        font-weight: 750;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      #pm-scope .pm-brandPreviewChip {
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.72);
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: rgba(15, 23, 42, 0.62);
+      }
+      #pm-scope .pm-visuallyHidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+
+      /* Beta modal: <body> sonunda; Tailwind important=#pm-scope bu öğelere uygulanmaz */
+      #betaModal {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.6);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        box-sizing: border-box;
+      }
+      #betaModal.hidden {
+        display: none !important;
+      }
+      #betaModal .beta-modal-card {
+        background: #fff;
+        border-radius: 1rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        max-width: 32rem;
+        width: 100%;
+        margin: 0 1rem;
+        padding: 2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+      }
+      #betaModal .beta-modal-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+      #betaModal .beta-modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 0.75rem;
+      }
+      #betaModal .beta-modal-desc {
+        font-size: 0.875rem;
+        color: #475569;
+        line-height: 1.625;
+        margin: 0 0 1.5rem;
+      }
+      #betaModal #closeBetaModal {
+        width: 100%;
+        background: #0f172a;
+        color: #fff;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: background-color 0.15s ease;
+      }
+      #betaModal #closeBetaModal:hover {
+        background: #1e293b;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="panel-shell" class="app">
+      <aside class="sidebar" aria-label="Ana menü">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span class="sidebar__title">Derecepanel</span>
+        </div>
+
+        <nav class="sidebar__nav">
+          <a href="../koc-paneli.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+            Dashboard
+          </a>
+          <a href="ogrencilerim.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            Öğrencilerim
+          </a>
+                    <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-gorusme-sub-coach" id="nav-gorusme-btn-coach">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Görüşme Odası
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-gorusme-sub-coach" role="group" aria-label="Görüşme Odası alt menü">
+              <a href="gorusme-odasi.html" class="nav-sub">Yeni Görüşme</a>
+              <a href="gorusme-arsivi.html" class="nav-sub">Görüşme Arşivi</a>
+            </div>
+          </div>
+
+          <a href="koclar.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path
+                d="M12 14l6.16 3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01-.665-6.479L12 14z"
+              />
+            </svg>
+            Koçlar
+          </a>
+          <a href="randevular.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Randevular
+          </a>
+
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-yks-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 14v7M9 18h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              YKS Simülasyon
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-yks-sub" role="group" aria-label="YKS Simülasyon alt menü">
+              <a href="tercih-sihirbazi.html" class="nav-sub">Tercih Sihirbazı</a>
+              <a href="yks-konulari.html" class="nav-sub">YKS Konuları</a>
+              <a href="net-sihirbazi.html" class="nav-sub">Net Sihirbazı</a>
+              <a href="puan-hesaplama.html" class="nav-sub">Puan Hesaplama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-den-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Denemeler
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-den-sub" role="group" aria-label="Denemeler alt menü">
+              <a href="basit-deneme-sonuclari.html" class="nav-sub">Sonuç Merkezi</a>
+              <a href="analiz-merkezi.html" class="nav-sub nav-sub--analiz-beta"
+                ><span class="nav-analiz-beta"
+                  ><span class="nav-analiz-beta__row1">Analiz ve Raporlama</span
+                  ><span class="nav-analiz-beta__row2"
+                    ><span class="nav-analiz-beta__suffix">Merkezi</span><span class="nav-analiz-beta__pill">BETA</span></span
+                  ></span
+                ></a
+              >
+              <a href="denemeler-global-takvim.html" class="nav-sub">Global Deneme Takvimi</a>
+              <a href="kurum-deneme-takvimi.html" class="nav-sub">Kurum Deneme Takvimi</a>
+              <a href="deneme-sonuclari-yukleme.html" class="nav-sub">Deneme Sonuçları Yükleme</a>
+              <a href="optik-okuyucu.html" class="nav-sub">Optik Okuyucu</a>
+              <a href="okutulan-denemeler.html" class="nav-sub">Okutulan Denemeler</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-wp-sub-main">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Haftalık Program
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-wp-sub-main" role="group" aria-label="Haftalık Program alt menü">
+              <a href="haftalik-program-olusturucu.html" class="nav-sub">Haftalık Program Oluşturucu</a>
+              <a href="kayitli-haftalik-programlar.html" class="nav-sub">Kayıtlı Haftalık Programlar</a>
+              <a href="haftalik-program.html" class="nav-sub">Öğrenciye program gönder</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-mr-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+              MR
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-mr-sub" role="group" aria-label="MR alt menü">
+              <a href="konu-mr.html" class="nav-sub">Konu MR</a>
+              <a href="soru-mr.html" class="nav-sub">Soru MR</a>
+              <a href="deneme-mr.html" class="nav-sub">Deneme MR</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-kitap-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Kitap Kütüphanesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-kitap-sub" role="group" aria-label="Kitap Kütüphanesi alt menü">
+              <a href="kitaplar.html" class="nav-sub">Kitap Listesi &amp; Kayıt</a>
+              <a href="kaynak-atama.html" class="nav-sub">Kaynak Atama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tm-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Test Maker
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tm-sub" role="group" aria-label="Test Maker alt menü">
+              <a href="test-olusturucu.html" class="nav-sub">Test Oluşturucu</a>
+              <a href="otomatik-soru-kirpici.html" class="nav-sub">Otomatik Soru Kırpıcı</a>
+              <a href="soru-havuzu.html" class="nav-sub">Soru Havuzu</a>
+            </div>
+          </div>
+          
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-hr-sub" id="nav-hr-trigger">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 2H6a2 2 0 0 1-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+                <path d="M14 2v4h4" />
+                <path d="M12 11v6" />
+                <path d="M9 14h6" />
+              </svg>
+              Hata Reçetesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-hr-sub" role="group" aria-label="Hata Reçetesi alt menü">
+              <a href="recete-yaz.html" class="nav-sub">Reçete Yaz</a>
+              <a href="recete-deposu.html" class="nav-sub">Reçete Deposu</a>
+              <a href="hatali-soru-havuzu.html" class="nav-sub">Hatalı Soru Havuzu</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tf-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Taramalar ve Fasiküller
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tf-sub" role="group" aria-label="Taramalar ve Fasiküller alt menü">
+              <a href="tarama-analiz.html" class="nav-sub"><span>Tarama Analiz ve Raporlama</span></a>
+              <a href="tarama-olusturucu.html" class="nav-sub"><span>Tarama Oluşturma</span></a>
+              <a href="tarama-deposu.html" class="nav-sub"><span>Tarama Deposu</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Oluşturma</span><span class="nav-sub__badge">Yakında</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Deposu</span><span class="nav-sub__badge">Yakında</span></a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="theme-switcher" role="group" aria-label="Görünüm teması">
+          <span class="theme-switcher__label">Tema</span>
+          <div class="theme-switcher__swatches">
+            <button type="button" class="theme-swatch theme-swatch--dark" data-theme="dark" aria-pressed="false" aria-label="Koyu tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--light" data-theme="light" aria-pressed="false" aria-label="Açık tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--blue" data-theme="blue" aria-pressed="false" aria-label="Okyanus teması"></button>
+            <button type="button" class="theme-swatch theme-swatch--orange" data-theme="orange" aria-pressed="false" aria-label="Gün batımı teması"></button>
+          </div>
+        </div>
+
+        <div class="sidebar__logout">
+          <button type="button" class="btn-logout">
+            Çıkış
+            <span class="btn-logout__arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+                <header class="dp-topbar-sheet flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap w-full p-3 mb-6 bg-slate-50/50 border border-slate-200 rounded-2xl shadow-sm">
+
+          <div class="flex items-center gap-4 flex-1 max-w-2xl">
+            <button onclick="window.history.back()" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input type="text" id="fm-global-search" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-700 placeholder:text-slate-400" placeholder="Öğrenci, deneme, koç veya konu ara...">
+
+              <div id="fm-search-results" class="absolute w-full bg-white shadow-2xl border border-slate-100 rounded-2xl mt-2 z-50 hidden max-h-[400px] overflow-y-auto p-2" role="listbox" aria-label="Arama sonuçları"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-4">
+
+            <button type="button" id="dp-header-notify" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+
+            <button type="button" id="dp-header-theme" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+
+        <div id="pm-scope" class="p-6">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--text-primary)">Pazarlama Asistanı</h1>
+              <p class="mt-1 text-sm pm-muted">
+                Gerçek deneme verilerinden Instagram Story (1080×1920) şablonları üretin ve PNG olarak indirin.
+              </p>
+            </div>
+            <!-- Duplicate actions removed from UI; kept hidden for JS compatibility -->
+            <div class="pm-visuallyHidden" aria-hidden="true">
+              <button type="button" class="pm-btn pm-btn-ghost" id="pm-btn-refresh" tabindex="-1">Şablonu Güncelle</button>
+              <button type="button" class="pm-btn pm-btn-primary" id="pm-btn-download" tabindex="-1">
+                <span aria-hidden="true">⬇</span> Görseli İndir (PNG)
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[420px,1fr]">
+            <!-- Sol: kontrol paneli -->
+            <section class="pm-card rounded-2xl p-5 pm-panel">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-sm font-extrabold tracking-tight" style="color: var(--text-primary)">Kontrol Paneli</h2>
+                  <p class="mt-1 text-xs pm-muted">Şablon, marka ve dışa aktarma ayarlarını yönetin.</p>
+                </div>
+                <span class="rounded-full border px-3 py-1 text-[11px] font-bold pm-muted" style="border-color: var(--header-border)">1080×1920</span>
+              </div>
+
+              <div class="mt-1 grid gap-4 pm-panelBody">
+                <div class="pm-tabs" role="tablist" aria-label="Kontrol Paneli Sekmeleri">
+                  <button type="button" class="pm-tab" id="pm-tab-data" role="tab" aria-selected="true" aria-controls="pm-panel-data">
+                    <div class="pm-tabTitle">Şablon &amp; Veri</div>
+                    <span>Seçimler</span>
+                  </button>
+                  <button type="button" class="pm-tab" id="pm-tab-brand" role="tab" aria-selected="false" aria-controls="pm-panel-brand">
+                    <div class="pm-tabTitle">Görünüm &amp; Marka</div>
+                    <span>Renk · Logo</span>
+                  </button>
+                  <button type="button" class="pm-tab" id="pm-tab-export" role="tab" aria-selected="false" aria-controls="pm-panel-export">
+                    <div class="pm-tabTitle">Dışa Aktar</div>
+                    <span>PNG · Önizleme</span>
+                  </button>
+                </div>
+
+                <!-- Tab 1: Şablon & Veri -->
+                <div id="pm-panel-data" class="pm-tabpanel grid gap-4" role="tabpanel" aria-labelledby="pm-tab-data">
+                  <label class="pm-field">
+                    <span class="pm-field-label">Şablon</span>
+                    <select
+                      id="pm-template-select"
+                      class="pm-control"
+                    >
+                      <option value="leaderboard">Liderlik Tablosu (İlk 10)</option>
+                      <option value="star">Haftanın Yıldızı (Çıkış Yapan)</option>
+                      <option value="countdown">Sınav Motivasyonu / Geri Sayım</option>
+                    </select>
+                    <p class="pm-help">Şablon değişince sağdaki önizlemenin DOM yapısı dinamik olarak güncellenir.</p>
+                  </label>
+
+                  <label class="pm-field">
+                    <span class="pm-field-label">Şablon Stili</span>
+                    <select id="pm-template-style" class="pm-control"></select>
+                    <p class="pm-help">Seçili ana şablona göre 3 farklı düzen arasında geçiş yapın.</p>
+                  </label>
+
+                  <label class="pm-field" id="pm-exam-field">
+                    <span class="pm-field-label">Veri (Deneme)</span>
+                    <select
+                      id="pm-exam-select"
+                      class="pm-control"
+                    >
+                      <option value="">Deneme seçin…</option>
+                    </select>
+                    <p class="pm-help">
+                      Kaynaklar: <code class="rounded bg-slate-100 px-1 text-[11px]">kurum_denemeler_v1</code> /
+                      <code class="rounded bg-slate-100 px-1 text-[11px]">global_denemeler_v1</code> +
+                      <code class="rounded bg-slate-100 px-1 text-[11px]">examResults</code>
+                    </p>
+                  </label>
+
+                  <div id="pm-custom-fields" class="grid gap-3" hidden></div>
+
+                  <div class="rounded-2xl border p-4" style="border-color: var(--header-border); background: var(--surface-panel)">
+                    <p class="text-xs font-bold uppercase tracking-wider pm-muted">Özet</p>
+                    <div class="mt-3 grid grid-cols-2 gap-3">
+                      <div>
+                        <p class="text-[11px] pm-muted">Kayıt</p>
+                        <p class="text-sm font-extrabold" id="pm-meta-count" style="color: var(--text-primary)">—</p>
+                      </div>
+                      <div>
+                        <p class="text-[11px] pm-muted">İlk 10</p>
+                        <p class="text-sm font-extrabold" id="pm-meta-top" style="color: var(--text-primary)">—</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tab 2: Görünüm & Marka -->
+                <div id="pm-panel-brand" class="pm-tabpanel grid gap-4" role="tabpanel" aria-labelledby="pm-tab-brand" hidden>
+                  <div class="pm-brandPreview" aria-label="Marka önizleme">
+                    <div class="pm-brandPreviewLeft">
+                      <div class="pm-brandPreviewLogo" id="pm-brandPreviewLogo">
+                        <img id="pm-brandPreviewImg" alt="Logo" hidden style="width:100%;height:100%;object-fit:contain" />
+                        <span id="pm-brandPreviewFallback">DP</span>
+                      </div>
+                      <div class="pm-brandPreviewText">
+                        <div class="pm-brandPreviewName" id="pm-brandPreviewName">Kurum</div>
+                        <div class="pm-brandPreviewHint">Tema ve logo çıktıdaki story’e uygulanır.</div>
+                      </div>
+                    </div>
+                    <div class="pm-brandPreviewChip">Brand</div>
+                  </div>
+
+                  <div class="pm-field">
+                    <span class="pm-field-label">Hazır Paletler</span>
+                    <div class="pm-palettes" aria-label="Hazır renk paletleri">
+                      <div class="pm-paletteItem">
+                        <button type="button" class="pm-palette" data-palette="lavender" aria-label="Pastel Lavanta" title="Pastel Lavanta"></button>
+                        <div class="pm-paletteMeta">
+                          <div class="pm-paletteName">Pastel Lavanta</div>
+                          <div class="pm-paletteDesc">Lila · Şeftali</div>
+                        </div>
+                      </div>
+                      <div class="pm-paletteItem">
+                        <button type="button" class="pm-palette" data-palette="mint" aria-label="Pastel Mint" title="Pastel Mint"></button>
+                        <div class="pm-paletteMeta">
+                          <div class="pm-paletteName">Pastel Mint</div>
+                          <div class="pm-paletteDesc">Nane · Buz Mavi</div>
+                        </div>
+                      </div>
+                      <div class="pm-paletteItem">
+                        <button type="button" class="pm-palette" data-palette="roseSand" aria-label="Pastel Gül & Kum" title="Pastel Gül & Kum"></button>
+                        <div class="pm-paletteMeta">
+                          <div class="pm-paletteName">Gül &amp; Kum</div>
+                          <div class="pm-paletteDesc">Pudra · Bej</div>
+                        </div>
+                      </div>
+                      <div class="pm-paletteItem">
+                        <button type="button" class="pm-palette" data-palette="minimalIce" aria-label="Minimal Gri/Buz" title="Minimal Gri/Buz"></button>
+                        <div class="pm-paletteMeta">
+                          <div class="pm-paletteName">Minimal Buz</div>
+                          <div class="pm-paletteDesc">Kırık Beyaz · Gri</div>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="pm-help">Tek tıkla arka plan, kartlar, tipografi ve vurgu rengi pastel konsepte geçer.</p>
+                  </div>
+
+                  <div class="pm-divider" aria-hidden="true"></div>
+
+                  <label class="pm-field">
+                    <span class="pm-field-label">Logo (PNG)</span>
+                    <div class="pm-uploader" role="group" aria-label="Logo yükleyici">
+                      <input type="file" id="pm-logo-upload" accept="image/png" class="pm-fileInput" />
+                      <div class="pm-uploaderRow">
+                        <label class="pm-uploaderBtn" for="pm-logo-upload">
+                          <span aria-hidden="true">⬆</span> PNG Yükle
+                        </label>
+                        <div class="pm-uploaderFile" id="pm-logo-filename">Dosya seçilmedi</div>
+                      </div>
+                      <div class="pm-uploaderRow">
+                        <div class="pm-uploaderHint">Logo Base64 olarak yüklenir ve şablonda anlık görünür.</div>
+                        <button type="button" class="pm-btn pm-btn-ghost pm-btn-sm" id="pm-btn-clear-logo">Kaldır</button>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                <!-- Tab 3: Dışa Aktar -->
+                <div id="pm-panel-export" class="pm-tabpanel grid gap-4" role="tabpanel" aria-labelledby="pm-tab-export" hidden>
+                  <label class="pm-field">
+                    <span class="pm-field-label">PNG Kalitesi</span>
+                    <select
+                      id="pm-export-scale"
+                      class="pm-control"
+                    >
+                      <option value="2">Standart (2×)</option>
+                      <option value="3">Telefon için net (3×)</option>
+                      <option value="4">Ultra (4×)</option>
+                      <option value="1">Hızlı (1×)</option>
+                    </select>
+                    <p class="pm-help">Kalite yükseldikçe çıktı daha net olur, işlem süresi artar.</p>
+                  </label>
+
+                  <label class="pm-field">
+                    <span class="pm-field-label">Önizleme</span>
+                    <button type="button" class="pm-btn pm-btn-ghost" id="pm-btn-fit">Önizlemeyi Yeniden Ölçekle</button>
+                    <p class="pm-help">Önizleme sadece ekranda küçültülür; indirilen PNG her zaman 1080×1920’dir.</p>
+                  </label>
+                </div>
+              </div>
+
+              <div class="pm-actionbar" aria-label="Hızlı işlemler">
+                <div class="pm-actionrow">
+                  <button type="button" class="pm-btn pm-btn-ghost pm-btn-sm" id="pm-btn-refresh-panel">
+                    Şablonu Güncelle <span class="pm-kbd" aria-hidden="true">R</span>
+                  </button>
+                  <button type="button" class="pm-btn pm-btn-primary pm-btn-sm" id="pm-btn-download-panel">
+                    ⬇ PNG İndir <span class="pm-kbd" aria-hidden="true">D</span>
+                  </button>
+                </div>
+                <p class="pm-help">İpucu: Şablon/veri değiştirince otomatik güncellenir; “Güncelle” depodan tazeler.</p>
+              </div>
+            </section>
+
+            <!-- Sağ: canlı önizleme -->
+            <section class="pm-card rounded-2xl p-5">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-sm font-extrabold tracking-tight" style="color: var(--text-primary)">Canlı Önizleme</h2>
+                  <p class="mt-1 text-xs pm-muted">Export edilen görsel, sağdaki story’dir.</p>
+                </div>
+                <div class="text-xs pm-muted" id="pm-preview-scale">—</div>
+              </div>
+
+              <div id="pm-preview" class="mt-4 w-full overflow-hidden rounded-2xl border p-4" style="border-color: var(--header-border)">
+                <div class="flex w-full justify-center">
+                  <div id="pm-canvas" aria-label="9:16 Önizleme alanı">
+                    <div id="pm-preview-inner">
+                      <div id="pm-story-root" aria-label="Instagram story şablonu">
+                        <!-- Template engine host (DOM dinamik güncellenir) -->
+                        <div id="pm-template-host"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script src="../js/pazarlama.js" defer></script>
+
+    <div
+      id="betaModal"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="beta-modal-title"
+    >
+      <div class="beta-modal-card bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8 text-center flex flex-col items-center">
+        <div class="beta-modal-icon" aria-hidden="true">🎨</div>
+        <h2 id="beta-modal-title" class="beta-modal-title text-xl font-bold text-slate-800 mb-3">Pazarlama Asistanı Test Aşamasında</h2>
+        <p class="beta-modal-desc text-sm text-slate-600 leading-relaxed mb-6">
+          Sayın Kullanıcımız, şu an platformumuzun yenilikçi modüllerinden Pazarlama Asistanı'nı görüntülüyorsunuz. Dinamik veri ile Instagram Story (1080×1920) üretme ve PNG olarak dışa aktarma motorumuz kalibrasyon sürecindedir. Bu beta sürecinde tarayıcı ve ekran çözünürlüğünüze bağlı olarak şablonlarda ufak hizalama farklılıkları yaşanabilir.
+        </p>
+        <button type="button" id="closeBetaModal" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl transition-colors">
+          Anladım, Asistanı İncele
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
+

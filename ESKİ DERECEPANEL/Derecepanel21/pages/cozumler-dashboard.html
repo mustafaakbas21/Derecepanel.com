@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kurum Dashboard — Derecepanel Çözümleri</title>
+    <meta name="description" content="Derecepanel yönetim paneli: özet KPI’lar, hızlı erişim kartları ve kurum nabzı tek ekranda." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=latin-ext" rel="stylesheet" />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/cozumler-sayfa.css" />
+  </head>
+  <body>
+    <div class="cz-shell">
+      <header class="cz-nav">
+        <div class="cz-container cz-nav__inner">
+          <a href="../index.html" class="cz-brand" aria-label="Derecepanel ana sayfa">
+            <span class="cz-brand__mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </span>
+            Derecepanel
+          </a>
+          <ul class="cz-nav__links">
+            <li><a href="../index.html">Ana sayfa</a></li>
+            <li><a href="../index.html#features">Özellikler</a></li>
+          </ul>
+          <div class="cz-nav__cta">
+            <a href="../login.html" class="cz-btn cz-btn--ghost">Oturum Aç</a>
+            <a href="../login.html" class="cz-btn cz-btn--primary">Giriş Yap</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="cz-hero">
+        <div class="cz-hero__bg" aria-hidden="true"></div>
+        <div class="cz-hero__wave" aria-hidden="true">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor">
+            <path d="M0,40 C360,100 720,24 1080,70 C1260,88 1380,52 1440,60 L1440,120 L0,120 Z" />
+          </svg>
+        </div>
+        <div class="cz-container cz-hero__inner">
+          <p class="cz-kicker"><span class="cz-kicker__dot" aria-hidden="true"></span> Yönetim özeti</p>
+          <h1>Giriş yaptığınız anda kurumun nabzını görün; dağınık tablolara mecbur kalmayın.</h1>
+          <p class="cz-hero__lede">
+            <strong>Dashboard</strong> (<code>koc-paneli.html</code>), öğrenci sayısı ve hızlı erişim kartlarıyla günlük operasyonu tek yerden başlatır. Müdür, sekreterya ve koç aynı vitrinden doğru modüle
+            gider; “hangi ekranda ne vardı?” araması biter, toplantı öncesi hazırlık süresi kısalır.
+          </p>
+        </div>
+      </section>
+
+      <section class="cz-mock">
+        <div class="cz-container">
+          <div class="cz-mock__frame">
+            <div class="cz-mock__chrome">
+              <span class="cz-mock__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              <span>Dashboard — özet metrikler ve modül kısayolları</span>
+            </div>
+            <div class="cz-mock__body">
+              <div class="cz-mock__label">
+                <strong>Uygulama önizlemesi</strong>
+                <span>Gerçek panelde tema (açık/koyu/mavi/turuncu) ile kurumsal kimliğinize uyum sağlanır.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cz-section">
+        <div class="cz-container">
+          <h2>Operasyonel kazanım</h2>
+          <p class="cz-section__title">Tek giriş noktası, çok modül</p>
+          <div class="cz-grid">
+            <article class="cz-card">
+              <div class="cz-card__ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1" /><rect x="14" y="3" width="7" height="5" rx="1" /><rect x="14" y="12" width="7" height="9" rx="1" /><rect x="3" y="16" width="7" height="5" rx="1" /></svg>
+              </div>
+              <h3>Kartlarla modül geçişi</h3>
+              <p>Öğrenciler, denemeler, optik ve program gibi sık kullanılan ekranlara tek tıkla gidilir; yeni personelin öğrenme eğrisi kısalır.</p>
+            </article>
+            <article class="cz-card">
+              <div class="cz-card__ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4" /></svg>
+              </div>
+              <h3>Özet ölçüler</h3>
+              <p>Toplam öğrenci gibi vitrin metrikleri anında görülür; kayıt döneminde yönetim kuruluna hızlı yanıt verilir.</p>
+            </article>
+            <article class="cz-card">
+              <div class="cz-card__ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+              </div>
+              <h3>Tema ile kurumsal görünüm</h3>
+              <p>Aynı panel motoru tüm sayfalarda çalışır; gece çalışması veya marka renkleri için göz yormayan alternatifler sunulur.</p>
+            </article>
+            <article class="cz-card">
+              <div class="cz-card__ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </div>
+              <h3>Düşük sürtünmeli onboarding</h3>
+              <p>Yeni sezon başında personel rotasyonunda bile “nereden başlanır?” sorusu nettir: önce dashboard, sonra ilgili modül.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="cz-bottom">
+        <div class="cz-container">
+          <div class="cz-bottom__box">
+            <h2>Panele geçin</h2>
+            <p>Giriş sonrası açılan ilk ekran operasyonun merkezidir; diğer çözümler buradan dallanır.</p>
+            <div class="cz-bottom__actions">
+              <a href="../koc-paneli.html" class="cz-btn cz-btn--primary">Dashboard’a git</a>
+              <a href="../index.html" class="cz-btn cz-btn--ghost">Ana sayfa</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="cz-foot cz-container"><a href="../index.html">Ana sayfa</a> · Derecepanel</footer>
+    </div>
+  </body>
+</html>

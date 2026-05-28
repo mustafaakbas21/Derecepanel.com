@@ -1,0 +1,552 @@
+/**
+ * Test Maker — DerecePanel tasarım dili
+ * Koyu lacivert (slate-900 / navy), nötr gri zemin, turuncu vurgu yalnızca hover’da.
+ * Açık mavi tonlar KULLANILMAZ.
+ */
+
+.tm-module-shell {
+  --tm-navy-950: #0f172a;
+  --tm-navy-900: #0f2744;
+  --tm-navy-800: #1e3a5f;
+  --tm-page-bg: #e8ecf1;
+  --tm-workspace-bg: #f1f5f9;
+  --tm-surface: #ffffff;
+  --tm-surface-muted: #f8fafc;
+  --tm-border: #e2e8f0;
+  --tm-border-strong: #cbd5e1;
+  --tm-text: #0f172a;
+  --tm-text-muted: #64748b;
+  --tm-text-on-dark: #f8fafc;
+  --tm-text-on-dark-muted: #94a3b8;
+  --tm-accent-orange: #f97316;
+
+  /* ESKİ inline script uyumu — açık mavi yerine nötr/koyu */
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --header-border: #e2e8f0;
+  --btn-primary-bg: #0f172a;
+  --btn-primary-hover: #1e293b;
+  background: var(--tm-page-bg);
+}
+
+/* ── Üst alt menü (koyu şerit) ───────────────────────────── */
+.tm-subnav {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  border-bottom: 1px solid #1e293b;
+  background: var(--tm-navy-950);
+  padding: 0.5rem 1rem;
+}
+
+.tm-subnav__brand {
+  margin-right: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tm-text-on-dark-muted);
+}
+
+.tm-subnav__link {
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tm-subnav__link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.tm-subnav__link--active {
+  background: #fff;
+  color: var(--tm-navy-950);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.tm-subnav__link--active:hover {
+  background: #fff;
+  color: var(--tm-navy-950);
+}
+
+/* ── Panel başlıkları (sol filtre / kokpit) ─────────────── */
+.tm-panel-header {
+  flex-shrink: 0;
+  background: linear-gradient(165deg, var(--tm-navy-800) 0%, var(--tm-navy-950) 100%);
+  color: #fff;
+  padding: 1rem 1.25rem;
+}
+
+.tm-panel-header h2 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.tm-panel-header p {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--tm-text-on-dark-muted);
+}
+
+/* ── 3 panel / 2 panel iskelet ─────────────────────────── */
+.tm-filter-panel {
+  display: flex;
+  width: 20rem;
+  flex-shrink: 0;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+}
+
+.tm-workspace-panel {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--tm-workspace-bg);
+}
+
+.tm-gallery-panel {
+  display: flex;
+  width: 30rem;
+  max-width: 42vw;
+  flex-shrink: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+}
+
+.tm-toolbar-bar {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.75rem 1.25rem;
+}
+
+.tm-radar-panel {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--tm-workspace-bg);
+}
+
+.tm-radar-toolbar {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.65rem 1rem;
+}
+
+.tm-radar-toolbar h3 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--tm-text);
+}
+
+.tm-radar-toolbar p {
+  font-size: 0.6875rem;
+  color: var(--tm-text-muted);
+}
+
+.tm-status-bar {
+  flex-shrink: 0;
+  border-top: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.4rem 1rem;
+  font-size: 0.6875rem;
+  color: var(--tm-text-muted);
+}
+
+/* ── Form alanları ─────────────────────────────────────── */
+.tm-field-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tm-text-muted);
+}
+
+.tm-field-input,
+.tm-field-select {
+  width: 100%;
+  border-radius: 0.625rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--tm-text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.tm-field-input:focus,
+.tm-field-select:focus {
+  outline: none;
+  border-color: var(--tm-navy-800);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+}
+
+.tm-field-select:disabled {
+  background: var(--tm-surface-muted);
+  color: var(--tm-text-muted);
+  opacity: 0.7;
+}
+
+.tm-filter-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.tm-divider {
+  height: 1px;
+  background: var(--tm-border);
+}
+
+/* ── Dropzone ──────────────────────────────────────────── */
+.tm-dropzone {
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  border: 2px dashed var(--tm-border-strong);
+  background: var(--tm-surface-muted);
+  padding: 1rem;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.tm-dropzone:hover {
+  border-color: var(--tm-navy-800);
+  background: #fff;
+}
+
+/* ── Segment / toggle (sütun modu, soru/sayfa) ─────────── */
+.tm-segment-group {
+  display: flex;
+  gap: 0.35rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface-muted);
+  padding: 0.2rem;
+}
+
+.tm-segment-btn {
+  flex: 1;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tm-text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.tm-segment-btn--active {
+  background: var(--tm-navy-950);
+  color: #fff;
+}
+
+.tm-segment-btn:hover:not(.tm-segment-btn--active) {
+  background: #e2e8f0;
+  color: var(--tm-text);
+}
+
+/* ── İlerleme çubuğu ───────────────────────────────────── */
+.tm-progress-track {
+  height: 0.375rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: #e2e8f0;
+}
+
+.tm-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--tm-navy-800);
+  transition: width 0.2s;
+}
+
+/* ── Soru kartı (havuz / kırpıcı) ──────────────────────── */
+.sh-card,
+.aks-card {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s;
+}
+
+.sh-card:hover,
+.aks-card:hover {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.tm-badge-meta {
+  border-radius: 0.25rem;
+  background: #e2e8f0;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--tm-navy-800);
+}
+
+.tm-badge-page {
+  border-radius: 0.25rem;
+  background: var(--tm-navy-950);
+  padding: 0.125rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ── Boş durum ─────────────────────────────────────────── */
+.tm-empty-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.tm-empty-icon-wrap {
+  border-radius: 9999px;
+  background: #e2e8f0;
+  padding: 1.5rem;
+}
+
+/* ── Test Oluşturucu stüdyo ────────────────────────────── */
+#tw-scope.tm-saas-shell {
+  background: var(--tm-workspace-bg);
+}
+
+.tm-studio-page-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 1rem 1.25rem;
+  margin: 0 -1.25rem 0;
+  width: calc(100% + 2.5rem);
+}
+
+.tm-studio-page-header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tm-text);
+}
+
+.tm-studio-page-header p {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--tm-text-muted);
+}
+
+.tm-studio-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.65rem 0.85rem;
+}
+
+.tm-tool-btn-outline {
+  border-radius: 0.75rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tm-text);
+}
+
+.tm-tool-btn-outline:hover {
+  border-color: var(--tm-border-strong);
+  background: var(--tm-surface-muted);
+}
+
+/* ── Otomatik Kırpıcı (elit studio) ─────────────────────── */
+.tm-kirpici-tool-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.tm-kirpici-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.55rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tm-text-muted);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.tm-kirpici-tool-btn:hover {
+  border-color: var(--tm-border-strong);
+  color: var(--tm-text);
+}
+
+.tm-kirpici-tool-btn--active {
+  border-color: var(--tm-navy-800);
+  background: var(--tm-navy-950);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.tm-kirpici-scan-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.625rem;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  padding: 0.65rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.28);
+  transition: filter 0.15s, opacity 0.15s;
+}
+
+.tm-kirpici-scan-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.tm-kirpici-scan-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tm-kirpici-file-card {
+  border-radius: 0.625rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface-muted);
+  padding: 0.65rem 0.75rem;
+}
+
+#aks-canvas-wrap {
+  background-color: #e8ecf1;
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background-size: 18px 18px;
+  touch-action: none;
+  user-select: none;
+}
+
+#aks-canvas-wrap.is-panning {
+  cursor: grabbing !important;
+}
+
+#aks-canvas-wrap.tm-tool-pan {
+  cursor: grab;
+}
+
+#aks-canvas-wrap.tm-tool-crop {
+  cursor: crosshair;
+}
+
+#aks-crop-marquee {
+  pointer-events: none;
+  border: 2px dashed #0f172a;
+  background: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+#aks-pdf-stage {
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.08),
+    0 20px 40px -12px rgba(15, 23, 42, 0.15);
+}
+
+.tm-kirpici-radar-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  padding: 0.75rem 1rem;
+}
+
+.tm-kirpici-zoom-btn {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+  color: var(--tm-text);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tm-kirpici-zoom-btn:hover {
+  border-color: var(--tm-navy-800);
+  background: var(--tm-surface-muted);
+}
+
+.tm-kirpici-gallery-head {
+  border-bottom: 1px solid var(--tm-border);
+  background: linear-gradient(165deg, var(--tm-navy-800) 0%, var(--tm-navy-950) 100%);
+  color: #fff;
+  padding: 0.85rem 1rem;
+}
+
+.tm-kirpici-gallery-head h3 {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.tm-kirpici-gallery-head p {
+  margin-top: 0.15rem;
+  font-size: 0.6875rem;
+  color: var(--tm-text-on-dark-muted);
+}
+
+/* PDF panel dropzone */
+.tm-pdf-dropzone {
+  border-color: var(--tm-border-strong) !important;
+  background: var(--tm-surface-muted) !important;
+}
+
+.tm-pdf-dropzone:hover {
+  border-color: var(--tm-navy-800) !important;
+  background: #fff !important;
+}

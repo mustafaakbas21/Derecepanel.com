@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geçmiş Programlarım – Öğrenci – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .og-arch {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 0 0 2rem;
+      }
+      .og-arch__head h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary, #0f172a);
+      }
+      .og-arch__head p {
+        margin: 0 0 1.5rem;
+        font-size: 0.9rem;
+        color: var(--text-muted, #64748b);
+        line-height: 1.5;
+        max-width: 36rem;
+      }
+      .og-arch-tl {
+        position: relative;
+        padding-left: 1.5rem;
+      }
+      .og-arch-tl::before {
+        content: "";
+        position: absolute;
+        left: 0.45rem;
+        top: 0.35rem;
+        bottom: 0.35rem;
+        width: 2px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, color-mix(in srgb, var(--btn-primary-bg, #6366f1) 55%, transparent), var(--header-border, #e2e8f0));
+      }
+      .og-arch-row {
+        position: relative;
+        margin-bottom: 1rem;
+        padding: 1rem 1.1rem 1rem 1.25rem;
+        border-radius: 14px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface-elevated, #fff);
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+      }
+      .og-arch-row::before {
+        content: "";
+        position: absolute;
+        left: -1.06rem;
+        top: 1.15rem;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--btn-primary-bg, #6366f1);
+        box-shadow: 0 0 0 3px var(--surface-elevated, #fff);
+      }
+      .og-arch-row__top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.65rem;
+      }
+      .og-arch-row__week {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--btn-primary-bg, #6366f1);
+      }
+      .og-arch-row__title {
+        flex: 1;
+        min-width: 10rem;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary, #0f172a);
+      }
+      .og-arch-row__meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem 1rem;
+        font-size: 0.85rem;
+        color: var(--text-muted, #64748b);
+      }
+      .og-arch-pct {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+      }
+      .og-arch-pct__bar {
+        width: 4.5rem;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--header-border, #e2e8f0);
+        overflow: hidden;
+      }
+      .og-arch-pct__fill {
+        height: 100%;
+        border-radius: 99px;
+        background: linear-gradient(90deg, #22c55e, #4ade80);
+      }
+      .og-arch-btn {
+        border: 0;
+        cursor: pointer;
+        padding: 0.45rem 0.9rem;
+        border-radius: 10px;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #fff;
+        background: var(--btn-primary-bg, #6366f1);
+      }
+      .og-arch-btn:hover {
+        filter: brightness(1.05);
+      }
+      .og-arch-empty {
+        padding: 2.5rem 1rem;
+        text-align: center;
+        font-size: 0.92rem;
+        color: var(--text-muted, #64748b);
+        border-radius: 14px;
+        border: 1px dashed var(--header-border, #e2e8f0);
+      }
+      .og-arch-modal__body {
+        max-height: min(70vh, 32rem);
+        overflow-y: auto;
+        margin-top: 0.75rem;
+      }
+      .og-arch-modal__day {
+        margin-bottom: 1.25rem;
+      }
+      .og-arch-modal__day h4 {
+        margin: 0 0 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary, #0f172a);
+      }
+      .og-arch-modal__task {
+        padding: 0.55rem 0.65rem;
+        margin-bottom: 0.35rem;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--header-border, #e2e8f0) 35%, transparent);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+      .og-arch-modal__task small {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--text-muted, #64748b);
+        font-size: 0.78rem;
+      }
+      .modal--og-arch {
+        max-width: 36rem;
+      }
+      .og-arch-modal__close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        border: 0;
+        background: transparent;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--text-muted, #64748b);
+      }
+      .modal--og-arch {
+        position: relative;
+        padding-top: 2.5rem;
+      }
+    </style>
+  </head>
+  <body class="og-student-embed">
+    <main class="og-arch" id="og-arch-root">
+      <header class="og-arch__head">
+        <h1>Geçmiş programlarım</h1>
+        <p>
+          Koçunuz yeni bir haftalık program gönderdiğinde, önceki aktif program burada arşivlenir. Tamamlama oranı ve hafta özeti tek bakışta görünür.
+        </p>
+      </header>
+      <div class="og-arch-tl" id="og-arch-list" aria-live="polite"></div>
+    </main>
+
+    <div class="modal-overlay" id="og-arch-modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="og-arch-modal-title">
+      <div class="modal modal--wide modal--og-arch">
+        <button type="button" class="og-arch-modal__close" id="og-arch-modal-close" aria-label="Kapat">×</button>
+        <h3 id="og-arch-modal-title">Program</h3>
+        <p id="og-arch-modal-sub" class="modal-detail" style="margin: 0 0 0.5rem"></p>
+        <div class="og-arch-modal__body" id="og-arch-modal-body"></div>
+        <div class="modal__actions" style="margin-top: 1rem">
+          <button type="button" class="btn-secondary" id="og-arch-modal-done">Kapat</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/student-catalog.js"></script>
+    <script src="../js/ogrenci-gecmis-programlar.js" defer></script>
+  </body>
+</html>

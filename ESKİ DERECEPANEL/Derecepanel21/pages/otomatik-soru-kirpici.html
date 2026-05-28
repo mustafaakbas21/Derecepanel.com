@@ -1,0 +1,2891 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Otomatik Soru Kırpıcı – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet" />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        important: "#tw-scope",
+        corePlugins: { preflight: false },
+        darkMode: ["selector", '[data-theme="dark"]'],
+        theme: { extend: { fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"] } } },
+      };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+      /* ── Full-Viewport 3-panel overrides ─────────────────── */
+      body.page-kirpici {
+        overflow: hidden;
+      }
+      body.page-kirpici .app {
+        height: 100vh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        /* Padding ve gap global değerden gelsin → sidebar yuvarlak & boşluklu */
+        padding: var(--shell-pad) !important;
+        gap: var(--shell-gap) !important;
+        align-items: stretch !important;
+      }
+      body.page-kirpici .sidebar {
+        /* align-items: stretch ile dolu boy alır, sticky değil relative */
+        height: auto !important;
+        min-height: 0 !important;
+        overflow-y: auto;
+        flex-shrink: 0;
+        align-self: stretch !important;
+        position: relative !important;
+        top: 0 !important;
+        /* border-radius global .sidebar kuralından gelir → dokunma */
+      }
+      body.page-kirpici .main {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        flex: 1 1 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column;
+        gap: 0;
+      }
+      body.page-kirpici .topbar {
+        padding: 0 20px !important;
+        height: 54px;
+        min-height: 54px;
+        border-bottom: 1px solid rgba(148,163,184,0.18);
+        flex-shrink: 0;
+        padding-bottom: 0 !important;
+      }
+      body.page-kirpici #tw-scope {
+        flex: 1 1 0 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      /* Left & right panels scroll independently */
+      body.page-kirpici #aks-left-panel {
+        height: 100%;
+        overflow-y: auto;
+      }
+      body.page-kirpici #aks-right-panel {
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      body.page-kirpici #aks-middle-panel {
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ══════════════════════════════════════════════════════════
+         TEMA UYUM OVERRIDEs
+         CSS değişkenleri (--surface, --header-border, vb.) Tailwind'in
+         hardcoded renklerini ezerek tüm temalarda (dark/light/sky/warm)
+         otomatik uyum sağlar.
+         ══════════════════════════════════════════════════════════ */
+
+      /* ── Ana panel zemini ve kenarlıkları ────────────────── */
+      body.page-kirpici #aks-left-panel   { background: var(--surface)      !important; border-right-color: var(--header-border) !important; }
+      body.page-kirpici #aks-middle-panel { background: var(--surface-muted) !important; }
+      body.page-kirpici #aks-right-panel  { background: var(--surface)       !important; border-left-color:  var(--header-border) !important; }
+
+      /* ── Kokpit header → aktif temanın birincil rengi ─── */
+      body.page-kirpici #aks-kokpit-header {
+        background: linear-gradient(135deg, var(--btn-primary-bg) 0%, var(--btn-primary-hover) 100%) !important;
+        border-bottom-color: transparent !important;
+      }
+
+      /* ── Radar toolbar ve durum çubuğu ───────────────────── */
+      body.page-kirpici #aks-radar-toolbar {
+        background: var(--surface)    !important;
+        border-bottom-color: var(--header-border) !important;
+      }
+      body.page-kirpici #aks-status-bar {
+        background: var(--surface)    !important;
+        border-top-color: var(--header-border)   !important;
+      }
+
+      /* ── Galeri başlık ve scroll alanı ───────────────────── */
+      body.page-kirpici #aks-gallery-header {
+        background: var(--surface)    !important;
+        border-bottom-color: var(--header-border) !important;
+      }
+      body.page-kirpici #aks-gallery-grid   { background: var(--surface-panel) !important; }
+      body.page-kirpici #aks-gallery-empty  { background: var(--surface-panel) !important; }
+
+      /* ── Sol panel: bölüm ayırıcılar ─────────────────────── */
+      body.page-kirpici #aks-left-panel .h-px { background-color: var(--header-border) !important; }
+
+      /* ── PDF Düzeni toggle kapsayıcısı ───────────────────── */
+      body.page-kirpici #aks-mode-wrap {
+        background: var(--surface-muted) !important;
+        border-color: var(--header-border) !important;
+      }
+      /* Aktif olmayan (pasif) mode buton arka planı */
+      body.page-kirpici .aks-mode-btn:not(.active) {
+        background: transparent !important;
+      }
+      /* Aktif mode buton arka planı */
+      body.page-kirpici .aks-mode-btn.active {
+        background: var(--surface) !important;
+      }
+
+      /* ── Form elemanları (select, input) ─────────────────── */
+      body.page-kirpici #tw-scope select {
+        background: var(--surface)       !important;
+        border-color: var(--header-border) !important;
+        color:  var(--text-primary)      !important;
+      }
+      body.page-kirpici #tw-scope select:disabled {
+        background: var(--surface-muted) !important;
+        color:  var(--text-muted)        !important;
+      }
+
+      /* ── Yapısal metin renkleri ───────────────────────────── */
+      body.page-kirpici #aks-left-panel   .text-slate-400,
+      body.page-kirpici #aks-left-panel   .text-slate-500,
+      body.page-kirpici #aks-radar-toolbar .text-slate-400,
+      body.page-kirpici #aks-radar-toolbar .text-slate-700,
+      body.page-kirpici #aks-status-bar   .text-slate-400,
+      body.page-kirpici #aks-status-bar   .text-slate-300,
+      body.page-kirpici #aks-gallery-header .text-slate-500,
+      body.page-kirpici #aks-gallery-empty  .text-slate-300,
+      body.page-kirpici #aks-gallery-empty  .text-slate-400 {
+        color: var(--text-muted) !important;
+      }
+      body.page-kirpici #aks-gallery-header .text-slate-700,
+      body.page-kirpici #aks-radar-toolbar  h2 {
+        color: var(--text-primary) !important;
+      }
+
+      /* ── Zoom kontrol kutusu ──────────────────────────────── */
+      body.page-kirpici #aks-radar-toolbar .rounded-lg.border {
+        background: var(--surface-muted) !important;
+        border-color: var(--header-border) !important;
+      }
+
+      /* ── Empty state ikonlar ─────────────────────────────── */
+      body.page-kirpici #aks-gallery-empty .bg-slate-100 {
+        background: var(--surface-muted) !important;
+      }
+
+      /* ── Canvas scroll alanı ─────────────────────────────── */
+      body.page-kirpici #aks-canvas-scroll {
+        background: var(--surface-muted) !important;
+      }
+
+      /* ── Card container zemini ───────────────────────────── */
+      body.page-kirpici .aks-card { background: var(--surface) !important; }
+      body.page-kirpici .aks-card .bg-slate-50 { background: var(--surface-panel) !important; }
+
+      /* ── İlerleme barı (progress bar) → tema rengi ───────── */
+      body.page-kirpici #aks-progress-wrap {
+        background: linear-gradient(90deg,
+          color-mix(in srgb, var(--btn-primary-bg) 8%, var(--surface)),
+          color-mix(in srgb, var(--btn-primary-hover) 6%, var(--surface))
+        ) !important;
+        border-bottom-color: var(--header-border) !important;
+      }
+      body.page-kirpici #aks-progress-bar {
+        background: linear-gradient(90deg, var(--btn-primary-bg), var(--btn-primary-hover)) !important;
+      }
+      body.page-kirpici #aks-progress-wrap .bg-indigo-100 {
+        background: color-mix(in srgb, var(--btn-primary-bg) 15%, var(--surface-muted)) !important;
+      }
+
+      /* ── Card entrance animation ──────────────────────────── */
+      @keyframes aksFadeUp {
+        from { opacity: 0; transform: translateY(14px) scale(0.96); }
+        to   { opacity: 1; transform: translateY(0)    scale(1);    }
+      }
+      .aks-card-enter {
+        animation: aksFadeUp 0.32s cubic-bezier(0.22,1,0.36,1) both;
+      }
+
+      /* ── Auto-scan shimmer on button ─────────────────────── */
+      @keyframes aksShimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+      }
+      #aks-btn-auto.scanning {
+        background: linear-gradient(90deg,
+          #7c3aed 0%, #6366f1 25%, #a78bfa 50%, #6366f1 75%, #7c3aed 100%);
+        background-size: 200% auto;
+        animation: aksShimmer 1.4s linear infinite;
+        cursor: wait !important;
+      }
+
+
+      /* ── Araç Modu Buton Durumları ──────────────────────────
+         .aks-tool-active  → seçili araç (parlak ring, tam opaklık)
+         .aks-tool-inactive → diğer araç (soluklaştırılmış, tıklanabilir)
+         .aks-crop-ready   → seçim tamamlandı, kırpma hazır (yeşil bant)
+      ────────────────────────────────────────────────────── */
+      .aks-tool-active {
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.55),
+                    0 4px 14px rgba(0,0,0,0.18) !important;
+        transform: scale(1.03);
+        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+      }
+      .aks-tool-inactive {
+        opacity: 0.52;
+        filter: saturate(0.65);
+        transition: opacity 0.15s, filter 0.15s !important;
+      }
+      .aks-tool-inactive:hover {
+        opacity: 0.8 !important;
+        filter: saturate(0.9) !important;
+      }
+      /* Seçim hazır: kırp butonuna yeşil nabız halkası */
+      @keyframes aksReadyPulse {
+        0%,100% { box-shadow: 0 0 0 3px rgba(255,255,255,0.55), 0 0 0 5px rgba(52,211,153,0.55); }
+        50%      { box-shadow: 0 0 0 3px rgba(255,255,255,0.55), 0 0 0 7px rgba(52,211,153,0.30); }
+      }
+      .aks-crop-ready {
+        animation: aksReadyPulse 1.4s ease-in-out infinite !important;
+      }
+
+      /* Card answer row */
+      .aks-answer-row {
+        display: flex;
+        gap: 3px;
+        justify-content: center;
+        padding: 6px 6px 4px;
+        border-top: 1px solid #f1f5f9;
+      }
+      .aks-ans-btn {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.14s, color 0.14s, box-shadow 0.14s;
+        flex-shrink: 0;
+      }
+      .aks-ans-btn:hover { background: #e2e8f0; color: #1e293b; }
+      .aks-ans-btn.active {
+        background: #d1fae5 !important;
+        color: #065f46 !important;
+        border-color: #34d399 !important;
+        box-shadow: 0 0 0 1.5px #10b981;
+      }
+
+      /* ── Full-scan progress bar ──────────────────────────── */
+      @keyframes aksProgressPulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.6; }
+      }
+      #aks-progress-wrap { transition: max-height 0.3s ease, opacity 0.3s ease; }
+      #aks-progress-wrap.hidden { display: none; }
+      #aks-progress-bar  { transition: width 0.25s ease-out; }
+
+      /* ── Mode selector active state ─────────────────────── */
+      .aks-mode-btn.active {
+        background: white !important;
+        color: #4f46e5 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      /* ── Sütun (Sol/Sağ) rozeti ──────────────────────────── */
+      .aks-badge-col {
+        background: rgba(15,118,110,0.75);
+        color: #ccfbf1;
+        font-size: 9px; font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        letter-spacing: 0.04em;
+      }
+
+      /* ── Card overlay badges ──────────────────────────────── */
+      .aks-card-badge-row {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 5px 5px;
+        pointer-events: none;
+      }
+      .aks-badge-page {
+        background: rgba(15,23,42,0.68);
+        color: #e2e8f0;
+        font-size: 9px; font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        letter-spacing: 0.04em;
+      }
+      .aks-badge-qnum {
+        background: rgba(79,70,229,0.82);
+        color: #fff;
+        font-size: 9px; font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        letter-spacing: 0.04em;
+      }
+
+      /* ── Scan progress badge ──────────────────────────────── */
+      #aks-scan-badge {
+        display: none;
+        position: absolute;
+        top: 10px; left: 50%;
+        transform: translateX(-50%);
+        background: rgba(99,102,241,0.92);
+        backdrop-filter: blur(6px);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 999px;
+        white-space: nowrap;
+        z-index: 20;
+        pointer-events: none;
+        letter-spacing: 0.03em;
+      }
+      #aks-scan-badge.visible { display: block; }
+
+      body.page-kirpici #aks-btn-recete-bulk[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /*
+       * Toast — #tw-scope dışında olduğu için Tailwind (important: "#tw-scope")
+       * burada ÇALIŞMAZ; tüm görünümü bu blokta veriyoruz.
+       */
+      body.page-kirpici #aks-toast {
+        position: fixed !important;
+        top: max(80px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
+        right: max(16px, env(safe-area-inset-right, 0px)) !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 40000 !important;
+        max-width: min(420px, calc(100vw - 24px)) !important;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: opacity 0.28s ease, transform 0.28s ease;
+        pointer-events: none;
+        box-sizing: border-box;
+      }
+      body.page-kirpici #aks-toast-inner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #f8fafc;
+        background: #1e293b;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.35);
+        border: 1px solid rgba(15, 23, 42, 0.2);
+      }
+      body.page-kirpici #aks-toast-icon {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ── Hata Kaynağı Modalı (Reçeteye Kaydet) ───────────── */
+      body.page-kirpici #aks-hk-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10090;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+      }
+      body.page-kirpici #aks-hk-modal.aks-hk-modal--open {
+        display: flex;
+      }
+      body.page-kirpici #aks-hk-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(8px);
+      }
+      body.page-kirpici .aks-hk-dialog {
+        position: relative;
+        width: min(520px, 92vw);
+        border-radius: 16px;
+        background: var(--surface, #fff);
+        border: 1px solid var(--header-border, #e2e8f0);
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+        padding: 16px;
+      }
+      body.page-kirpici .aks-hk-dialog__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--header-border, #e2e8f0);
+      }
+      body.page-kirpici #aks-hk-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        letter-spacing: -0.01em;
+      }
+      body.page-kirpici .aks-hk-muted {
+        margin: 10px 0 14px;
+        font-size: 12px;
+        color: var(--text-muted, #64748b);
+        line-height: 1.5;
+      }
+      body.page-kirpici #aks-hk-close-x {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface, #fff);
+        color: var(--text-muted, #64748b);
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      body.page-kirpici #aks-hk-close-x:hover {
+        background: rgba(99, 102, 241, 0.08);
+        color: var(--text-primary, #0f172a);
+        border-color: rgba(99, 102, 241, 0.35);
+      }
+      body.page-kirpici .aks-hk-choice {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 12px 0 14px;
+      }
+      body.page-kirpici .aks-hk-preview {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 14px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: color-mix(in srgb, var(--surface, #fff) 84%, #eef2ff);
+        padding: 10px;
+        margin: 12px 0 6px;
+      }
+      body.page-kirpici .aks-hk-preview__img {
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        background: rgba(148, 163, 184, 0.18);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      body.page-kirpici .aks-hk-preview__img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: white;
+      }
+      body.page-kirpici .aks-hk-preview__meta {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      body.page-kirpici #aks-hk-scope {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+        letter-spacing: 0.01em;
+      }
+      body.page-kirpici #aks-hk-hint {
+        font-size: 10px;
+        color: var(--text-muted, #64748b);
+      }
+      body.page-kirpici .aks-hk-opt {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 14px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface, #fff);
+        padding: 12px 12px;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      }
+      body.page-kirpici .aks-hk-opt:hover {
+        border-color: rgba(99, 102, 241, 0.45);
+        background: rgba(99, 102, 241, 0.06);
+      }
+      body.page-kirpici .aks-hk-opt input {
+        width: 16px;
+        height: 16px;
+        accent-color: #4f46e5;
+      }
+      body.page-kirpici .aks-hk-opt strong {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+      }
+      body.page-kirpici .aks-hk-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 12px;
+        border-top: 1px solid var(--header-border, #e2e8f0);
+      }
+      body.page-kirpici #aks-hk-cancel {
+        height: 40px;
+        padding: 0 14px;
+        border-radius: 12px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface, #fff);
+        color: var(--text-primary, #0f172a);
+        font-weight: 700;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      body.page-kirpici #aks-hk-cancel:hover {
+        background: rgba(148, 163, 184, 0.18);
+      }
+      body.page-kirpici #aks-hk-save {
+        height: 40px;
+        padding: 0 16px;
+        border-radius: 12px;
+        border: 0;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        cursor: pointer;
+        box-shadow: 0 10px 24px -10px rgba(79, 70, 229, 0.55);
+        transition: filter 0.15s;
+      }
+      body.page-kirpici #aks-hk-save:hover {
+        filter: brightness(1.05);
+      }
+    </style>
+  </head>
+  <body class="page-kirpici">
+    <div id="panel-shell" class="app">
+      <!-- ─── SIDEBAR ─────────────────────────────────────────────── -->
+      <aside class="sidebar" aria-label="Ana menü">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span class="sidebar__title">Derecepanel</span>
+        </div>
+        <nav class="sidebar__nav">
+          <a href="../koc-paneli.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path d="M9 22V12h6v10" /></svg>
+            Dashboard
+          </a>
+          <a href="ogrencilerim.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+            Öğrencilerim
+          </a>
+                    <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-gorusme-sub-coach" id="nav-gorusme-btn-coach">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Görüşme Odası
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-gorusme-sub-coach" role="group" aria-label="Görüşme Odası alt menü">
+              <a href="gorusme-odasi.html" class="nav-sub">Yeni Görüşme</a>
+              <a href="gorusme-arsivi.html" class="nav-sub">Görüşme Arşivi</a>
+            </div>
+          </div>
+
+          <a href="koclar.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16 3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01-.665-6.479L12 14z" /></svg>
+            Koçlar
+          </a>
+          <a href="randevular.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            Randevular
+          </a>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-yks-sub" id="nav-yks-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 14v7M9 18h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              YKS Simülasyon
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-yks-sub" role="group" aria-label="YKS Simülasyon alt menü">
+              <a href="tercih-sihirbazi.html" class="nav-sub">Tercih Sihirbazı</a>
+              <a href="yks-konulari.html" class="nav-sub">YKS Konuları</a>
+              <a href="net-sihirbazi.html" class="nav-sub">Net Sihirbazı</a>
+              <a href="puan-hesaplama.html" class="nav-sub">Puan Hesaplama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-den-sub-aks">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg>
+              Denemeler
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-den-sub-aks">
+              <a href="basit-deneme-sonuclari.html" class="nav-sub">Sonuç Merkezi</a>
+              <a href="analiz-merkezi.html" class="nav-sub nav-sub--analiz-beta"><span class="nav-analiz-beta"><span class="nav-analiz-beta__row1">Analiz ve Raporlama</span><span class="nav-analiz-beta__row2"><span class="nav-analiz-beta__suffix">Merkezi</span><span class="nav-analiz-beta__pill">BETA</span></span></span></a>
+              <a href="denemeler-global-takvim.html" class="nav-sub">Global Deneme Takvimi</a>
+              <a href="kurum-deneme-takvimi.html" class="nav-sub">Kurum Deneme Takvimi</a>
+              <a href="deneme-sonuclari-yukleme.html" class="nav-sub">Deneme Sonuçları Yükleme</a>
+              <a href="optik-okuyucu.html" class="nav-sub">Optik Okuyucu</a>
+              <a href="okutulan-denemeler.html" class="nav-sub">Okutulan Denemeler</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-wp-sub-aks">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Haftalık Program
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-wp-sub-aks">
+              <a href="haftalik-program-olusturucu.html" class="nav-sub">Haftalık Program Oluşturucu</a>
+              <a href="kayitli-haftalik-programlar.html" class="nav-sub">Kayıtlı Haftalık Programlar</a>
+              <a href="haftalik-program.html" class="nav-sub">Öğrenciye program gönder</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-mr-sub-aks">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+              MR
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-mr-sub-aks">
+              <a href="konu-mr.html" class="nav-sub">Konu MR</a>
+              <a href="soru-mr.html" class="nav-sub">Soru MR</a>
+              <a href="deneme-mr.html" class="nav-sub">Deneme MR</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-kitap-sub-aks">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
+              Kitap Kütüphanesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-kitap-sub-aks">
+              <a href="kitaplar.html" class="nav-sub">Kitap Listesi &amp; Kayıt</a>
+              <a href="kaynak-atama.html" class="nav-sub">Kaynak Atama</a>
+            </div>
+          </div>
+          <div class="nav-group nav-group--open" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="true" aria-controls="nav-tm-sub-aks">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              Test Maker
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tm-sub-aks">
+              <a href="test-olusturucu.html" class="nav-sub">Test Oluşturucu</a>
+              <a href="otomatik-soru-kirpici.html" class="nav-sub nav-sub--active">Otomatik Soru Kırpıcı</a>
+              <a href="soru-havuzu.html" class="nav-sub">Soru Havuzu</a>
+            </div>
+          </div>
+          
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-hr-sub" id="nav-hr-trigger">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 2H6a2 2 0 0 1-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+                <path d="M14 2v4h4" />
+                <path d="M12 11v6" />
+                <path d="M9 14h6" />
+              </svg>
+              Hata Reçetesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-hr-sub" role="group" aria-label="Hata Reçetesi alt menü">
+              <a href="recete-yaz.html" class="nav-sub">Reçete Yaz</a>
+              <a href="recete-deposu.html" class="nav-sub">Reçete Deposu</a>
+              <a href="hatali-soru-havuzu.html" class="nav-sub">Hatalı Soru Havuzu</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tf-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Taramalar ve Fasiküller
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" role="group" aria-label="Taramalar ve Fasiküller alt menü">
+              <a href="tarama-analiz.html" class="nav-sub"><span>Tarama Analiz ve Raporlama</span></a>
+              <a href="tarama-olusturucu.html" class="nav-sub"><span>Tarama Oluşturma</span></a>
+              <a href="tarama-deposu.html" class="nav-sub"><span>Tarama Deposu</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Oluşturma</span><span class="nav-sub__badge">Yakında</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Deposu</span><span class="nav-sub__badge">Yakında</span></a>
+            </div>
+          </div>
+        </nav>
+        <div class="theme-switcher" role="group" aria-label="Görünüm teması">
+          <span class="theme-switcher__label">Tema</span>
+          <div class="theme-switcher__swatches">
+            <button type="button" class="theme-swatch theme-swatch--dark" data-theme="dark" aria-pressed="false" aria-label="Koyu tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--light" data-theme="light" aria-pressed="false" aria-label="Açık tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--blue" data-theme="blue" aria-pressed="false" aria-label="Okyanus teması"></button>
+            <button type="button" class="theme-swatch theme-swatch--orange" data-theme="orange" aria-pressed="false" aria-label="Gün batımı teması"></button>
+          </div>
+        </div>
+        <div class="sidebar__logout">
+          <button type="button" class="btn-logout">
+            Çıkış
+            <span class="btn-logout__arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- ─── MAIN ──────────────────────────────────────────────── -->
+      <main class="main min-h-0">
+                <header class="dp-topbar-sheet flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap w-full p-3 mb-6 bg-slate-50/50 border border-slate-200 rounded-2xl shadow-sm">
+
+          <div class="flex items-center gap-4 flex-1 max-w-2xl">
+            <button onclick="window.history.back()" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input type="text" id="fm-global-search" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-700 placeholder:text-slate-400" placeholder="Öğrenci, deneme, koç veya konu ara...">
+
+              <div id="fm-search-results" class="absolute w-full bg-white shadow-2xl border border-slate-100 rounded-2xl mt-2 z-50 hidden max-h-[400px] overflow-y-auto p-2" role="listbox" aria-label="Arama sonuçları"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-4">
+
+            <button type="button" id="dp-header-notify" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+
+            <button type="button" id="dp-header-theme" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+
+        <!-- ═══ 3-PANELLİ KOKPİT ═══════════════════════════════════ -->
+        <div id="tw-scope" class="flex min-h-0 flex-1 overflow-hidden font-[Inter,ui-sans-serif,system-ui,sans-serif]">
+
+          <!-- ── SOL KOKPİT ──────────────────────────────────────── -->
+          <aside id="aks-left-panel" class="flex w-72 shrink-0 flex-col overflow-y-auto border-r border-slate-200/80 bg-white">
+
+            <!-- Header -->
+            <div id="aks-kokpit-header" class="flex items-center gap-2.5 border-b border-slate-100 bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5">
+              <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/20">
+                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-widest text-indigo-200">Kokpit</p>
+                <h2 class="text-sm font-bold text-white leading-tight">Soru Kırpıcı</h2>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-5 p-4">
+
+              <!-- PDF Yükle -->
+              <section>
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">PDF Yükle</p>
+                <label id="aks-dropzone"
+                  class="group flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50/40 px-4 py-5 text-center transition hover:border-indigo-400 hover:bg-indigo-50">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 transition group-hover:bg-indigo-200">
+                    <svg class="h-5 w-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                  </div>
+                  <div>
+                    <p class="text-xs font-semibold text-indigo-700">PDF sürükle veya seç</p>
+                    <p class="mt-0.5 text-[10px] text-slate-400">Tek sayfa veya çok sayfalı</p>
+                  </div>
+                  <input type="file" id="aks-file-input" accept="application/pdf" class="sr-only" />
+                </label>
+                <!-- Yüklenen PDF dosya kartı -->
+                <div id="aks-file-name" class="mt-2 hidden items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-2.5 py-2 shadow-sm">
+                  <div class="flex min-w-0 items-center gap-2">
+                    <!-- PDF ikonu -->
+                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
+                      <svg class="h-3.5 w-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <div class="min-w-0">
+                      <span id="aks-file-name-text" class="block truncate text-[11px] font-semibold text-emerald-800"></span>
+                      <span id="aks-file-page-count" class="text-[9px] text-emerald-500">— sayfa</span>
+                    </div>
+                  </div>
+                  <!-- Çöp tenekesi -->
+                  <button id="aks-btn-clear-pdf"
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 transition hover:bg-red-100 hover:text-red-600"
+                    title="PDF'i kaldır ve sıfırla">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </div>
+              </section>
+
+              <!-- YKS Etiketleme -->
+              <section>
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">YKS Etiketleme</p>
+                <div class="flex flex-col gap-2.5">
+
+                  <!-- Ders -->
+                  <label class="flex flex-col gap-1">
+                    <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Ders</span>
+                    <div class="relative">
+                      <select id="aks-sel-ders"
+                        class="w-full appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs font-medium text-slate-700 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/25">
+                        <option value="">— Seçin —</option>
+                      </select>
+                      <svg class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </label>
+
+                  <!-- Konu -->
+                  <label class="flex flex-col gap-1">
+                    <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Konu</span>
+                    <div class="relative">
+                      <select id="aks-sel-konu" disabled
+                        class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 py-2 pl-3 pr-8 text-xs font-medium text-slate-400 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/25 disabled:cursor-not-allowed">
+                        <option value="">— Önce ders seçin —</option>
+                      </select>
+                      <svg class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </label>
+
+                  <!-- Alt Kavram -->
+                  <label class="flex flex-col gap-1">
+                    <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Alt Kavram / Zorluk</span>
+                    <div class="relative">
+                      <select id="aks-sel-kavram" disabled
+                        class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 py-2 pl-3 pr-8 text-xs font-medium text-slate-400 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/25 disabled:cursor-not-allowed">
+                        <option value="">— Önce konu seçin —</option>
+                      </select>
+                      <svg class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </label>
+
+                  <!-- Aktif etiket önizleme -->
+                  <div id="aks-tag-preview" class="hidden rounded-lg border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 px-3 py-2">
+                    <p class="text-[9px] font-bold uppercase tracking-widest text-indigo-400">Aktif Etiket</p>
+                    <p id="aks-tag-text" class="mt-0.5 text-xs font-semibold leading-snug text-slate-700"></p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Ayırıcı -->
+              <div class="h-px bg-slate-100"></div>
+
+              <!-- Sütun Modu Seçici -->
+              <section>
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">PDF Düzeni</p>
+                <div id="aks-mode-wrap" class="flex rounded-xl border border-slate-200 bg-slate-50 p-0.5">
+                  <button id="aks-mode-single"
+                    class="aks-mode-btn flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition text-slate-400"
+                    data-mode="single">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    Tek Sütun
+                  </button>
+                  <button id="aks-mode-double"
+                    class="aks-mode-btn flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition bg-white text-indigo-700 shadow-sm"
+                    data-mode="double">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4H5a1 1 0 00-1 1v14a1 1 0 001 1h4M15 4h4a1 1 0 011 1v14a1 1 0 01-1 1h-4M9 4v16M15 4v16" /></svg>
+                    Çift Sütun
+                  </button>
+                </div>
+                <p id="aks-mode-desc" class="mt-1.5 text-[10px] text-slate-400">Ortadan ikiye bölünmüş PDF</p>
+              </section>
+
+              <!-- Ayırıcı -->
+              <div class="h-px bg-slate-100"></div>
+
+              <!-- Aksiyon Butonları -->
+              <section class="flex flex-col gap-2">
+                <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Aksiyonlar</p>
+
+                <!-- ── Araç: Kırpma ─────────────────── -->
+                <button id="aks-btn-crop"
+                  class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-xs font-bold text-white transition active:scale-[0.97]"
+                  title="Kırpma modunu seç — PDF üzerinde alan çiz">
+                  <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+                  <span id="aks-crop-label">Seçili Alanı Kırp</span>
+                </button>
+
+                <!-- ── Araç: Elle Gezme (Pan) ────── -->
+                <button id="aks-btn-pan"
+                  class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2.5 text-xs font-bold text-white transition active:scale-[0.97]"
+                  title="Elle Gezme modunu seç — PDF'i sürükleyerek kaydır">
+                  <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 013 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                  </svg>
+                  <span id="aks-pan-label">Elle Gezme</span>
+                </button>
+
+                <!-- ── Aksiyon: Tüm PDF Tara ─────── -->
+                <button id="aks-btn-auto"
+                  class="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled
+                  title="Bu sayfadaki tüm soruları otonom olarak bul ve kırp">
+                  <!-- idle icon -->
+                  <svg id="aks-auto-icon-idle" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                  <!-- scanning spinner -->
+                  <svg id="aks-auto-icon-spin" class="hidden h-4 w-4 shrink-0 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  <span id="aks-auto-label">Tüm PDF'i Tara</span>
+                </button>
+
+                <!-- Ayırıcı -->
+                <div class="my-1 h-px bg-slate-100"></div>
+
+                <!-- Sistemi Sıfırla -->
+                <button id="aks-btn-reset"
+                  class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-500 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 active:scale-[0.98]"
+                  title="PDF, galeri ve etiket seçimlerini temizle">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  Sistemi Sıfırla
+                </button>
+              </section>
+
+              <!-- Sayfa Navigasyonu -->
+              <section id="aks-page-nav" class="hidden">
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Sayfa</p>
+                <div class="flex items-center gap-2">
+                  <button id="aks-prev-page"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <svg class="h-4 w-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 18l-6-6 6-6" /></svg>
+                  </button>
+                  <span id="aks-page-info" class="flex-1 text-center text-xs font-semibold text-slate-600">1 / 1</span>
+                  <button id="aks-next-page"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <svg class="h-4 w-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18l6-6-6-6" /></svg>
+                  </button>
+                </div>
+              </section>
+
+            </div>
+          </aside>
+
+          <!-- ── ORTA RADAR (PDF + Kırpma) ──────────────────────── -->
+          <section id="aks-middle-panel" class="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-100/60">
+
+            <!-- Üst bar -->
+            <div id="aks-radar-toolbar" class="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-white px-5 py-2.5">
+              <div class="flex items-center gap-2">
+                <div class="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100">
+                  <svg class="h-3.5 w-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                </div>
+                <h2 class="text-sm font-bold text-slate-700">Radar — PDF Çalışma Alanı</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="aks-radar-hint" class="text-xs text-slate-400 italic">PDF yükleyin ve seçim çizin</span>
+                <!-- Zoom -->
+                <div class="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
+                  <button id="aks-zoom-out" class="flex h-6 w-6 items-center justify-center rounded text-slate-500 transition hover:bg-white hover:text-indigo-600 disabled:opacity-40">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                  </button>
+                  <span id="aks-zoom-label" class="w-10 text-center text-[11px] font-semibold text-slate-600">100%</span>
+                  <button id="aks-zoom-in" class="flex h-6 w-6 items-center justify-center rounded text-slate-500 transition hover:bg-white hover:text-indigo-600">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Tarama İlerleme Barı (tam PDF tarama sırasında görünür) ── -->
+            <div id="aks-progress-wrap"
+              class="hidden shrink-0 border-b border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-violet-50/80 px-5 py-3">
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 min-w-0">
+                  <svg id="aks-progress-spin" class="h-3.5 w-3.5 shrink-0 animate-spin text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  <p id="aks-progress-text" class="truncate text-[11px] font-semibold text-indigo-700">Otonom Tarama Devam Ediyor…</p>
+                </div>
+                <button id="aks-btn-stop-scan"
+                  class="shrink-0 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-bold text-red-500 transition hover:bg-red-100">
+                  ■ Durdur
+                </button>
+              </div>
+              <!-- Progress bar -->
+              <div class="h-2 w-full overflow-hidden rounded-full bg-indigo-100">
+                <div id="aks-progress-bar"
+                  class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                  style="width:0%"></div>
+              </div>
+              <!-- Alt istatistik -->
+              <div class="mt-1.5 flex items-center justify-between">
+                <p id="aks-progress-page" class="text-[10px] text-slate-500">Sayfa: —</p>
+                <p id="aks-progress-found" class="text-[10px] font-semibold text-indigo-600">Bulunan: 0 soru</p>
+              </div>
+            </div>
+
+            <!-- Canvas Alanı -->
+            <div id="aks-canvas-scroll" class="flex min-h-0 flex-1 items-start justify-center overflow-auto p-6">
+              <!-- Boş durum -->
+              <div id="aks-empty-state" class="flex flex-col items-center justify-center gap-3 py-20 text-center">
+                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200/60">
+                  <svg class="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-400">Henüz PDF yüklenmedi</p>
+                <p class="text-xs text-slate-300">Sol panelden PDF yükleyip kırpmaya başlayın</p>
+              </div>
+
+              <!-- Canvas container (PDF + seçim overlay üst üste) -->
+              <div id="aks-canvas-wrap" class="relative hidden shadow-2xl shadow-slate-900/25">
+                <canvas id="aks-pdf-canvas" class="block"></canvas>
+                <!-- Seçim overlay: üst katman, işaretleme için -->
+                <canvas id="aks-overlay-canvas" class="absolute inset-0 cursor-crosshair"></canvas>
+                <!-- Otonom tarama ilerleme rozeti -->
+                <div id="aks-scan-badge">
+                  <span id="aks-scan-badge-text">Taranıyor…</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alt durum çubuğu -->
+            <div id="aks-status-bar" class="flex shrink-0 items-center justify-between border-t border-slate-200/80 bg-white px-5 py-1.5">
+              <p id="aks-status" class="text-[11px] text-slate-400">Hazır</p>
+              <p id="aks-sel-dims" class="text-[11px] font-mono text-slate-300"></p>
+            </div>
+          </section>
+
+          <!-- ── SAĞ GALERİ (Cephanelik) ─────────────────────────── -->
+          <aside id="aks-right-panel" class="flex w-[480px] shrink-0 flex-col overflow-hidden border-l border-slate-200/80 bg-white">
+
+            <!-- Galeri başlık + kontrol bar -->
+            <div id="aks-gallery-header" class="shrink-0 border-b border-slate-100 px-3 py-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="flex h-6 w-6 items-center justify-center rounded-md bg-violet-100">
+                    <svg class="h-3.5 w-3.5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                  </div>
+                  <h2 class="text-sm font-bold text-slate-700">Cephanelik</h2>
+                  <span id="aks-gallery-count" class="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-600">0</span>
+                </div>
+              </div>
+
+              <!-- Hızlı Cevap Paneli -->
+              <div class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-2">
+                <div class="mb-1.5 flex items-center justify-between gap-2">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-indigo-500">Hızlı Cevap Paneli</p>
+                  <p class="text-[10px] text-slate-400">A-E ile cevapla · Backspace ile geri al</p>
+                </div>
+                <div id="hizliCevapSeridi" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+              </div>
+
+              <!-- Toplu aksiyon bar -->
+              <div class="mt-2.5 flex items-center gap-2">
+                <label class="flex cursor-pointer items-center gap-1.5">
+                  <input type="checkbox" id="aks-select-all" class="h-3.5 w-3.5 rounded border-slate-300 accent-indigo-600" />
+                  <span class="text-[11px] font-medium text-slate-500">Tümünü seç</span>
+                </label>
+                <div class="ml-auto flex gap-1.5">
+                  <button id="aks-btn-delete-selected"
+                    class="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-500 transition hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled title="Seçilenleri sil">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Sil
+                  </button>
+                  <button id="aks-btn-recete-bulk"
+                    type="button"
+                    class="flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[11px] font-semibold text-rose-600 transition hover:bg-rose-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled
+                    title="Seçilen veya tüm soruları Hata Reçetesine ekle">
+                    <svg class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.5 20.5l10-10a4.95 4.95 0 10-7-7l-10 10a4.95 4.95 0 107 7zM8.5 8.5l7 7" /></svg>
+                    Reçete
+                  </button>
+                  <button id="aks-btn-save-selected"
+                    class="flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-600 transition hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled title="Seçilenleri havuza kaydet">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                    Kaydet
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Boş galeri mesajı -->
+            <div id="aks-gallery-empty" class="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
+                <svg class="h-6 w-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>
+              <p class="text-xs font-semibold text-slate-400">Henüz kırpılan soru yok</p>
+              <p class="text-[11px] text-slate-300">Ortadan seçim çizin, soru buraya eklenir</p>
+            </div>
+
+            <!-- Soru kartları grid -->
+            <div id="aks-gallery-grid" class="hidden min-h-0 flex-1 overflow-y-auto p-3">
+              <div id="aks-gallery-cards" class="grid grid-cols-1 gap-3"></div>
+            </div>
+
+          </aside>
+
+        </div><!-- /tw-scope -->
+      </main>
+    </div><!-- /app -->
+
+    <!-- Kaydet Toast -->
+    <div id="aks-toast" role="status" aria-live="polite" aria-atomic="true">
+      <div id="aks-toast-inner">
+        <svg id="aks-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span id="aks-toast-text">Kaydedildi</span>
+      </div>
+    </div>
+
+    <!-- Hata Kaynağı Belirle modalı -->
+    <div id="aks-hk-modal" aria-hidden="true">
+      <div id="aks-hk-backdrop" aria-hidden="true"></div>
+      <div class="aks-hk-dialog" role="dialog" aria-modal="true" aria-labelledby="aks-hk-title">
+        <div class="aks-hk-dialog__head">
+          <h2 id="aks-hk-title">Hata Kaynağı Belirle</h2>
+          <button type="button" id="aks-hk-close-x" aria-label="Kapat">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="aks-hk-preview" aria-label="Seçili soru özeti">
+          <div class="aks-hk-preview__img">
+            <img id="aks-hk-preview-img" alt="Seçili soru" />
+          </div>
+          <div class="aks-hk-preview__meta">
+            <div id="aks-hk-scope">Seçili soru</div>
+            <div id="aks-hk-hint">Hata kaynağını seçip kaydedin.</div>
+          </div>
+        </div>
+        <p class="aks-hk-muted">Bu soru hangi kaynaktan geliyor?</p>
+        <div class="aks-hk-choice" role="radiogroup" aria-label="Hata Kaynağı">
+          <label class="aks-hk-opt">
+            <input type="radio" name="aks-hk-src" value="deneme" />
+            <strong>Deneme Hatası</strong>
+          </label>
+          <label class="aks-hk-opt">
+            <input type="radio" name="aks-hk-src" value="soru_bankasi" />
+            <strong>Soru Bankası Hatası</strong>
+          </label>
+        </div>
+        <div class="aks-hk-actions">
+          <button type="button" id="aks-hk-cancel">İptal</button>
+          <button type="button" id="aks-hk-save">Kaydet</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script type="module" src="../js/yks-mufredat.js"></script>
+    <script>
+    (function () {
+      "use strict";
+
+      /* ── PDF.js worker ───────────────────────────────────── */
+      if (typeof pdfjsLib !== "undefined") {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+
+      /* ── State ───────────────────────────────────────────── */
+      var pdfDoc      = null;
+      var currentPage = 1;
+      var pdfScale    = 1.0;
+      var isSelecting = false;
+      var selStart    = { x: 0, y: 0 };
+      var selEnd      = { x: 0, y: 0 };
+      var hasSel      = false;
+      var panMode     = false;   /* Elle Gezme modu */
+      var panStart    = null;    /* pan başlangıç {x, y, scrollLeft, scrollTop} */
+      var currentTool = "crop";  /* "crop" | "pan" — aktif araç modu */
+      var croppedItems = []; // [{id, dataUrl, ders, konu, kavram}]
+      var nextId      = 1;
+      var aktifSoruIndex = 0;
+
+      /* ── DOM refs ────────────────────────────────────────── */
+      var elDropzone      = document.getElementById("aks-dropzone");
+      var elFileInput     = document.getElementById("aks-file-input");
+      var elFileName      = document.getElementById("aks-file-name");
+      var elFileNameText  = document.getElementById("aks-file-name-text");
+      var elSelDers       = document.getElementById("aks-sel-ders");
+      var elSelKonu       = document.getElementById("aks-sel-konu");
+      var elSelKavram     = document.getElementById("aks-sel-kavram");
+      var elTagPreview    = document.getElementById("aks-tag-preview");
+      var elTagText       = document.getElementById("aks-tag-text");
+      var elBtnCrop        = document.getElementById("aks-btn-crop");
+      var elCropLabel      = document.getElementById("aks-crop-label");
+      var elBtnPan         = document.getElementById("aks-btn-pan");
+      var elPanLabel       = document.getElementById("aks-pan-label");
+      var elBtnAuto        = document.getElementById("aks-btn-auto");
+      var elBtnReset       = document.getElementById("aks-btn-reset");
+      var elBtnClearPdf    = document.getElementById("aks-btn-clear-pdf");
+      var elFilePageCount  = document.getElementById("aks-file-page-count");
+      var elAutoIconIdle   = document.getElementById("aks-auto-icon-idle");
+      var elAutoIconSpin   = document.getElementById("aks-auto-icon-spin");
+      var elAutoLabel      = document.getElementById("aks-auto-label");
+      var elScanBadge      = document.getElementById("aks-scan-badge");
+      var elScanBadgeText  = document.getElementById("aks-scan-badge-text");
+      var elProgressWrap   = document.getElementById("aks-progress-wrap");
+      var elProgressBar    = document.getElementById("aks-progress-bar");
+      var elProgressText   = document.getElementById("aks-progress-text");
+      var elProgressPage   = document.getElementById("aks-progress-page");
+      var elProgressFound  = document.getElementById("aks-progress-found");
+      var elProgressSpin   = document.getElementById("aks-progress-spin");
+      var elBtnStopScan    = document.getElementById("aks-btn-stop-scan");
+      var elPageNav        = document.getElementById("aks-page-nav");
+
+      /* ── Tarama durdurma flag'i ──────────────────────────── */
+      var scanAborted = false;
+
+      /* ── Sütun Modu: 'single' | 'double' ─────────────────── */
+      /* Global state — autoCropQuestions() bu değişkeni okur */
+      window.pdfColumnMode = "double";   /* başlangıç: çift sütun */
+
+      (function initColMode() {
+        var btnSingle = document.getElementById("aks-mode-single");
+        var btnDouble = document.getElementById("aks-mode-double");
+        var desc      = document.getElementById("aks-mode-desc");
+
+        /* Aktif / pasif class setleri */
+        var CLS_ACTIVE   = ["bg-white", "text-indigo-700", "shadow-sm"];
+        var CLS_INACTIVE = ["text-slate-400"];
+
+        function applyMode(mode) {
+          window.pdfColumnMode = mode;
+
+          /* Aktif butona active class'lar, diğerine pasif */
+          var active   = mode === "double" ? btnDouble : btnSingle;
+          var inactive = mode === "double" ? btnSingle : btnDouble;
+
+          CLS_ACTIVE.forEach(function (c) { active.classList.add(c);    inactive.classList.remove(c); });
+          CLS_INACTIVE.forEach(function (c) { inactive.classList.add(c); active.classList.remove(c);   });
+
+          if (desc) {
+            desc.textContent = mode === "double"
+              ? "Ortadan ikiye bölünmüş PDF"
+              : "Standart tek sütunlu PDF";
+          }
+        }
+
+        /* Sayfa yüklenince çift sütun zaten aktif (HTML'de yazılı), state'i sabitle */
+        applyMode("double");
+
+        /* Tıklama olayları */
+        btnSingle.addEventListener("click", function () { applyMode("single"); });
+        btnDouble.addEventListener("click", function () { applyMode("double"); });
+      })();
+
+      if (elBtnStopScan) {
+        elBtnStopScan.addEventListener("click", function () {
+          scanAborted = true;
+          elProgressText.textContent = "Tarama durduruldu…";
+          elBtnStopScan.disabled = true;
+        });
+      }
+
+      /* ── İlerleme çubuğu güncelleme ─────────────────────── */
+      function showProgressBar(visible) {
+        if (!elProgressWrap) return;
+        if (visible) {
+          elProgressWrap.classList.remove("hidden");
+          if (elProgressSpin) elProgressSpin.style.display = "";
+          if (elBtnStopScan) { elBtnStopScan.disabled = false; }
+        } else {
+          elProgressWrap.classList.add("hidden");
+        }
+      }
+
+      function updateProgressBar(pageNum, totalPages, foundCount) {
+        if (!elProgressBar) return;
+        var pct = totalPages > 0 ? Math.round((pageNum / totalPages) * 100) : 0;
+        elProgressBar.style.width = pct + "%";
+        if (elProgressText) {
+          elProgressText.textContent =
+            "Otonom Tarama — Sayfa: " + pageNum + " / " + totalPages +
+            " | Bulunan: " + foundCount + " soru";
+        }
+        if (elProgressPage)  elProgressPage.textContent  = "Sayfa: " + pageNum + " / " + totalPages;
+        if (elProgressFound) elProgressFound.textContent = "Bulunan: " + foundCount + " soru";
+      }
+
+      function finishProgressBar(foundCount, aborted) {
+        if (elProgressBar) elProgressBar.style.width = aborted ? elProgressBar.style.width : "100%";
+        if (elProgressText) {
+          elProgressText.textContent = aborted
+            ? "Tarama durduruldu — " + foundCount + " soru bulundu"
+            : "✓ Tarama tamamlandı — " + foundCount + " soru bulundu";
+        }
+        if (elProgressSpin) elProgressSpin.style.display = "none";
+        if (elBtnStopScan)  elBtnStopScan.disabled = true;
+        /* 3 saniye sonra bar'ı gizle */
+        setTimeout(function () { showProgressBar(false); }, 3000);
+      }
+      var elPrevPage      = document.getElementById("aks-prev-page");
+      var elNextPage      = document.getElementById("aks-next-page");
+      var elPageInfo      = document.getElementById("aks-page-info");
+      var elEmptyState    = document.getElementById("aks-empty-state");
+      var elCanvasScroll  = document.getElementById("aks-canvas-scroll");
+      var elCanvasWrap    = document.getElementById("aks-canvas-wrap");
+      var elPdfCanvas     = document.getElementById("aks-pdf-canvas");
+      var elOverlay       = document.getElementById("aks-overlay-canvas");
+      var elStatus        = document.getElementById("aks-status");
+      var elSelDims       = document.getElementById("aks-sel-dims");
+      var elRadarHint     = document.getElementById("aks-radar-hint");
+      var elZoomIn        = document.getElementById("aks-zoom-in");
+      var elZoomOut       = document.getElementById("aks-zoom-out");
+      var elZoomLabel     = document.getElementById("aks-zoom-label");
+      var elGalleryEmpty  = document.getElementById("aks-gallery-empty");
+      var elGalleryGrid   = document.getElementById("aks-gallery-grid");
+      var elGalleryCards  = document.getElementById("aks-gallery-cards");
+      var elGalleryCount  = document.getElementById("aks-gallery-count");
+      var elHizliCevapSeridi = document.getElementById("hizliCevapSeridi");
+      var elSelectAll     = document.getElementById("aks-select-all");
+      var elBtnDelSel     = document.getElementById("aks-btn-delete-selected");
+      var elBtnReceteBulk = document.getElementById("aks-btn-recete-bulk");
+      var elBtnSaveSel    = document.getElementById("aks-btn-save-selected");
+      var elToast         = document.getElementById("aks-toast");
+      var elToastText     = document.getElementById("aks-toast-text");
+
+      /* Hata kaynağı modal refs */
+      var elHkModal     = document.getElementById("aks-hk-modal");
+      var elHkBackdrop  = document.getElementById("aks-hk-backdrop");
+      var elHkCloseX    = document.getElementById("aks-hk-close-x");
+      var elHkCancel    = document.getElementById("aks-hk-cancel");
+      var elHkSave      = document.getElementById("aks-hk-save");
+      var elHkPrevImg   = document.getElementById("aks-hk-preview-img");
+      var elHkScope     = document.getElementById("aks-hk-scope");
+      var elHkHint      = document.getElementById("aks-hk-hint");
+      var hkPendingIds  = [];
+
+      var pdfCtx  = elPdfCanvas  ? elPdfCanvas.getContext("2d")  : null;
+      var ovCtx   = elOverlay    ? elOverlay.getContext("2d")    : null;
+
+
+      /* ── PDF Temizle ─────────────────────────────────────── */
+      function clearPdfFile() {
+        setToolMode("crop");
+        pdfDoc = null;
+        currentPage = 1;
+        if (elFileInput) elFileInput.value = "";
+        elFileName.classList.add("hidden");
+        elFileName.classList.remove("flex");
+        elFileNameText.textContent = "";
+        if (elFilePageCount) elFilePageCount.textContent = "— sayfa";
+        elEmptyState.classList.remove("hidden");
+        elCanvasWrap.classList.add("hidden");
+        elPageNav.classList.add("hidden");
+        if (elBtnAuto) elBtnAuto.disabled = true;
+        setCropReady(false);
+        ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+        if (pdfCtx) pdfCtx.clearRect(0, 0, elPdfCanvas.width, elPdfCanvas.height);
+        elSelDims.textContent = "";
+        elRadarHint.textContent = "PDF yükleyin ve seçim çizin";
+        elStatus.textContent = "PDF kaldırıldı";
+        setScanBadge(null);
+      }
+
+      /* ── Sistemi Tamamen Sıfırla ─────────────────────────── */
+      function resetCropper() {
+        clearPdfFile();
+        /* Galeriyi temizle */
+        croppedItems = [];
+        elGalleryCards.innerHTML = "";
+        updateGalleryUI();
+        /* YKS etiket seçimlerini sıfırla */
+        elSelDers.value = "";
+        elSelKonu.innerHTML = '<option value="">— Önce ders seçin —</option>';
+        elSelKonu.disabled = true;
+        elSelKavram.innerHTML = '<option value="">— Önce konu seçin —</option>';
+        elSelKavram.disabled = true;
+        resetTag();
+        elStatus.textContent = "Sistem sıfırlandı — yeni PDF yükleyebilirsiniz";
+        showToast("Sistem sıfırlandı ✓");
+      }
+
+      /* Buton bağlamaları */
+      if (elBtnClearPdf) elBtnClearPdf.addEventListener("click", clearPdfFile);
+      if (elBtnReset)    elBtnReset.addEventListener("click", resetCropper);
+
+      /* ══════════════════════════════════════════════════════
+         ARAÇ MODU SİSTEMİ — Photoshop tarzı
+         setToolMode("crop" | "pan")
+         ══════════════════════════════════════════════════════ */
+      function setToolMode(mode) {
+        currentTool = mode;
+        panMode     = (mode === "pan");
+        panStart    = null;
+
+        if (mode === "pan") {
+          /* Overlay tıklanamaz → scroll container devreye girer */
+          elOverlay.style.cursor        = "grab";
+          elOverlay.style.pointerEvents = "none";
+          elCanvasScroll.style.cursor   = "grab";
+
+          /* Pan butonu AKTİF */
+          elBtnPan.classList.remove("aks-tool-inactive");
+          elBtnPan.classList.add("aks-tool-active");
+          if (elPanLabel) elPanLabel.textContent = "Elle Gezme ✓";
+
+          /* Kırp butonu PASSİF — seçim halkasını da temizle */
+          elBtnCrop.classList.remove("aks-tool-active", "aks-crop-ready");
+          elBtnCrop.classList.add("aks-tool-inactive");
+          if (elCropLabel) elCropLabel.textContent = "Seçili Alanı Kırp";
+
+          if (pdfDoc) elStatus.textContent = "Elle Gezme aktif — PDF'i sürükleyerek kaydırın";
+
+        } else {
+          /* Kırpma modu */
+          elOverlay.style.cursor        = "crosshair";
+          elOverlay.style.pointerEvents = "";
+          elCanvasScroll.style.cursor   = "";
+
+          /* Kırp butonu AKTİF */
+          elBtnCrop.classList.remove("aks-tool-inactive");
+          elBtnCrop.classList.add("aks-tool-active");
+          if (elCropLabel) elCropLabel.textContent = "Seçili Alanı Kırp";
+
+          /* Pan butonu PASSİF */
+          elBtnPan.classList.remove("aks-tool-active");
+          elBtnPan.classList.add("aks-tool-inactive");
+          if (elPanLabel) elPanLabel.textContent = "Elle Gezme";
+
+          if (pdfDoc) elStatus.textContent = "Kırpma modu aktif — PDF üzerinde alan çizin";
+        }
+      }
+
+      /* Buton tıklamaları */
+      if (elBtnPan)  elBtnPan.addEventListener("click",  function () { setToolMode("pan");  });
+      if (elBtnCrop) elBtnCrop.addEventListener("click", function () {
+        /* Pan modundayken crop'a geçiş yap */
+        if (currentTool === "pan") { setToolMode("crop"); return; }
+        /* Crop modundayken — seçim varsa kırp, yoksa ipucu ver */
+        if (!pdfDoc) { showToast("Önce sol panelden bir PDF yükleyin"); return; }
+        if (!hasSel) {
+          showToast("PDF üzerinde fare ile bir alan seçin");
+          elStatus.textContent = "İpucu: PDF üzerinde sol tıklayıp sürükleyerek soru alanını seçin";
+          return;
+        }
+        cropAndAdd();
+      });
+
+      /* Pan: mouse olayları scroll container üzerinde */
+      elCanvasScroll.addEventListener("mousedown", function (e) {
+        if (!panMode || !pdfDoc) return;
+        e.preventDefault();
+        elCanvasScroll.style.cursor = "grabbing";
+        panStart = {
+          x: e.clientX,
+          y: e.clientY,
+          scrollLeft: elCanvasScroll.scrollLeft,
+          scrollTop:  elCanvasScroll.scrollTop,
+        };
+      });
+
+      window.addEventListener("mousemove", function (e) {
+        if (!panMode || !panStart) return;
+        var dx = e.clientX - panStart.x;
+        var dy = e.clientY - panStart.y;
+        elCanvasScroll.scrollLeft = panStart.scrollLeft - dx;
+        elCanvasScroll.scrollTop  = panStart.scrollTop  - dy;
+      });
+
+      window.addEventListener("mouseup", function () {
+        if (!panMode || !panStart) return;
+        panStart = null;
+        elCanvasScroll.style.cursor = "grab";
+      });
+
+      /* ── YKS Müfredatı ───────────────────────────────────── */
+      function initMufredat() {
+        if (!window.YksMufredat) return;
+        var subjects = window.YksMufredat.subjects || [];
+        subjects.forEach(function (s) {
+          var opt = document.createElement("option");
+          opt.value = s.id;
+          opt.textContent = s.name + " (" + s.sinav + ")";
+          elSelDers.appendChild(opt);
+        });
+      }
+
+      elSelDers.addEventListener("change", function () {
+        var subId = elSelDers.value;
+        elSelKonu.innerHTML = '<option value="">— Seçin —</option>';
+        elSelKavram.innerHTML = '<option value="">— Önce konu seçin —</option>';
+        elSelKonu.disabled = !subId;
+        elSelKavram.disabled = true;
+        if (!subId) { resetTag(); return; }
+
+        var api = window.YksMufredatApi;
+        var topics = api ? api.getTopics(subId) : [];
+        topics.forEach(function (t) {
+          var opt = document.createElement("option");
+          opt.value = t.id;
+          opt.textContent = t.name;
+          elSelKonu.appendChild(opt);
+        });
+        updateTag();
+      });
+
+      elSelKonu.addEventListener("change", function () {
+        var subId   = elSelDers.value;
+        var topicId = elSelKonu.value;
+        elSelKavram.innerHTML = '<option value="">— Seçin —</option>';
+        elSelKavram.disabled = !topicId;
+        if (!topicId) { updateTag(); return; }
+
+        var api = window.YksMufredatApi;
+        var concepts = api ? api.getConcepts(subId, topicId) : [];
+        concepts.forEach(function (c) {
+          var opt = document.createElement("option");
+          opt.value = c.id;
+          opt.textContent = c.name;
+          elSelKavram.appendChild(opt);
+        });
+        elSelKavram.disabled = false;
+        updateTag();
+      });
+
+      elSelKavram.addEventListener("change", updateTag);
+
+      function getTag() {
+        var ders    = elSelDers.options[elSelDers.selectedIndex];
+        var konu    = elSelKonu.options[elSelKonu.selectedIndex];
+        var kavram  = elSelKavram.options[elSelKavram.selectedIndex];
+        return {
+          ders:   ders && ders.value   ? ders.textContent.replace(/\s*\(.*?\)\s*$/, "") : "",
+          konu:   konu && konu.value   ? konu.textContent : "",
+          kavram: kavram && kavram.value ? kavram.textContent : "",
+        };
+      }
+
+      function updateTag() {
+        var tag = getTag();
+        if (!tag.ders) { resetTag(); return; }
+        var parts = [tag.ders];
+        if (tag.konu)   parts.push(tag.konu);
+        if (tag.kavram) parts.push(tag.kavram);
+        elTagText.textContent = parts.join(" › ");
+        elTagPreview.classList.remove("hidden");
+      }
+
+      function resetTag() {
+        elTagPreview.classList.add("hidden");
+        elTagText.textContent = "";
+      }
+
+      /* ── PDF Yükleme ─────────────────────────────────────── */
+      function handleFile(file) {
+        if (!file || file.type !== "application/pdf") {
+          showToast("Lütfen geçerli bir PDF dosyası seçin.", "error"); return;
+        }
+        elFileNameText.textContent = file.name;
+        if (elFilePageCount) elFilePageCount.textContent = "yükleniyor…";
+        elFileName.classList.remove("hidden");
+        elFileName.classList.add("flex");
+        elStatus.textContent = "PDF yükleniyor…";
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var typedArray = new Uint8Array(e.target.result);
+          pdfjsLib.getDocument({ data: typedArray }).promise.then(function (doc) {
+            pdfDoc = doc;
+            currentPage = 1;
+            elPageNav.classList.remove("hidden");
+            elEmptyState.classList.add("hidden");
+            elCanvasWrap.classList.remove("hidden");
+            elRadarHint.textContent = "PDF yüklendi · seçim çizmek için sol tıklayıp sürükleyin";
+            if (elFilePageCount) elFilePageCount.textContent = doc.numPages + " sayfa";
+            renderPage(currentPage);
+          }).catch(function (err) {
+            elStatus.textContent = "PDF yüklenemedi: " + err.message;
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      elFileInput.addEventListener("change", function () {
+        if (elFileInput.files[0]) handleFile(elFileInput.files[0]);
+      });
+
+      /* Drag & Drop */
+      elDropzone.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        elDropzone.classList.add("border-indigo-400", "bg-indigo-50");
+      });
+      elDropzone.addEventListener("dragleave", function () {
+        elDropzone.classList.remove("border-indigo-400", "bg-indigo-50");
+      });
+      elDropzone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        elDropzone.classList.remove("border-indigo-400", "bg-indigo-50");
+        var file = e.dataTransfer && e.dataTransfer.files[0];
+        if (file) handleFile(file);
+      });
+
+      /* ── PDF Render ──────────────────────────────────────── */
+      /* Uçuşta olan render task'ı izle (zoom'da iptal için) */
+      var currentRenderTask = null;
+
+      function renderPage(num) {
+        if (!pdfDoc) return;
+
+        /* Önceki render hâlâ sürüyorsa iptal et (zoom spam'ı önler) */
+        if (currentRenderTask) {
+          try { currentRenderTask.cancel(); } catch (e) {}
+          currentRenderTask = null;
+        }
+
+        var dpr = window.devicePixelRatio || 1;
+        elStatus.textContent = "Sayfa " + num + " / " + pdfDoc.numPages + " render ediliyor…";
+
+        pdfDoc.getPage(num).then(function (page) {
+          var viewport = page.getViewport({ scale: pdfScale });
+
+          /* ── CSS boyutları (ekrandaki görünür alan) ── */
+          elPdfCanvas.style.width  = viewport.width  + "px";
+          elPdfCanvas.style.height = viewport.height + "px";
+
+          /* ── Fiziksel piksel boyutları (Retina/HiDPI) ── */
+          elPdfCanvas.width  = Math.floor(viewport.width  * dpr);
+          elPdfCanvas.height = Math.floor(viewport.height * dpr);
+
+          /* Overlay: CSS piksel koordinatında kalır (seçim matematiği için) */
+          elOverlay.width  = viewport.width;
+          elOverlay.height = viewport.height;
+          elOverlay.style.width  = viewport.width  + "px";
+          elOverlay.style.height = viewport.height + "px";
+
+          /* DPR transform ile fiziksel piksele çiz → cam gibi netlik */
+          var task = page.render({
+            canvasContext: pdfCtx,
+            transform: [dpr, 0, 0, dpr, 0, 0],
+            viewport: viewport
+          });
+          currentRenderTask = task;
+
+          task.promise.then(function () {
+            currentRenderTask = null;
+            elStatus.textContent = "Sayfa " + num + " / " + pdfDoc.numPages + " hazır · Sol tıklayıp sürükleyerek soru seçin";
+            updatePageInfo();
+            if (elBtnAuto) elBtnAuto.disabled = false;
+          }).catch(function (err) {
+            /* RenderingCancelledException beklenen bir durum — sessizce geç */
+            if (err && err.name !== "RenderingCancelledException") {
+              elStatus.textContent = "Render hatası: " + (err.message || err);
+            }
+          });
+        });
+      }
+
+      function updatePageInfo() {
+        if (!pdfDoc) return;
+        elPageInfo.textContent = currentPage + " / " + pdfDoc.numPages;
+        elPrevPage.disabled = currentPage <= 1;
+        elNextPage.disabled = currentPage >= pdfDoc.numPages;
+      }
+
+      elPrevPage.addEventListener("click", function () {
+        if (currentPage > 1) { currentPage--; setCropReady(false); renderPage(currentPage); }
+      });
+      elNextPage.addEventListener("click", function () {
+        if (pdfDoc && currentPage < pdfDoc.numPages) { currentPage++; setCropReady(false); renderPage(currentPage); }
+      });
+
+      /* ── Zoom ────────────────────────────────────────────── */
+      var zoomLevels = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5];
+      var zoomIdx = 2; // default 1.0 = %100
+
+      function applyZoom() {
+        pdfScale = zoomLevels[zoomIdx];
+        elZoomLabel.textContent = Math.round(pdfScale * 100) + "%";
+        elZoomOut.disabled = zoomIdx <= 0;
+        elZoomIn.disabled  = zoomIdx >= zoomLevels.length - 1;
+        if (pdfDoc) renderPage(currentPage);
+      }
+
+      elZoomIn.addEventListener("click", function () {
+        if (zoomIdx < zoomLevels.length - 1) { zoomIdx++; applyZoom(); }
+      });
+      elZoomOut.addEventListener("click", function () {
+        if (zoomIdx > 0) { zoomIdx--; applyZoom(); }
+      });
+      /* Başlangıçta buton durumlarını ve label'ı senkronize et */
+      applyZoom();
+
+      /* ── Seçim hazırlık durumu (nabız halkası) ──────────── */
+      function setCropReady(ready) {
+        hasSel = ready;
+        if (ready) {
+          elBtnCrop.classList.add("aks-crop-ready");
+          if (elCropLabel) elCropLabel.textContent = "Kırp ▶";
+        } else {
+          elBtnCrop.classList.remove("aks-crop-ready");
+          if (elCropLabel) elCropLabel.textContent = "Seçili Alanı Kırp";
+        }
+      }
+
+      /* Başlangıç: Kırpma modu varsayılan olarak aktif */
+      setToolMode("crop");
+
+      /* ── Rubber-Band Seçim (BoundingClientRect tabanlı) ── */
+      elOverlay.addEventListener("mousedown", function (e) {
+        if (!pdfDoc) return;
+        /* Pan modu aktifken overlay mouse olayları devre dışı (pointer-events:none) */
+        if (panMode) return;
+        e.preventDefault();
+        var rect = elOverlay.getBoundingClientRect();
+        var scaleX = elOverlay.width / rect.width;
+        var scaleY = elOverlay.height / rect.height;
+        isSelecting = true;
+        setCropReady(false);
+        selStart.x  = (e.clientX - rect.left) * scaleX;
+        selStart.y  = (e.clientY - rect.top)  * scaleY;
+        selEnd.x    = selStart.x;
+        selEnd.y    = selStart.y;
+        elSelDims.textContent = "";
+      });
+
+      elOverlay.addEventListener("mousemove", function (e) {
+        if (!isSelecting) return;
+        var rect = elOverlay.getBoundingClientRect();
+        var scaleX = elOverlay.width  / rect.width;
+        var scaleY = elOverlay.height / rect.height;
+        selEnd.x = (e.clientX - rect.left) * scaleX;
+        selEnd.y = (e.clientY - rect.top)  * scaleY;
+        drawSelection();
+
+        var w = Math.abs(selEnd.x - selStart.x) | 0;
+        var h = Math.abs(selEnd.y - selStart.y) | 0;
+        elSelDims.textContent = w + " × " + h + " px";
+      });
+
+      elOverlay.addEventListener("mouseup", function (e) {
+        if (!isSelecting) return;
+        isSelecting = false;
+        var rect = elOverlay.getBoundingClientRect();
+        var scaleX = elOverlay.width  / rect.width;
+        var scaleY = elOverlay.height / rect.height;
+        selEnd.x = (e.clientX - rect.left) * scaleX;
+        selEnd.y = (e.clientY - rect.top)  * scaleY;
+
+        var w = Math.abs(selEnd.x - selStart.x);
+        var h = Math.abs(selEnd.y - selStart.y);
+        if (w > 8 && h > 8) {
+          setCropReady(true);
+          elStatus.textContent = "Seçim tamam → 'Seçili Alanı Kırp' ile galereye ekleyin";
+        } else {
+          setCropReady(false);
+          ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+        }
+      });
+
+      elOverlay.addEventListener("mouseleave", function () {
+        if (isSelecting) {
+          isSelecting = false;
+          if (!hasSel) ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+        }
+      });
+
+      function drawSelection() {
+        ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+        var x = Math.min(selStart.x, selEnd.x);
+        var y = Math.min(selStart.y, selEnd.y);
+        var w = Math.abs(selEnd.x - selStart.x);
+        var h = Math.abs(selEnd.y - selStart.y);
+
+        // Dış gölge efekti
+        ovCtx.fillStyle = "rgba(0,0,0,0.12)";
+        ovCtx.fillRect(0, 0, elOverlay.width, y);
+        ovCtx.fillRect(0, y + h, elOverlay.width, elOverlay.height - y - h);
+        ovCtx.fillRect(0, y, x, h);
+        ovCtx.fillRect(x + w, y, elOverlay.width - x - w, h);
+
+        // Seçim kutucuğu
+        ovCtx.fillStyle = "rgba(99,102,241,0.06)";
+        ovCtx.fillRect(x, y, w, h);
+
+        ovCtx.strokeStyle = "#6366f1";
+        ovCtx.lineWidth   = 2;
+        ovCtx.setLineDash([6, 3]);
+        ovCtx.strokeRect(x, y, w, h);
+        ovCtx.setLineDash([]);
+
+        // Köşe tutamaçları
+        var handles = [[x,y],[x+w,y],[x,y+h],[x+w,y+h]];
+        handles.forEach(function(pt) {
+          ovCtx.fillStyle = "#6366f1";
+          ovCtx.beginPath();
+          ovCtx.arc(pt[0], pt[1], 4, 0, Math.PI * 2);
+          ovCtx.fill();
+        });
+      }
+
+      /* ── Ders & Konu seçildi mi? ─────────────────────────────
+         Her iki kırpma motoru da bu kontrolden geçer.
+         Boş veya placeholder değer → false döner.
+      ────────────────────────────────────────────────────── */
+      function validateTag() {
+        var dersVal  = elSelDers  ? elSelDers.value  : "";
+        var konuVal  = elSelKonu  ? elSelKonu.value  : "";
+        if (!dersVal) {
+          showToast("Lütfen önce Ders seçin — sol panelden YKS etiketini belirleyin", "error");
+          /* Ders select'e dikkat çek */
+          if (elSelDers) {
+            elSelDers.focus();
+            elSelDers.style.outline = "2px solid #dc2626";
+            setTimeout(function () { elSelDers.style.outline = ""; }, 1800);
+          }
+          return false;
+        }
+        if (!konuVal) {
+          showToast("Lütfen önce Konu seçin — sol panelden konuyu belirleyin", "error");
+          if (elSelKonu) {
+            elSelKonu.focus();
+            elSelKonu.style.outline = "2px solid #dc2626";
+            setTimeout(function () { elSelKonu.style.outline = ""; }, 1800);
+          }
+          return false;
+        }
+        return true;
+      }
+
+      function cropAndAdd() {
+        /* ── Ders/Konu doğrulaması ── */
+        if (!validateTag()) return;
+
+        var x = Math.min(selStart.x, selEnd.x);
+        var y = Math.min(selStart.y, selEnd.y);
+        var w = Math.abs(selEnd.x - selStart.x);
+        var h = Math.abs(selEnd.y - selStart.y);
+        if (w < 8 || h < 8) return;
+
+        /*
+         * DPR Düzeltmesi:
+         *   selStart/selEnd → overlay CSS piksel koordinatları (DPR'sız)
+         *   elPdfCanvas     → fiziksel piksel boyutunda (DPR ile çarpılmış)
+         *   drawImage kaynak koordinatları DPR ile ölçeklendirilmeli.
+         */
+        var dpr  = window.devicePixelRatio || 1;
+        var srcX = Math.round(x * dpr);
+        var srcY = Math.round(y * dpr);
+        var srcW = Math.round(w * dpr);
+        var srcH = Math.round(h * dpr);
+
+        /* Yüksek çözünürlüklü kırpma canvas'ı */
+        var cropCanvas    = document.createElement("canvas");
+        cropCanvas.width  = srcW;
+        cropCanvas.height = srcH;
+        var cropCtx = cropCanvas.getContext("2d");
+        cropCtx.imageSmoothingEnabled = true;
+        cropCtx.imageSmoothingQuality = "high";
+        cropCtx.drawImage(elPdfCanvas, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+        var dataUrl = cropCanvas.toDataURL("image/png", 1.0);
+        var tag     = getTag();
+
+        /* ── Modal yok — soruyu anında Cephaneliğe ekle ── */
+        var item = {
+          id:      nextId++,
+          dataUrl: dataUrl,
+          ders:    tag.ders,
+          konu:    tag.konu,
+          kavram:  tag.kavram,
+          page:    currentPage,
+          answer:  null, /* cevap sağ paneldeki A-E butonlarından seçilir */
+        };
+        croppedItems.push(item);
+        addCardToGallery(item, true);
+        updateGalleryUI();
+
+        /* Seçimi temizle */
+        setCropReady(false);
+        ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+        elSelDims.textContent = "";
+        elStatus.textContent  = "Soru #" + item.id + " eklendi · Cevabı sağ panelden seçin";
+        showToast("Soru #" + item.id + " galeriye eklendi — cevabı karttan seçin");
+      }
+
+      function buildPoolQuestionObjects(items) {
+        var list = [];
+        items.forEach(function (item) {
+          if (!item) return;
+          list.push({
+            uuid: "q_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+            dataUrl: item.dataUrl,
+            ders: item.ders || "",
+            konu: item.konu || "",
+            kavram: item.kavram || "",
+            answer: item.answer || null,
+            page: item.page || null,
+            qNumber: item.qNumber || "",
+            soruNo: item.soruNo || "",
+            auto: !!item.auto,
+            savedAt: new Date().toISOString(),
+          });
+        });
+        return list;
+      }
+
+      function persistPoolQuestions(objs) {
+        var pool = [];
+        try { pool = JSON.parse(localStorage.getItem("derece_soru_havuzu") || "[]"); } catch (e0) {}
+        objs.forEach(function (q) { pool.push(q); });
+        try {
+          localStorage.setItem("derece_soru_havuzu", JSON.stringify(pool));
+          return true;
+        } catch (e1) {
+          showToast("Kayıt başarısız — tarayıcı depolaması dolu olabilir", "error");
+          return false;
+        }
+      }
+
+      function persistHataliPoolQuestions(objs) {
+        var pool = [];
+        try { pool = JSON.parse(localStorage.getItem("derece_hatali_soru_havuzu") || "[]"); } catch (e0) {}
+        if (!Array.isArray(pool)) pool = [];
+        objs.forEach(function (q) { pool.push(q); });
+        try {
+          localStorage.setItem("derece_hatali_soru_havuzu", JSON.stringify(pool));
+          return true;
+        } catch (e1) {
+          showToast("Kayıt başarısız — tarayıcı depolaması dolu olabilir", "error");
+          return false;
+        }
+      }
+
+      function itemsFromIds(ids) {
+        var out = [];
+        (ids || []).forEach(function (id) {
+          var found = croppedItems.find(function (x) { return x.id === id; });
+          if (found) out.push(found);
+        });
+        return out;
+      }
+
+      function openHataKaynagiModalForIds(ids) {
+        hkPendingIds = ids ? ids.slice() : [];
+        if (!elHkModal) return;
+        try {
+          document.querySelectorAll('input[name="aks-hk-src"]').forEach(function (r) { r.checked = false; });
+        } catch (e) {}
+        try {
+          var rawItems = itemsFromIds(hkPendingIds);
+          var first = rawItems[0] || null;
+          if (elHkPrevImg) {
+            elHkPrevImg.src = first && first.dataUrl ? String(first.dataUrl) : "";
+          }
+          if (elHkScope) {
+            elHkScope.textContent = hkPendingIds.length > 1 ? (hkPendingIds.length + " soru seçildi") : "Seçili soru";
+          }
+          if (elHkHint) {
+            elHkHint.textContent = hkPendingIds.length > 1 ? "Seçtiğiniz tüm sorular aynı hata kaynağı ile kaydedilir." : "Hata kaynağını seçip kaydedin.";
+          }
+        } catch (e3) {}
+        elHkModal.classList.add("aks-hk-modal--open");
+        elHkModal.setAttribute("aria-hidden", "false");
+        try {
+          var first = document.querySelector('input[name="aks-hk-src"]');
+          if (first) first.focus();
+        } catch (e2) {}
+      }
+
+      function closeHataKaynagiModal() {
+        if (!elHkModal) return;
+        elHkModal.classList.remove("aks-hk-modal--open");
+        elHkModal.setAttribute("aria-hidden", "true");
+        hkPendingIds = [];
+      }
+
+      /** Kaydet ile aynı hedef: seçili kartlar veya seçim yoksa tüm kartlar item id'leri */
+      function getGalleryTargetItemIds() {
+        var chkEls = Array.prototype.slice.call(elGalleryCards.querySelectorAll(".aks-card-check:checked"));
+        var cards;
+        if (chkEls.length === 0) {
+          cards = Array.prototype.slice.call(elGalleryCards.querySelectorAll("[data-item-id]"));
+        } else {
+          cards = chkEls.map(function (chk) { return chk.closest("[data-item-id]"); }).filter(Boolean);
+        }
+        var ids = [];
+        cards.forEach(function (card) {
+          if (!card) return;
+          var id = parseInt(card.getAttribute("data-item-id"), 10);
+          if (!isNaN(id)) ids.push(id);
+        });
+        return ids;
+      }
+
+      /* ── Galeri Kart Oluşturma ──────────────────────────── */
+      /**
+       * @param {object}  item
+       * @param {boolean} [animate] — aks-card-enter animasyonunu çalıştır
+       */
+      function addCardToGallery(item, animate) {
+        var card = document.createElement("div");
+        card.className = "group relative rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden transition hover:border-indigo-300 hover:shadow-md" +
+          (animate ? " aks-card-enter" : "");
+        card.setAttribute("data-item-id",   String(item.id));
+        card.setAttribute("data-page",      String(item.page  || ""));
+        card.setAttribute("data-question",  String(item.qNumber || ""));
+
+        var tagParts = [];
+        if (item.ders)   tagParts.push(item.ders);
+        if (item.konu)   tagParts.push(item.konu);
+        if (item.kavram) tagParts.push(item.kavram);
+        var tagHtml = tagParts.length
+          ? '<p class="truncate text-[9px] font-semibold text-indigo-500" title="' + escHtml(tagParts.join(" › ")) + '">' + escHtml(tagParts.join(" › ")) + '</p>'
+          : '<p class="text-[9px] text-slate-300 italic">Etiket yok</p>';
+
+        /* Cevap butonu satırı HTML'i (A–E) */
+        var ansBtnsHtml = ["A","B","C","D","E"].map(function (ch) {
+          var active = item.answer === ch ? " active" : "";
+          return '<button class="aks-ans-btn' + active + '" data-ans="' + ch + '">' + ch + '</button>';
+        }).join("");
+
+        /* Sayfa, Soru ve Sütun badge'leri */
+        var pageBadge = item.page
+          ? '<span class="aks-badge-page">S.' + item.page + '</span>' : '';
+        var colLabel  = item.col === "sol" ? "Sol" : item.col === "sag" ? "Sağ" : "";
+        var colBadge  = colLabel
+          ? '<span class="aks-badge-col">' + colLabel + '</span>' : '';
+        var qBadge = item.qNumber
+          ? '<span class="aks-badge-qnum">' + escHtml(item.qNumber) + '.</span>'
+          : (item.auto ? '<span class="aks-badge-qnum">oto</span>' : '');
+        /* badge row: [S.pageNo] [Sol/Sağ]  …sağa yasla…  [qNum] */
+        var badgeLeft = '<div class="flex items-center gap-1">' + pageBadge + colBadge + '</div>';
+
+        card.innerHTML =
+          /* Görsel alanı */
+          '<div class="relative bg-slate-50">' +
+            '<img src="' + item.dataUrl + '" alt="Soru ' + (item.qNumber || item.id) + '" class="aks-card-img block w-full object-contain" style="max-height:160px;" />' +
+            /* Sayfa + Sütun + Soru overlay badge'leri */
+            '<div class="aks-card-badge-row">' + badgeLeft + qBadge + '</div>' +
+            /* Seçim checkbox */
+            '<label class="absolute top-1.5 left-1.5 opacity-0 group-hover:opacity-100 transition-opacity">' +
+              '<input type="checkbox" class="aks-card-check h-4 w-4 rounded border-2 border-white accent-indigo-600 shadow cursor-pointer" />' +
+            '</label>' +
+            /* Sil butonu */
+            '<button class="aks-card-del absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-white/90 text-slate-400 opacity-0 group-hover:opacity-100 shadow transition hover:bg-red-500 hover:text-white">' +
+              '<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>' +
+            '</button>' +
+          '</div>' +
+          /* Metadata */
+          '<div class="px-2 pt-1.5 pb-0">' +
+            tagHtml +
+          '</div>' +
+          /* Cevap satırı */
+          '<div class="aks-answer-row">' + ansBtnsHtml + '</div>' +
+          '<div class="flex border-t border-slate-100/90 bg-slate-50/95 px-2 py-2">' +
+            '<button type="button" class="aks-card-save-pool inline-flex w-full items-center justify-center gap-1 rounded-lg border border-emerald-200/90 bg-emerald-50 px-2 py-1.5 text-[10px] font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-1" title="Soru Havuzuna kaydet">' +
+              '<svg class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>' +
+              "Havuza Kaydet" +
+            "</button>" +
+          "</div>";
+
+        /* ── Cevap butonları event listener'ları ── */
+        card.querySelectorAll(".aks-ans-btn").forEach(function (btn) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var chosen = btn.getAttribute("data-ans");
+            /* Data güncelle */
+            var found = croppedItems.find(function (ci) { return ci.id === item.id; });
+            if (found) {
+              /* Toggle: aynıya tekrar basarsa cevabı temizle */
+              found.answer = (found.answer === chosen) ? null : chosen;
+              setCardAnswer(card, found.answer);
+              setAktifSoruIndex(croppedItems.indexOf(found), true);
+            }
+          });
+        });
+
+        /* Sil */
+        card.querySelector(".aks-card-del").addEventListener("click", function (e) {
+          e.stopPropagation();
+          deleteItem(item.id);
+        });
+
+        /* Checkbox değişiminde toplu butonları güncelle */
+        card.querySelector(".aks-card-check").addEventListener("change", function () {
+          syncSelectAll();
+          updateBulkButtons();
+        });
+
+        var btnPool = card.querySelector(".aks-card-save-pool");
+        if (btnPool) {
+          btnPool.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var found = croppedItems.find(function (ci) { return ci.id === item.id; });
+            if (!found) return;
+            var objs = buildPoolQuestionObjects([found]);
+            if (!persistPoolQuestions(objs)) return;
+            showToast("1 soru başarıyla Soru Havuzuna kaydedildi!", "success");
+          });
+        }
+
+        card.addEventListener("click", function () {
+          var idx = croppedItems.findIndex(function (ci) { return ci.id === item.id; });
+          if (idx >= 0) setAktifSoruIndex(idx, true);
+        });
+
+        elGalleryCards.appendChild(card);
+      }
+
+      /**
+       * Bir kart DOM elemanındaki cevap butonlarını günceller.
+       * @param {HTMLElement} cardEl  — kart div'i
+       * @param {string|null} answer  — 'A'|'B'|'C'|'D'|'E'|null
+       */
+      function setCardAnswer(cardEl, answer) {
+        cardEl.querySelectorAll(".aks-ans-btn").forEach(function (btn) {
+          if (btn.getAttribute("data-ans") === answer) {
+            btn.classList.add("active");
+          } else {
+            btn.classList.remove("active");
+          }
+        });
+      }
+
+      function clampAktifSoruIndex() {
+        if (croppedItems.length === 0) {
+          aktifSoruIndex = 0;
+          return;
+        }
+        if (aktifSoruIndex < 0) aktifSoruIndex = 0;
+        if (aktifSoruIndex >= croppedItems.length) aktifSoruIndex = croppedItems.length - 1;
+      }
+
+      function getCardByItemId(itemId) {
+        return elGalleryCards.querySelector('[data-item-id="' + itemId + '"]');
+      }
+
+      function updateActiveGalleryCard() {
+        var activeItem = croppedItems[aktifSoruIndex] || null;
+        elGalleryCards.querySelectorAll("[data-item-id]").forEach(function (card) {
+          var isActive = activeItem && card.getAttribute("data-item-id") === String(activeItem.id);
+          card.classList.toggle("ring-2", !!isActive);
+          card.classList.toggle("ring-indigo-400", !!isActive);
+          card.classList.toggle("border-indigo-300", !!isActive);
+        });
+      }
+
+      function scrollActiveFastAnswerIntoView() {
+        if (!elHizliCevapSeridi) return;
+        var activeBtn = elHizliCevapSeridi.querySelector('[data-fast-index="' + aktifSoruIndex + '"]');
+        if (activeBtn && typeof activeBtn.scrollIntoView === "function") {
+          activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
+      }
+
+      function setAktifSoruIndex(index, scrollStrip) {
+        aktifSoruIndex = index;
+        clampAktifSoruIndex();
+        renderHizliCevapSeridi();
+        updateActiveGalleryCard();
+        if (scrollStrip) scrollActiveFastAnswerIntoView();
+      }
+
+      function renderHizliCevapSeridi() {
+        if (!elHizliCevapSeridi) return;
+        clampAktifSoruIndex();
+        elHizliCevapSeridi.innerHTML = "";
+
+        if (!croppedItems.length) {
+          elHizliCevapSeridi.innerHTML =
+            '<span class="whitespace-nowrap rounded-lg border border-dashed border-indigo-200 bg-white/70 px-3 py-2 text-[11px] font-semibold text-slate-400">Kırpılan sorular burada numaralı cevap kutucukları olarak görünecek</span>';
+          return;
+        }
+
+        var frag = document.createDocumentFragment();
+        croppedItems.forEach(function (item, index) {
+          var btn = document.createElement("button");
+          var isActive = index === aktifSoruIndex;
+          var answer = item.answer ? String(item.answer).toUpperCase() : "";
+          btn.type = "button";
+          btn.setAttribute("data-fast-index", String(index));
+          btn.className = [
+            "flex h-10 min-w-[42px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 text-xs font-bold transition",
+            isActive
+              ? "border-indigo-500 bg-indigo-600 text-white shadow-md shadow-indigo-200"
+              : answer
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-indigo-300"
+                : "border-slate-200 bg-white text-slate-500 hover:border-indigo-300 hover:text-indigo-600"
+          ].join(" ");
+          btn.innerHTML =
+            '<span class="leading-none">' + (index + 1) + '</span>' +
+            '<span class="mt-0.5 text-[10px] leading-none ' + (isActive ? "text-indigo-100" : "text-slate-400") + '">' + (answer || "—") + '</span>';
+          btn.addEventListener("click", function () {
+            setAktifSoruIndex(index, true);
+            var card = getCardByItemId(item.id);
+            if (card && typeof card.scrollIntoView === "function") {
+              card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+          });
+          frag.appendChild(btn);
+        });
+        elHizliCevapSeridi.appendChild(frag);
+      }
+
+      function setAnswerForIndex(index, answer) {
+        var item = croppedItems[index];
+        if (!item) return;
+        item.answer = answer;
+        var card = getCardByItemId(item.id);
+        if (card) setCardAnswer(card, item.answer);
+      }
+
+      function isTypingTarget(target) {
+        if (!target) return false;
+        var tag = target.tagName ? target.tagName.toUpperCase() : "";
+        return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || !!target.isContentEditable;
+      }
+
+      function deleteItem(id) {
+        croppedItems = croppedItems.filter(function (x) { return x.id !== id; });
+        var card = elGalleryCards.querySelector('[data-item-id="' + id + '"]');
+        if (card) {
+          card.style.transition = "opacity 0.2s, transform 0.2s";
+          card.style.opacity = "0";
+          card.style.transform = "scale(0.95)";
+          setTimeout(function () { if (card.parentNode) card.parentNode.removeChild(card); updateGalleryUI(); }, 220);
+        } else {
+          updateGalleryUI();
+        }
+      }
+
+      function updateGalleryUI() {
+        var count = croppedItems.length;
+        elGalleryCount.textContent = count;
+        if (count === 0) {
+          elGalleryEmpty.classList.remove("hidden");
+          elGalleryGrid.classList.add("hidden");
+        } else {
+          elGalleryEmpty.classList.add("hidden");
+          elGalleryGrid.classList.remove("hidden");
+        }
+        clampAktifSoruIndex();
+        renderHizliCevapSeridi();
+        updateActiveGalleryCard();
+        syncSelectAll();
+        updateBulkButtons();
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (elHkModal && elHkModal.classList.contains("aks-hk-modal--open")) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeHataKaynagiModal();
+            return;
+          }
+          if (isTypingTarget(event.target)) return;
+          return;
+        }
+        if (isTypingTarget(event.target)) return;
+        if (!croppedItems || croppedItems.length === 0) return;
+
+        var key = event.key ? event.key.toUpperCase() : "";
+        if (/^[ABCDE]$/.test(key)) {
+          event.preventDefault();
+          clampAktifSoruIndex();
+          setAnswerForIndex(aktifSoruIndex, key);
+          setAktifSoruIndex(Math.min(aktifSoruIndex + 1, croppedItems.length - 1), true);
+          return;
+        }
+
+        if (event.key === "Backspace") {
+          event.preventDefault();
+          clampAktifSoruIndex();
+          var clearIndex = croppedItems[aktifSoruIndex] && croppedItems[aktifSoruIndex].answer
+            ? aktifSoruIndex
+            : Math.max(aktifSoruIndex - 1, 0);
+          setAnswerForIndex(clearIndex, null);
+          setAktifSoruIndex(Math.max(aktifSoruIndex - 1, 0), true);
+        }
+      });
+
+      renderHizliCevapSeridi();
+
+      /* ── Toplu Seçim ─────────────────────────────────────── */
+      elSelectAll.addEventListener("change", function () {
+        var checks = elGalleryCards.querySelectorAll(".aks-card-check");
+        checks.forEach(function (c) { c.checked = elSelectAll.checked; });
+        updateBulkButtons();
+      });
+
+      function syncSelectAll() {
+        var checks   = Array.prototype.slice.call(elGalleryCards.querySelectorAll(".aks-card-check"));
+        var checked  = checks.filter(function (c) { return c.checked; }).length;
+        elSelectAll.checked       = checks.length > 0 && checked === checks.length;
+        elSelectAll.indeterminate = checked > 0 && checked < checks.length;
+      }
+
+      function updateBulkButtons() {
+        var checked = elGalleryCards.querySelectorAll(".aks-card-check:checked").length;
+        var total = elGalleryCards.querySelectorAll("[data-item-id]").length;
+        elBtnDelSel.disabled  = checked === 0;
+        elBtnSaveSel.disabled = total === 0;
+        if (elBtnReceteBulk) elBtnReceteBulk.disabled = total === 0;
+      }
+
+      elBtnDelSel.addEventListener("click", function () {
+        var cards = Array.prototype.slice.call(elGalleryCards.querySelectorAll(".aks-card-check:checked"));
+        cards.forEach(function (chk) {
+          var card = chk.closest("[data-item-id]");
+          if (card) {
+            var id = parseInt(card.getAttribute("data-item-id"), 10);
+            croppedItems = croppedItems.filter(function (x) { return x.id !== id; });
+            card.parentNode.removeChild(card);
+          }
+        });
+        updateGalleryUI();
+        showToast(cards.length + " soru silindi");
+      });
+
+      elBtnSaveSel.addEventListener("click", function () {
+        var cards = Array.prototype.slice.call(elGalleryCards.querySelectorAll(".aks-card-check:checked"));
+        var selectedCount = cards.length;
+        if (cards.length === 0) {
+          cards = Array.prototype.slice.call(elGalleryCards.querySelectorAll("[data-item-id]"));
+        } else {
+          cards = cards.map(function (chk) { return chk.closest("[data-item-id]"); }).filter(Boolean);
+        }
+        if (cards.length === 0) { showToast("Kaydedilecek soru bulunamadı"); return; }
+
+        var rawItems = [];
+        cards.forEach(function (card) {
+          if (!card) return;
+          var id = parseInt(card.getAttribute("data-item-id"), 10);
+          var found = croppedItems.find(function (x) { return x.id === id; });
+          if (found) rawItems.push(found);
+        });
+        if (rawItems.length === 0) { showToast("Kaydedilecek soru bulunamadı"); return; }
+
+        var toSave = buildPoolQuestionObjects(rawItems);
+        if (!persistPoolQuestions(toSave)) return;
+        var savedN = selectedCount > 0 ? selectedCount : toSave.length;
+        showToast(savedN + " soru başarıyla Soru Havuzuna kaydedildi!", "success");
+        /* İşaretleri kaldır */
+        elGalleryCards.querySelectorAll(".aks-card-check:checked").forEach(function (chk) { chk.checked = false; });
+        syncSelectAll();
+        updateBulkButtons();
+      });
+
+      if (elBtnReceteBulk) {
+        elBtnReceteBulk.addEventListener("click", function () {
+          var ids = getGalleryTargetItemIds();
+          if (ids.length === 0) {
+            showToast("Reçeteye eklenecek soru bulunamadı", "warning");
+            return;
+          }
+          openHataKaynagiModalForIds(ids);
+        });
+      }
+
+      if (elHkBackdrop) elHkBackdrop.addEventListener("click", closeHataKaynagiModal);
+      if (elHkCloseX) elHkCloseX.addEventListener("click", closeHataKaynagiModal);
+      if (elHkCancel) elHkCancel.addEventListener("click", closeHataKaynagiModal);
+      if (elHkSave) {
+        elHkSave.addEventListener("click", function () {
+          var nPending = hkPendingIds.length;
+          if (nPending === 0) return;
+          var chosen = "";
+          try {
+            var checked = document.querySelector('input[name="aks-hk-src"]:checked');
+            chosen = checked ? String(checked.value || "").trim() : "";
+          } catch (e) {}
+          if (!chosen) {
+            showToast("Lütfen hata kaynağı seçin", "warning");
+            return;
+          }
+
+          var rawItems = itemsFromIds(hkPendingIds);
+          if (!rawItems.length) {
+            closeHataKaynagiModal();
+            showToast("Kaydedilecek soru bulunamadı", "warning");
+            return;
+          }
+
+          var toSave = buildPoolQuestionObjects(rawItems);
+          toSave.forEach(function (q) { q.hataKaynagi = chosen; });
+          if (!persistHataliPoolQuestions(toSave)) return;
+          closeHataKaynagiModal();
+          var nSaved = toSave.length;
+          showToast(
+            (nSaved === 1 ? "1 soru" : nSaved + " soru") + " başarıyla Reçete Havuzuna kaydedildi!",
+            "success"
+          );
+        });
+      }
+
+      /* ══════════════════════════════════════════════════════
+         OTONOM TARAMA ENGİNİ
+         Aşama 1: PDF sayfasını offscreen canvas'a render et
+         Aşama 2: Seçili tek/çift sütun düzenine göre canvas'ı böl
+         Aşama 3: Horizontal projection ile koyu piksel yoğunluğunu tara
+         Aşama 4: Uzun beyaz boşlukları soru sınırı sayıp kırp
+      ══════════════════════════════════════════════════════ */
+
+      /*
+       * ══════════════════════════════════════════════════════════
+       * PİKSEL ANALİZİ SABİTLERİ
+       * ══════════════════════════════════════════════════════════
+       *
+       * Eski text-layer/regex motoru yerine canvas pikselleri taranır.
+       * Eşikler render ölçeği (cropScale) ile fonksiyon içinde büyütülür.
+       */
+
+      /**
+       * Belirtilen sayfayı RAM'e render eder (görünür canvas'a dokunmaz).
+       * @param {number} pageNum
+       * @param {number} scale
+       * @returns {Promise<{canvas, viewport, pdfPage}>}
+       */
+      async function renderPageToCanvas(pageNum, scale) {
+        /*
+         * Kırpma kalitesi için 2× boost uygula (max 3.0 — RAM koruması).
+         * viewport bu ölçekte döner; koordinat dönüşümleri de bu ölçeği kullanır.
+         */
+        var cropScale = Math.min(scale * 2, 3.0);
+        var pdfPage   = await pdfDoc.getPage(pageNum);
+        var viewport  = pdfPage.getViewport({ scale: cropScale });
+        var offCanvas    = document.createElement("canvas");
+        offCanvas.width  = Math.floor(viewport.width);
+        offCanvas.height = Math.floor(viewport.height);
+        var offCtx = offCanvas.getContext("2d");
+        offCtx.imageSmoothingEnabled = true;
+        offCtx.imageSmoothingQuality = "high";
+        await pdfPage.render({ canvasContext: offCtx, viewport: viewport }).promise;
+        return { canvas: offCanvas, viewport: viewport, pdfPage: pdfPage, cropScale: cropScale };
+      }
+
+      /**
+       * Geçici canvas'ı ve PDF sayfasını bellekten düşürür.
+       * @param {{canvas, pdfPage}} ref
+       */
+      function cleanupPageRef(ref) {
+        try { ref.pdfPage.cleanup(); } catch (e) {}
+        /* Canvas boyutunu sıfırlamak GC'nin nesneyi hemen toplamasını sağlar */
+        ref.canvas.width  = 0;
+        ref.canvas.height = 0;
+      }
+
+      /* ── delay yardımcısı ────────────────────────────────── */
+      function delay(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+
+      function getPixelScanColumns(pageW, cs) {
+        var gutter = Math.max(20, Math.round(28 * cs));
+        var mid = Math.floor(pageW / 2);
+        if (window.pdfColumnMode === "double") {
+          return [
+            { label: "sol", x0: 0, width: Math.max(1, mid - Math.floor(gutter / 2)) },
+            { label: "sag", x0: Math.min(pageW - 1, mid + Math.ceil(gutter / 2)), width: Math.max(1, pageW - (mid + Math.ceil(gutter / 2))) },
+          ];
+        }
+        return [{ label: "", x0: 0, width: pageW }];
+      }
+
+      function findQuestionBoxesByPixels(ctx, col, pageH, cs) {
+        var imageData = ctx.getImageData(col.x0, 0, col.width, pageH);
+        var data = imageData.data;
+        var xStep = 2;
+        var sampledPerRow = Math.max(1, Math.ceil(col.width / xStep));
+        var darkThreshold = Math.max(4, Math.floor(sampledPerRow * 0.015));
+        var blankRunLimit = Math.max(40, Math.round(40 * cs));
+        var padY = Math.round(15 * cs);
+        var minBoxH = Math.round(60 * cs);
+        var scanTop = Math.round(pageH * 0.08);
+        var scanBottom = Math.round(pageH * 0.96);
+        var boxes = [];
+        var contentStart = null;
+        var lastInkY = null;
+        var blankRun = 0;
+
+        function rowHasInk(y) {
+          var dark = 0;
+          var rowOffset = y * col.width * 4;
+          for (var x = 0; x < col.width; x += xStep) {
+            var idx = rowOffset + x * 4;
+            var a = data[idx + 3];
+            if (a < 24) continue;
+            var r = data[idx];
+            var g = data[idx + 1];
+            var b = data[idx + 2];
+            var lum = (r * 0.299) + (g * 0.587) + (b * 0.114);
+            if (lum < 205) {
+              dark++;
+              if (dark > darkThreshold) return true;
+            }
+          }
+          return false;
+        }
+
+        function pushBox(y1, y2) {
+          var top = Math.max(0, y1 - padY);
+          var bottom = Math.min(pageH, y2 + padY);
+          if (bottom - top >= minBoxH) boxes.push({ y1: top, y2: bottom });
+        }
+
+        for (var y = scanTop; y < scanBottom; y++) {
+          if (rowHasInk(y)) {
+            if (contentStart === null) contentStart = y;
+            lastInkY = y;
+            blankRun = 0;
+          } else if (contentStart !== null) {
+            blankRun++;
+            if (blankRun >= blankRunLimit) {
+              pushBox(contentStart, lastInkY || y);
+              contentStart = null;
+              lastInkY = null;
+              blankRun = 0;
+            }
+          }
+        }
+
+        if (contentStart !== null && lastInkY !== null) {
+          pushBox(contentStart, lastInkY);
+        }
+
+        return boxes;
+      }
+
+      /* ── Tarama Butonu UI ────────────────────────────────── */
+      function setAutoScanningUI(scanning) {
+        if (!elBtnAuto) return;
+        if (scanning) {
+          elBtnAuto.disabled = true;
+          elBtnAuto.classList.add("scanning");
+          if (elAutoIconIdle) elAutoIconIdle.classList.add("hidden");
+          if (elAutoIconSpin) elAutoIconSpin.classList.remove("hidden");
+          if (elAutoLabel)    elAutoLabel.textContent = "Taranıyor…";
+        } else {
+          elBtnAuto.disabled = false;
+          elBtnAuto.classList.remove("scanning");
+          if (elAutoIconIdle) elAutoIconIdle.classList.remove("hidden");
+          if (elAutoIconSpin) elAutoIconSpin.classList.add("hidden");
+          if (elAutoLabel)    elAutoLabel.textContent = "Sayfayı Otonom Tara";
+        }
+      }
+
+      function setScanBadge(text) {
+        if (!elScanBadge) return;
+        if (text) {
+          elScanBadgeText.textContent = text;
+          elScanBadge.classList.add("visible");
+        } else {
+          elScanBadge.classList.remove("visible");
+        }
+      }
+
+      /* ── Tarama çizgilerini overlay'e çiz ───────────────── */
+      /**
+       * @param {Array<{y:number, label:string}>} lines
+       * Overlay canvas'a her soru için renkli yatay çizgi + etiket çizer.
+       * Her çizgi 120ms arayla belirir (görsel geri bildirim).
+       */
+      async function showScanLines(lines) {
+        for (var i = 0; i < lines.length; i++) {
+          var ln = lines[i];
+
+          /* Çizgi */
+          ovCtx.save();
+          ovCtx.globalAlpha = 0.82;
+          ovCtx.strokeStyle = "#6366f1";
+          ovCtx.lineWidth   = 1.5;
+          ovCtx.setLineDash([5, 3]);
+          ovCtx.beginPath();
+          ovCtx.moveTo(0, ln.y);
+          ovCtx.lineTo(elOverlay.width, ln.y);
+          ovCtx.stroke();
+          ovCtx.setLineDash([]);
+
+          /* Etiket baloncuğu */
+          var label   = ln.label || ("Soru " + (i + 1));
+          var padding = 4;
+          ovCtx.font  = "bold 10px Inter,sans-serif";
+          var tw      = ovCtx.measureText(label).width;
+          var bx      = 10, by = ln.y - 18;
+          ovCtx.globalAlpha = 0.88;
+          ovCtx.fillStyle   = "#6366f1";
+          ovCtx.beginPath();
+          ovCtx.roundRect
+            ? ovCtx.roundRect(bx - padding, by - padding, tw + padding * 2, 18, 4)
+            : ovCtx.rect(bx - padding, by - padding, tw + padding * 2, 18);
+          ovCtx.fill();
+          ovCtx.globalAlpha = 1;
+          ovCtx.fillStyle   = "#fff";
+          ovCtx.fillText(label, bx, by + 9);
+          ovCtx.restore();
+
+          setScanBadge("Tarandı: " + (i + 1) + " / " + lines.length + " soru");
+          await delay(110);
+        }
+        /* Kısa bekleme — kullanıcı çizgileri görsün */
+        await delay(350);
+      }
+
+      /* ══════════════════════════════════════════════════════════
+         OTONOM KIRPMA MOTORU — Canvas Pixel Analysis
+         ──────────────────────────────────────────────────────
+         Çözüm:
+           1. Tek/çift sütun moduna göre canvas bölgelerini belirle
+           2. Her sütunda satır satır koyu piksel yoğunluğu ölç
+           3. 25-30px ardışık beyaz boşluğu soru sınırı kabul et
+           4. 15px güvenlik payı ve 50px minimum yükseklik filtresi uygula
+         ══════════════════════════════════════════════════════════ */
+      async function autoCropQuestions() {
+        if (!pdfDoc) { showToast("Önce bir PDF yükleyin", "warning"); return; }
+
+        /* ── Ders/Konu doğrulaması ── */
+        if (!validateTag()) return;
+
+        var totalPages = pdfDoc.numPages;
+        var totalFound = 0;
+        var tag        = getTag();
+        scanAborted    = false;
+
+        setAutoScanningUI(true);
+        showProgressBar(true);
+        updateProgressBar(0, totalPages, 0);
+        ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+        elStatus.textContent = "PDF pikselleri analiz ediliyor… (" + totalPages + " sayfa)";
+
+        try {
+          for (var pageNum = 1; pageNum <= totalPages; pageNum++) {
+            if (scanAborted) break;
+            updateProgressBar(pageNum, totalPages, totalFound);
+            setScanBadge("Sayfa " + pageNum + " / " + totalPages);
+
+            var ref;
+            try { ref = await renderPageToCanvas(pageNum, pdfScale); }
+            catch (e) { console.warn("[autoCrop] render hatası:", pageNum, e); continue; }
+            var offCanvas = ref.canvas;
+            var pageW = offCanvas.width;
+            var pageH = offCanvas.height;
+            var cs = ref.cropScale || 1;
+            var offCtx = offCanvas.getContext("2d");
+            var columns = getPixelScanColumns(pageW, cs);
+
+            for (var ci = 0; ci < columns.length; ci++) {
+              if (scanAborted) break;
+              var col = columns[ci];
+              var boxes = [];
+              try { boxes = findQuestionBoxesByPixels(offCtx, col, pageH, cs); }
+              catch (e) { console.warn("[autoCrop pixels] sütun analiz hatası:", pageNum, col.label, e); boxes = []; }
+
+              for (var i = 0; i < boxes.length; i++) {
+                if (scanAborted) break;
+                var yStart = boxes[i].y1;
+                var yEnd = boxes[i].y2;
+                var sliceH = yEnd - yStart;
+                if (sliceH < Math.round(60 * cs)) continue;
+
+                var cropCanvas    = document.createElement("canvas");
+                cropCanvas.width  = col.width;
+                cropCanvas.height = sliceH;
+                var cropCtx = cropCanvas.getContext("2d");
+                cropCtx.imageSmoothingEnabled = true;
+                cropCtx.imageSmoothingQuality = "high";
+                cropCtx.drawImage(
+                  offCanvas,
+                  col.x0, yStart, col.width, sliceH,
+                  0,      0,      col.width, sliceH
+                );
+
+                var dataUrl = cropCanvas.toDataURL("image/png", 1.0);
+                cropCanvas.width = 0; cropCanvas.height = 0; /* GC */
+                var qNo = String(totalFound + 1);
+
+                var item = {
+                  id:      nextId++,
+                  dataUrl: dataUrl,
+                  ders:    tag.ders,
+                  konu:    tag.konu,
+                  kavram:  tag.kavram,
+                  page:    pageNum,
+                  auto:    true,
+                  col:     col.label,
+                  qNumber: qNo,
+                  soruNo:  "Soru " + qNo,
+                };
+                croppedItems.push(item);
+
+                await delay(50);
+                addCardToGallery(item, true);
+                totalFound++;
+                updateGalleryUI();
+                updateProgressBar(pageNum, totalPages, totalFound);
+              } /* end question loop */
+            } /* end column loop */
+
+            /* ── RAM temizliği ── */
+            cleanupPageRef(ref);
+            await delay(8); /* tarayıcıya nefes aldır */
+          }
+
+          /* ── Tamamlandı / Durduruldu ── */
+          finishProgressBar(totalFound, scanAborted);
+          setScanBadge(null);
+          ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+          elStatus.textContent = (scanAborted ? "Tarama durduruldu" : "✓ Tüm PDF tarandı") +
+            " — " + totalFound + " soru, " + totalPages + " sayfa";
+          showToast(scanAborted
+            ? totalFound + " soru bulundu (durduruldu)"
+            : totalFound + " soru tüm PDF'den kırpıldı ✓");
+
+        } catch (err) {
+          finishProgressBar(totalFound, true);
+          setScanBadge(null);
+          ovCtx.clearRect(0, 0, elOverlay.width, elOverlay.height);
+          elStatus.textContent = "Otonom tarama hatası: " + err.message;
+          showToast("Hata: " + err.message);
+          console.error("[autoCrop v3]", err);
+        } finally {
+          setAutoScanningUI(false);
+          scanAborted = false;
+        }
+      }
+
+      /* Butonu bağla */
+      if (elBtnAuto) {
+        elBtnAuto.addEventListener("click", function () {
+          autoCropQuestions();
+        });
+      }
+
+      /* ── Yardımcılar ─────────────────────────────────────── */
+      function escHtml(s) {
+        var d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      /* Toast iç elemanları – lazy (DOMContentLoaded'a gerek yok) */
+      function getToastInner() { return document.getElementById("aks-toast-inner"); }
+      function getToastIcon()  { return document.getElementById("aks-toast-icon");  }
+
+      /* ──────────────────────────────────────────────────────────
+         showToast(msg, type?)
+           type: "success" (varsayılan) | "error" | "warning"
+         Tip renkleri:
+           success → bg-slate-900, emerald ikon
+           error   → bg-red-600,   uyarı ünlem ikonu
+           warning → bg-amber-600, uyarı ünlem ikonu
+      ────────────────────────────────────────────────────────── */
+      var toastTimer;
+      function showToast(msg, type) {
+        if (!elToast || !elToastText) {
+          try {
+            window.alert(msg);
+          } catch (e0) {}
+          return;
+        }
+        elToastText.textContent = msg;
+
+        /* Arka plan + ikon rengini tipe göre ayarla */
+        var BG   = { success: "#059669", error: "#dc2626", warning: "#d97706" };
+        var ICON = {
+          success: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+          error:   "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
+          warning: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+        };
+        var COLOR = { success: "white", error: "white", warning: "white" };
+        var t = (type === "error" || type === "warning") ? type : "success";
+
+        var inner = getToastInner();
+        var icon  = getToastIcon();
+        if (inner) inner.style.background = BG[t];
+        if (icon) {
+          icon.style.color = COLOR[t];
+          var p = icon.querySelector("path");
+          if (p) p.setAttribute("d", ICON[t]);
+        }
+
+        elToast.style.opacity = "1";
+        elToast.style.transform = "translateX(0) translateY(0)";
+        elToast.style.pointerEvents = "auto";
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          if (!elToast) return;
+          elToast.style.opacity = "0";
+          elToast.style.transform = "translateX(20px) translateY(0)";
+          elToast.style.pointerEvents = "none";
+        }, 3000);
+      }
+
+      /* ── Init ────────────────────────────────────────────── */
+      document.addEventListener("DOMContentLoaded", function () {
+        initMufredat();
+        applyZoom();
+      });
+
+      /* Eğer DOMContentLoaded zaten geçtiyse */
+      if (document.readyState !== "loading") {
+        initMufredat();
+        applyZoom();
+      }
+
+    })();
+    </script>
+  </body>
+</html>

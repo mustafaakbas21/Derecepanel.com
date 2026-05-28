@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Strateji Merkezi – Yeni Görüşme – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet" />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        important: "#tw-scope",
+        corePlugins: { preflight: false },
+        darkMode: ["selector", '[data-theme="dark"]'],
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"] },
+            colors: {
+              primary: { DEFAULT: "#8fa9c4", light: "#b4c9de", dark: "#6b849c" },
+              cream: { DEFAULT: "#faf7f2", light: "#fffefb", deep: "#f3ede4", border: "#e8dfd4" },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Bu sayfada yardımcı metinler — tema --text-muted çok açık kaldığında okunurluk */
+      #tw-scope {
+        --text-muted: #64748b;
+        --go-cream: #faf7f2;
+        --go-cream-deep: #f3ede4;
+        --go-cream-border: #e8dfd4;
+        --go-pastel-sage: #c5d9ce;
+        --go-pastel-blue: #c5d8eb;
+        --go-pastel-peach: #ecd9c8;
+        --go-pastel-text: #3d4f5f;
+        --btn-primary-bg: #a8bfd4;
+        --btn-primary-text: #2a3f52;
+      }
+      [data-theme="dark"] #tw-scope {
+        --text-muted: #94a3b8;
+      }
+
+      /* Görüşme gövdesi — öğrenci paneli alanı */
+      #tw-scope.go-meeting-panel {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+      }
+      [data-theme="dark"] #tw-scope.go-meeting-panel {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      /* Alt bilgi çubuğu — seçim gibi görünmesin, sabit kontrast */
+      #tw-scope .go-footer-desc {
+        color: rgb(71 85 105);
+        font-weight: 500;
+      }
+      [data-theme="dark"] #tw-scope .go-footer-desc {
+        color: rgb(203 213 225);
+      }
+      #tw-scope .go-footer-kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.625rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.2rem 0.45rem;
+        border-radius: 0.375rem;
+        background: rgb(250 247 242);
+        color: rgb(68 64 60);
+        border: 1px solid rgb(232 223 212);
+        white-space: nowrap;
+      }
+      [data-theme="dark"] #tw-scope .go-footer-kbd {
+        background: rgb(30 41 59);
+        color: rgb(248 250 252);
+        border-color: rgb(71 85 105);
+      }
+
+      #tw-scope .go-student-pick-hint {
+        color: rgb(51 65 85);
+      }
+      [data-theme="dark"] #tw-scope .go-student-pick-hint {
+        color: rgb(203 213 225);
+      }
+      #tw-scope .go-flow-callout {
+        background: var(--go-cream-deep);
+        border-color: var(--go-cream-border);
+      }
+      [data-theme="dark"] #tw-scope .go-flow-callout {
+        background: rgb(41 37 36);
+        border-color: rgb(87 83 78);
+      }
+      #tw-scope .go-flow-callout__title {
+        color: rgb(87 83 78);
+        font-weight: 800;
+      }
+      [data-theme="dark"] #tw-scope .go-flow-callout__title {
+        color: rgb(231 229 228);
+      }
+      #tw-scope .go-flow-callout__body {
+        color: rgb(51 65 85);
+      }
+      [data-theme="dark"] #tw-scope .go-flow-callout__body {
+        color: rgb(226 232 240);
+      }
+
+      #tw-scope .go-ogrenci-combo__popover {
+        border-radius: 0.5rem;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface, #fff);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      }
+      [data-theme="dark"] #tw-scope .go-ogrenci-combo__popover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      }
+      #tw-scope .go-ogrenci-opt {
+        cursor: pointer;
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-primary, #0f172a);
+        transition: background 0.12s;
+      }
+      #tw-scope .go-ogrenci-opt:hover,
+      #tw-scope .go-ogrenci-opt:focus {
+        outline: none;
+        background: color-mix(in srgb, var(--btn-primary-bg, #a8bfd4) 22%, var(--go-cream, #faf7f2));
+      }
+      #tw-scope .go-ogrenci-empty {
+        padding: 0.75rem 0.65rem;
+        font-size: 0.75rem;
+        color: var(--text-muted, #64748b);
+      }
+      #tw-scope .go-timer-ring {
+        --go-deg: 360deg;
+        background: conic-gradient(rgb(168 191 212) var(--go-deg), rgb(243 237 228) 0deg);
+        transition: background 0.35s ease;
+      }
+      [data-theme="dark"] #tw-scope .go-timer-ring {
+        background: conic-gradient(rgb(143 168 191) var(--go-deg), rgb(41 37 36) 0deg);
+      }
+      #tw-scope .go-timer-ring.go-timer--warn {
+        animation: go-timer-pulse 1.15s ease-in-out infinite;
+      }
+      #tw-scope .go-timer-ring.go-timer--done {
+        background: conic-gradient(rgb(239 68 68) var(--go-deg), rgb(226 232 240) 0deg);
+      }
+      /* Gömülü Konu / Soru MR — liste kaydırması */
+      #tw-scope .mr-shell--embed [data-mr-track-root] {
+        max-height: min(62vh, 560px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-right: 2px;
+      }
+      #tw-scope .mr-shell--embed .mr-control.card {
+        margin-bottom: 0.85rem;
+      }
+      @keyframes go-timer-pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(168, 191, 212, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 12px rgba(168, 191, 212, 0);
+        }
+      }
+      #tw-scope .go-notes {
+        min-height: 280px;
+      }
+      #tw-scope #session_notes.go-v2-session-notes {
+        min-height: 300px;
+        outline: none;
+      }
+      #tw-scope #session_notes.go-v2-session-notes:empty:before {
+        content: attr(data-placeholder);
+        color: #64748b;
+        pointer-events: none;
+      }
+      [data-theme="dark"] #tw-scope #session_notes.go-v2-session-notes:empty:before {
+        color: #94a3b8;
+      }
+      /* Sesli dikte — anlık metin (Google klavye benzeri) */
+      #tw-scope #session_notes .go-speech-interim {
+        margin-left: 2px;
+        padding-bottom: 1px;
+        border-bottom: 1px dashed rgba(37, 99, 235, 0.45);
+        color: #64748b;
+        font-style: italic;
+        caret-color: transparent;
+      }
+      [data-theme="dark"] #tw-scope #session_notes .go-speech-interim {
+        color: #94a3b8;
+        border-bottom-color: rgba(96, 165, 250, 0.45);
+      }
+      /* Sesli not — mikrofon + yan dalgalar */
+      #tw-scope .go-speech-mic-cluster {
+        position: relative;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 4px 6px 4px 10px;
+        border-radius: 9999px;
+        border: 1px solid transparent;
+        background: transparent;
+        transition:
+          border-color 0.28s ease,
+          box-shadow 0.28s ease,
+          background 0.28s ease;
+      }
+      #tw-scope .go-speech-mic-cluster.go-speech-mic-cluster--live {
+        border-color: color-mix(in srgb, rgb(244 63 94) 35%, var(--header-border, #e2e8f0));
+        background: color-mix(in srgb, rgb(244 63 94) 6%, var(--surface, #fff));
+        box-shadow:
+          0 0 0 1px color-mix(in srgb, rgb(244 63 94) 12%, transparent),
+          0 10px 28px -12px rgba(244, 63, 94, 0.35);
+      }
+      [data-theme="dark"] #tw-scope .go-speech-mic-cluster.go-speech-mic-cluster--live {
+        border-color: color-mix(in srgb, rgb(251 113 133) 45%, rgb(51 65 85));
+        background: color-mix(in srgb, rgb(244 63 94) 12%, rgb(15 23 42));
+        box-shadow:
+          0 0 0 1px color-mix(in srgb, rgb(251 113 133) 18%, transparent),
+          0 12px 32px -10px rgba(0, 0, 0, 0.45);
+      }
+      #tw-scope .go-speech-waves {
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        gap: 3px;
+        height: 26px;
+        min-width: 36px;
+        opacity: 0;
+        transform: scale(0.92);
+        transition:
+          opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+      }
+      #tw-scope .go-speech-waves.go-speech-waves--live {
+        opacity: 1;
+        transform: scale(1);
+      }
+      #tw-scope .go-speech-waves__bar {
+        width: 3px;
+        border-radius: 999px;
+        height: 6px;
+        align-self: flex-end;
+        background: linear-gradient(
+          180deg,
+          rgb(251 113 133) 0%,
+          rgb(244 63 94) 45%,
+          rgb(190 24 93) 100%
+        );
+        opacity: 0.45;
+        transform-origin: center bottom;
+        animation: none;
+      }
+      [data-theme="dark"] #tw-scope .go-speech-waves__bar {
+        background: linear-gradient(180deg, rgb(254 205 211) 0%, rgb(251 113 133) 50%, rgb(244 63 94) 100%);
+      }
+      #tw-scope .go-speech-waves--live .go-speech-waves__bar {
+        animation: go-speech-wave-bar 0.85s ease-in-out infinite;
+      }
+      #tw-scope .go-speech-waves--live .go-speech-waves__bar:nth-child(1) {
+        animation-delay: 0ms;
+      }
+      #tw-scope .go-speech-waves--live .go-speech-waves__bar:nth-child(2) {
+        animation-delay: 95ms;
+      }
+      #tw-scope .go-speech-waves--live .go-speech-waves__bar:nth-child(3) {
+        animation-delay: 190ms;
+      }
+      #tw-scope .go-speech-waves--live .go-speech-waves__bar:nth-child(4) {
+        animation-delay: 125ms;
+      }
+      #tw-scope .go-speech-waves--live .go-speech-waves__bar:nth-child(5) {
+        animation-delay: 60ms;
+      }
+      @keyframes go-speech-wave-bar {
+        0%,
+        100% {
+          transform: scaleY(0.35);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scaleY(1);
+          opacity: 1;
+        }
+      }
+      #tw-scope #start_speech_wrap {
+        position: relative;
+      }
+      #tw-scope #start_speech.go-v2-mic-btn {
+        position: relative;
+        overflow: visible;
+        border-width: 1px;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.28s ease,
+          border-color 0.28s ease,
+          background 0.28s ease,
+          color 0.2s ease;
+      }
+      #tw-scope #start_speech.go-v2-mic-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+      #tw-scope #start_speech.go-v2-mic-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      #tw-scope #start_speech.go-v2-mic-btn--live {
+        border-color: color-mix(in srgb, rgb(244 63 94) 55%, var(--header-border, #e2e8f0));
+        background: linear-gradient(
+          165deg,
+          color-mix(in srgb, rgb(254 242 242) 95%, var(--surface, #fff)) 0%,
+          color-mix(in srgb, rgb(251 113 133) 22%, var(--surface, #fff)) 100%
+        );
+        color: rgb(159 18 57);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.65),
+          0 8px 22px -8px rgba(244, 63, 94, 0.45);
+      }
+      [data-theme="dark"] #tw-scope #start_speech.go-v2-mic-btn--live {
+        border-color: color-mix(in srgb, rgb(251 113 133) 50%, rgb(71 85 105));
+        background: linear-gradient(
+          165deg,
+          color-mix(in srgb, rgb(136 19 55) 55%, rgb(15 23 42)) 0%,
+          color-mix(in srgb, rgb(190 24 93) 35%, rgb(30 41 59)) 100%
+        );
+        color: rgb(254 205 211);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          0 8px 26px -8px rgba(0, 0, 0, 0.5);
+      }
+      #tw-scope .go-v2-mic-btn__live-dot {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: rgb(239 68 68);
+        border: 2px solid var(--surface, #fff);
+        opacity: 0;
+        transform: scale(0.5);
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+      }
+      [data-theme="dark"] #tw-scope .go-v2-mic-btn__live-dot {
+        border-color: rgb(30 41 59);
+      }
+      #tw-scope #start_speech.go-v2-mic-btn--live .go-v2-mic-btn__live-dot {
+        opacity: 1;
+        transform: scale(1);
+        animation: go-v2-mic-live-dot 1.4s ease-in-out infinite;
+      }
+      @keyframes go-v2-mic-live-dot {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #tw-scope .go-speech-waves--live .go-speech-waves__bar {
+          animation: none;
+          opacity: 0.85;
+          transform: scaleY(0.72);
+        }
+        #tw-scope #start_speech.go-v2-mic-btn--live .go-v2-mic-btn__live-dot {
+          animation: none;
+        }
+      }
+      #tw-scope .go-notes::placeholder {
+        color: #64748b;
+        opacity: 1;
+      }
+      [data-theme="dark"] #tw-scope .go-notes::placeholder {
+        color: #94a3b8;
+      }
+      /* JS ile eklenen deneme satırları: Tailwind CDN #tw-scope dışı sınıfları üretmediği için sabit renk */
+      #tw-scope .go-trial-total-net {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e3a5f;
+      }
+      [data-theme="dark"] #tw-scope .go-trial-total-net {
+        color: #bae6fd;
+      }
+      /* Modal tablo hücresi (#tw-scope dışı; CDN bazı sınıfları üretmez) */
+      .go-modal-trials-net {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #e0e7ff;
+      }
+      #tw-scope .go-acc > summary {
+        list-style: none;
+      }
+      #tw-scope .go-acc > summary::-webkit-details-marker {
+        display: none;
+      }
+      /* Toast #tw-scope dışında — Tailwind bg-* burada işlemez; kontrast sabit CSS ile */
+      #go-toast {
+        position: fixed;
+        bottom: 96px;
+        left: 50%;
+        z-index: 10090;
+        transform: translateX(-50%);
+        max-width: min(420px, 92vw);
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #f8fafc;
+        background: #0f172a;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 14px 36px rgba(15, 23, 42, 0.35);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      #go-toast.go-toast--error {
+        background: #b91c1c;
+        border-color: rgba(254, 202, 202, 0.45);
+        color: #fff;
+      }
+      #go-toast.go-toast--success {
+        background: #0f172a;
+        border-color: rgba(148, 163, 184, 0.35);
+        color: #f8fafc;
+      }
+      #go-toast.go-toast--hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 12px);
+      }
+      #tw-scope #go-agenda-bar-host .transition-\[width\] {
+        transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /*
+       * Modallar #tw-scope DIŞINDA — Tailwind important:#tw-scope yüzünden .hidden/.flex işe yaramazdı.
+       * Görünürlük yalnızca bu sınıflarla kontrol edilir (sayfa altında yığılma önlenir).
+       */
+      .go-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10070;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+      .go-modal-overlay.go-modal-open {
+        display: flex !important;
+      }
+      #go-modal-summary.go-modal-overlay {
+        z-index: 10080;
+        background: rgba(28, 25, 23, 0.32);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #go-modal-summary .go-modal-panel {
+        max-width: min(38rem, 100%);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #fffefb 0%, #faf7f2 100%);
+        color: #44403c;
+        border: 1px solid #e8dfd4;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.85) inset,
+          0 28px 56px -16px rgba(68, 64, 60, 0.2),
+          0 12px 24px -10px rgba(120, 113, 108, 0.14);
+      }
+      #go-modal-summary .go-modal-panel__head {
+        padding: 1.125rem 1.5rem;
+        border-bottom: 1px solid #ebe4d8;
+        background: #fffefb;
+      }
+      #go-modal-summary .go-modal-panel__body {
+        padding: 1.25rem 1.5rem 1.5rem;
+        background: #faf7f2;
+      }
+      #go-modal-summary .go-modal-summary__title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #292524;
+      }
+      #go-modal-summary .go-modal-summary__sub {
+        margin: 0.2rem 0 0;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #a8a29e;
+      }
+      #go-modal-summary .go-modal-close {
+        border: 1px solid #e8dfd4;
+        background: #f5f0e8;
+        color: #57534e;
+        border-radius: 0.625rem;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+      #go-modal-summary .go-modal-close:hover {
+        background: #ede4d8;
+        border-color: #d6cec2;
+        color: #292524;
+      }
+      #go-modal-summary #go-summary-text {
+        width: 100%;
+        min-height: 15rem;
+        resize: vertical;
+        border-radius: 0.75rem;
+        border: 1px solid #e8dfd4;
+        background: #fffefb;
+        padding: 1rem 1.125rem;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.8125rem;
+        line-height: 1.65;
+        color: #44403c;
+        box-shadow: inset 0 1px 2px rgba(120, 113, 108, 0.07);
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      #go-modal-summary #go-summary-text:focus {
+        border-color: #c5d8eb;
+        box-shadow:
+          inset 0 1px 2px rgba(120, 113, 108, 0.06),
+          0 0 0 3px rgba(168, 191, 212, 0.28);
+      }
+      #go-modal-summary .go-summary-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #ebe4d8;
+      }
+      @media (min-width: 640px) {
+        #go-modal-summary .go-summary-actions {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        #go-modal-summary .go-summary-actions > button {
+          flex: 1 1 0;
+          min-width: 7.5rem;
+        }
+      }
+      #go-modal-summary .go-summary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1.25;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+      }
+      #go-modal-summary .go-summary-btn--ghost {
+        border: 1px solid #e8dfd4;
+        background: #fffefb;
+        color: #57534e;
+        box-shadow: 0 1px 2px rgba(120, 113, 108, 0.06);
+      }
+      #go-modal-summary .go-summary-btn--ghost:hover {
+        background: #f5f0e8;
+        border-color: #d6cec2;
+        color: #292524;
+      }
+      #go-modal-summary .go-summary-btn--primary {
+        border: 1px solid #bfdbfe;
+        background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+        color: #1e3a5f;
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.08);
+      }
+      #go-modal-summary .go-summary-btn--primary:hover {
+        background: linear-gradient(135deg, #c7ddfc 0%, #c7d2fe 100%);
+        border-color: #93c5fd;
+      }
+      #go-modal-summary .go-summary-btn--neutral {
+        border: 1px solid #d6cec2;
+        background: linear-gradient(135deg, #f5f0e8 0%, #ede4d8 100%);
+        color: #44403c;
+        box-shadow: 0 1px 2px rgba(120, 113, 108, 0.06);
+      }
+      #go-modal-summary .go-summary-btn--neutral:hover {
+        background: linear-gradient(135deg, #ede4d8 0%, #e6ddd0 100%);
+        border-color: #c9bfb3;
+        color: #292524;
+      }
+      [data-theme="dark"] #go-modal-summary.go-modal-overlay {
+        background: rgba(0, 0, 0, 0.55);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-panel {
+        background: linear-gradient(180deg, rgb(41 37 36) 0%, rgb(28 25 23) 100%);
+        border-color: rgb(87 83 78);
+        color: rgb(231 229 228);
+        box-shadow: 0 28px 56px -16px rgba(0, 0, 0, 0.45);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-panel__head {
+        background: rgb(41 37 36);
+        border-bottom-color: rgb(87 83 78);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-panel__body {
+        background: rgb(28 25 23);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-summary__title {
+        color: rgb(250 250 249);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-summary__sub {
+        color: rgb(168 162 158);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-close {
+        background: rgb(68 64 60);
+        border-color: rgb(87 83 78);
+        color: rgb(231 229 228);
+      }
+      [data-theme="dark"] #go-modal-summary .go-modal-close:hover {
+        background: rgb(87 83 78);
+        color: #fff;
+      }
+      [data-theme="dark"] #go-modal-summary #go-summary-text {
+        background: rgb(41 37 36);
+        border-color: rgb(87 83 78);
+        color: rgb(231 229 228);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+      }
+      [data-theme="dark"] #go-modal-summary .go-summary-actions {
+        border-top-color: rgb(87 83 78);
+      }
+      [data-theme="dark"] #go-modal-summary .go-summary-btn--ghost {
+        background: rgb(41 37 36);
+        border-color: rgb(87 83 78);
+        color: rgb(231 229 228);
+      }
+      [data-theme="dark"] #go-modal-summary .go-summary-btn--ghost:hover {
+        background: rgb(68 64 60);
+      }
+      html.go-modal-scroll-lock,
+      html.go-modal-scroll-lock body {
+        overflow: hidden;
+      }
+      .go-modal-panel {
+        position: relative;
+        width: 100%;
+        max-height: min(90vh, 900px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0.75rem;
+        background: #0f172a;
+        color: #f1f5f9;
+        border: 1px solid rgba(51, 65, 85, 0.95);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+      }
+      .go-modal-panel--sm {
+        max-width: 32rem;
+      }
+      .go-modal-panel--lg {
+        max-width: 48rem;
+      }
+      .go-modal-panel__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.9);
+        flex-shrink: 0;
+      }
+      .go-modal-panel__body {
+        overflow-y: auto;
+        flex: 1;
+        padding: 1.25rem;
+      }
+      .go-modal-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(71, 85, 105, 0.9);
+        background: rgba(30, 41, 59, 0.85);
+        color: #e2e8f0;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+      .go-modal-close:hover {
+        background: rgba(51, 65, 85, 0.95);
+        color: #fff;
+      }
+      /* Ders neti rozetleri — modal (#tw-scope dışı) dahil yüksek kontrast */
+      .go-subject-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 0.375rem;
+        padding: 0.2rem 0.45rem;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.25;
+        border: 1px solid rgba(100, 116, 139, 0.38);
+        background: #f1f5f9;
+        color: #334155;
+      }
+      #tw-scope .go-subject-badge {
+        border-color: rgba(100, 116, 139, 0.42);
+        background: #f1f5f9;
+        color: #334155;
+      }
+      [data-theme="dark"] #tw-scope .go-subject-badge {
+        border-color: rgba(148, 163, 184, 0.5);
+        background: rgba(30, 41, 59, 0.92);
+        color: #e2e8f0;
+      }
+      .go-modal-panel .go-subject-badge {
+        border-color: rgba(148, 163, 184, 0.55);
+        background: rgba(51, 65, 85, 0.95);
+        color: #f8fafc;
+      }
+
+      /* Sayfa altı — öğrenci paneli / footer sıkışmasın */
+      #panel-shell.app > main.main {
+        padding-bottom: 2.5rem;
+      }
+
+      /* Sidebar — mor vurgu yerine slate / açık mavi (yalnızca bu sayfa) */
+      #panel-shell.app > aside.sidebar .nav-item.nav-item--active,
+      #panel-shell.app > aside.sidebar .nav-group--open > .nav-group__trigger {
+        background: rgba(148, 163, 184, 0.16) !important;
+        color: #f8fafc !important;
+        box-shadow: inset 3px 0 0 #94a3b8 !important;
+      }
+      #panel-shell.app > aside.sidebar .nav-sub.nav-sub--active {
+        background: rgba(51, 65, 85, 0.72) !important;
+        color: #f1f5f9 !important;
+        box-shadow: inset 3px 0 0 #cbd5e1 !important;
+      }
+      #panel-shell.app > aside.sidebar .nav-sub.nav-sub--active .nav-sub__icon {
+        color: #e2e8f0 !important;
+      }
+
+      /* Görüntülü görüşme — pastel mavi (beyaz zemin) */
+      #go-btn-video-start:not(.go-btn-video--live) {
+        background-color: #dbeafe !important;
+        border-color: #bfdbfe !important;
+        color: #1e3a5f !important;
+      }
+      #go-btn-video-start:not(.go-btn-video--live):hover:not(:disabled) {
+        background-color: #c7ddfc !important;
+        border-color: #93c5fd !important;
+      }
+      [data-theme="dark"] #go-btn-video-start:not(.go-btn-video--live) {
+        background-color: #334155 !important;
+        border-color: #64748b !important;
+        color: #e2e8f0 !important;
+      }
+      [data-theme="dark"] #go-btn-video-start:not(.go-btn-video--live):hover:not(:disabled) {
+        background-color: #475569 !important;
+        border-color: #94a3b8 !important;
+      }
+
+      /* Ana aksiyon — pastel (Tailwind sınıfı yedek) */
+      #tw-scope .go-btn-pastel-primary {
+        background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+        border: 1px solid #bfdbfe;
+        color: #1e3a5f;
+        box-shadow: 0 1px 2px rgba(30, 41, 59, 0.06);
+      }
+      #tw-scope .go-btn-pastel-primary:hover:not(:disabled) {
+        background: linear-gradient(135deg, #c7ddfc 0%, #c7d2fe 100%);
+        border-color: #93c5fd;
+      }
+      #tw-scope .go-btn-pastel-save {
+        background: linear-gradient(135deg, #f5ebe0 0%, #ede4d8 100%);
+        border: 1px solid #e8dfd4;
+        color: #44403c;
+        box-shadow: 0 1px 2px rgba(30, 41, 59, 0.06);
+      }
+      #tw-scope .go-btn-pastel-save:hover:not(:disabled) {
+        background: linear-gradient(135deg, #ede4d8 0%, #e6ddd0 100%);
+        border-color: #d6cec2;
+      }
+      #tw-scope .go-student-card {
+        background: linear-gradient(135deg, #fffefb 0%, #faf7f2 45%, #f5f0e8 100%);
+        border-color: #e8dfd4;
+      }
+      [data-theme="dark"] #tw-scope .go-student-card {
+        background: linear-gradient(135deg, rgb(41 37 36) 0%, rgb(28 25 23) 100%);
+        border-color: rgb(87 83 78);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="panel-shell" class="app">
+      <aside class="sidebar" aria-label="Ana menü">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+          </div>
+          <span class="sidebar__title">Derecepanel</span>
+        </div>
+        <nav class="sidebar__nav">
+          <a href="../koc-paneli.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path d="M9 22V12h6v10" /></svg>
+            Dashboard
+          </a>
+          <a href="ogrencilerim.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+            Öğrencilerim
+          </a>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-gorusme-sub-go" id="nav-gorusme-btn-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Görüşme Odası
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-gorusme-sub-go" role="group" aria-label="Görüşme Odası alt menü">
+              <a href="gorusme-odasi.html" class="nav-sub nav-sub--active">Yeni Görüşme</a>
+              <a href="gorusme-arsivi.html" class="nav-sub">Görüşme Arşivi</a>
+            </div>
+          </div>
+          <a href="koclar.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16 3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01-.665-6.479L12 14z" /></svg>
+            Koçlar
+          </a>
+          <a href="randevular.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            Randevular
+          </a>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-yks-sub-go" id="nav-yks-btn-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 14v7M9 18h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              YKS Simülasyon
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-yks-sub-go" role="group" aria-label="YKS Simülasyon alt menü">
+              <a href="tercih-sihirbazi.html" class="nav-sub">Tercih Sihirbazı</a>
+              <a href="yks-konulari.html" class="nav-sub">YKS Konuları</a>
+              <a href="net-sihirbazi.html" class="nav-sub">Net Sihirbazı</a>
+              <a href="puan-hesaplama.html" class="nav-sub">Puan Hesaplama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-den-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke-linecap="round" stroke-linejoin="round" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              Denemeler
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-den-sub-go" role="group" aria-label="Denemeler alt menü">
+              <a href="basit-deneme-sonuclari.html" class="nav-sub">Sonuç Merkezi</a>
+              <a href="analiz-merkezi.html" class="nav-sub nav-sub--analiz-beta"><span class="nav-analiz-beta"><span class="nav-analiz-beta__row1">Analiz ve Raporlama</span><span class="nav-analiz-beta__row2"><span class="nav-analiz-beta__suffix">Merkezi</span><span class="nav-analiz-beta__pill">BETA</span></span></span></a>
+              <a href="denemeler-global-takvim.html" class="nav-sub">Global Deneme Takvimi</a>
+              <a href="kurum-deneme-takvimi.html" class="nav-sub">Kurum Deneme Takvimi</a>
+              <a href="deneme-sonuclari-yukleme.html" class="nav-sub">Deneme Sonuçları Yükleme</a>
+              <a href="optik-okuyucu.html" class="nav-sub">Optik Okuyucu</a>
+              <a href="okutulan-denemeler.html" class="nav-sub">Okutulan Denemeler</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-wp-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              Haftalık Program
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-wp-sub-go" role="group" aria-label="Haftalık Program alt menü">
+              <a href="haftalik-program-olusturucu.html" class="nav-sub">Haftalık Program Oluşturucu</a>
+              <a href="kayitli-haftalik-programlar.html" class="nav-sub">Kayıtlı Haftalık Programlar</a>
+              <a href="haftalik-program.html" class="nav-sub">Öğrenciye program gönder</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-mr-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+              MR
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-mr-sub-go" role="group" aria-label="MR alt menü">
+              <a href="konu-mr.html" class="nav-sub">Konu MR</a>
+              <a href="soru-mr.html" class="nav-sub">Soru MR</a>
+              <a href="deneme-mr.html" class="nav-sub">Deneme MR</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-kitap-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
+              Kitap Kütüphanesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-kitap-sub-go" role="group" aria-label="Kitap Kütüphanesi alt menü">
+              <a href="kitaplar.html" class="nav-sub">Kitap Listesi &amp; Kayıt</a>
+              <a href="kaynak-atama.html" class="nav-sub">Kaynak Atama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tm-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              Test Maker
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tm-sub-go" role="group" aria-label="Test Maker alt menü">
+              <a href="test-olusturucu.html" class="nav-sub">Test Oluşturucu</a>
+              <a href="otomatik-soru-kirpici.html" class="nav-sub">Otomatik Soru Kırpıcı</a>
+              <a href="soru-havuzu.html" class="nav-sub">Soru Havuzu</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-hr-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 2H6a2 2 0 0 1-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+                <path d="M14 2v4h4" />
+                <path d="M12 11v6" />
+                <path d="M9 14h6" />
+              </svg>
+              Hata Reçetesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-hr-sub-go" role="group" aria-label="Hata Reçetesi alt menü">
+              <a href="recete-yaz.html" class="nav-sub"><span>Reçete Yaz</span></a>
+              <a href="recete-deposu.html" class="nav-sub"><span>Reçete Deposu</span></a>
+              <a href="hatali-soru-havuzu.html" class="nav-sub"><span>Hatalı Soru Havuzu</span></a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tf-sub-go">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
+              Taramalar ve Fasiküller
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tf-sub-go" role="group" aria-label="Taramalar ve Fasiküller alt menü">
+              <a href="tarama-analiz.html" class="nav-sub"><span>Tarama Analiz ve Raporlama</span></a>
+              <a href="tarama-olusturucu.html" class="nav-sub"><span>Tarama Oluşturma</span></a>
+              <a href="tarama-deposu.html" class="nav-sub"><span>Tarama Deposu</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Oluşturma</span><span class="nav-sub__badge">Yakında</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Deposu</span><span class="nav-sub__badge">Yakında</span></a>
+            </div>
+          </div>
+        </nav>
+        <div class="theme-switcher" role="group" aria-label="Görünüm teması">
+          <span class="theme-switcher__label">Tema</span>
+          <div class="theme-switcher__swatches">
+            <button type="button" class="theme-swatch theme-swatch--dark" data-theme="dark" aria-pressed="false" aria-label="Koyu tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--light" data-theme="light" aria-pressed="false" aria-label="Açık tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--blue" data-theme="blue" aria-pressed="false" aria-label="Okyanus teması"></button>
+            <button type="button" class="theme-swatch theme-swatch--orange" data-theme="orange" aria-pressed="false" aria-label="Gün batımı teması"></button>
+          </div>
+        </div>
+        <div class="sidebar__logout">
+          <button type="button" class="btn-logout">
+            Çıkış
+            <span class="btn-logout__arrow" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg></span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="dp-topbar-sheet mb-6 flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/50 p-3 shadow-sm sm:flex-nowrap">
+          <div class="flex max-w-2xl flex-1 items-center gap-4">
+            <button onclick="window.history.back()" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <div class="relative w-full">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                id="fm-global-search"
+                class="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 transition-all placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Öğrenci, deneme, koç veya konu ara..."
+              />
+              <div
+                id="fm-search-results"
+                class="absolute z-50 mt-2 hidden max-h-[400px] w-full overflow-y-auto rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl"
+                role="listbox"
+                aria-label="Arama sonuçları"
+              ></div>
+            </div>
+          </div>
+          <div class="ml-4 flex min-w-0 shrink-0 flex-wrap items-center gap-2 sm:gap-3">
+            <button type="button" id="dp-header-notify" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+            </button>
+            <button type="button" id="dp-header-theme" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+            </button>
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div
+          id="tw-scope"
+          class="go-meeting-panel flex min-h-0 flex-1 flex-col gap-8 rounded-2xl border border-[#e8dfd4]/90 bg-gradient-to-br from-white via-[#faf7f2] to-[#f5f0e8] px-4 py-6 text-[color:var(--text-primary)] shadow-sm sm:px-6 sm:py-8 dark:border-stone-700/90 dark:from-stone-900 dark:via-stone-800 dark:to-stone-900 dark:shadow-none pb-24 sm:pb-28"
+        >
+          <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">Strateji Merkezi · Kabuk</p>
+              <h1 id="go-meeting-headline" class="text-2xl font-bold tracking-tight sm:text-3xl">Yeni görüşme</h1>
+              <p class="mt-1 max-w-2xl text-sm leading-relaxed text-[color:var(--text-muted)]">
+                Canlı seans ekranı; kalıcı özet için <strong>Görüşmeyi Kaydet ve Bitir</strong> ile arşive yazın. Geçmiş kayıtlar <a href="gorusme-arsivi.html" class="font-semibold text-[#6b849c] underline underline-offset-2 hover:text-[#5a7389] dark:text-[#b4c9de] dark:hover:text-[#dbeafe]">Görüşme Arşivi</a> sayfasındadır.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+              <span class="text-[10px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]">Hızlı işlem</span>
+              <div class="go-quick-video-wrap flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  id="go-btn-video-start"
+                  class="shrink-0 transition disabled:cursor-not-allowed disabled:opacity-45"
+                  disabled
+                  aria-live="polite"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m22 8-6 4 6 4V8Z" />
+                    <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+                  </svg>
+                  <span id="go-btn-video-start-label">Görüntülü Görüşme Başlat</span>
+                </button>
+                <button
+                  type="button"
+                  id="go-btn-copy-meet-link"
+                  class="shrink-0 transition"
+                  style="display: none"
+                  title="Öğrencinin tarayıcıda açacağı Jitsi bağlantısı"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                  </svg>
+                  Görüşme Linkini Kopyala
+                </button>
+              </div>
+              <button
+                type="button"
+                id="go-btn-recete"
+                disabled
+                class="inline-flex items-center gap-2 rounded-xl border border-[color:var(--header-border)] bg-[color:var(--surface)] px-4 py-2.5 text-xs font-bold text-[color:var(--text-primary)] shadow-sm transition hover:bg-[color:var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <svg class="h-4 w-4 shrink-0 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                Reçete Yaz
+              </button>
+              <button
+                type="button"
+                id="go-btn-kaynak"
+                disabled
+                class="go-btn-pastel-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                Kaynak Ata
+              </button>
+            </div>
+          </div>
+
+          <!-- Öğrenci seçimi: başlığın hemen altında, seans öncesi ilk adım olarak -->
+          <section
+            class="go-student-card rounded-2xl border p-4 shadow-sm ring-1 ring-[#ebe4d8]/80 dark:ring-stone-600/30 sm:p-5"
+            aria-label="Öğrenci seçimi"
+          >
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+              <div class="min-w-0 flex-1 lg:max-w-xl">
+                <label class="text-[11px] font-bold uppercase tracking-wide text-stone-600 dark:text-stone-300">Öğrenci seçimi</label>
+                <p class="go-student-pick-hint mt-1 text-sm leading-snug">Seans ve notlar bu seçime bağlanır; önce öğrenciyi işaretleyin.</p>
+                <div id="go-ogrenci-combo" class="relative mt-2">
+                  <div class="flex rounded-xl border border-[color:var(--header-border)] bg-[color:var(--surface)] shadow-sm transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
+                    <input
+                      id="go-inp-ogrenci"
+                      type="text"
+                      role="combobox"
+                      autocomplete="off"
+                      aria-expanded="false"
+                      aria-controls="go-ogrenci-listbox"
+                      aria-autocomplete="list"
+                      placeholder="İsim veya numara ara…"
+                      class="min-w-0 flex-1 border-0 bg-transparent px-3 py-3 text-sm outline-none ring-0 placeholder:text-slate-500 dark:placeholder:text-slate-400 sm:py-2.5"
+                    />
+                    <button type="button" id="go-ogrenci-toggle" class="flex shrink-0 items-center px-3 text-[color:var(--text-muted)] transition hover:text-[color:var(--text-primary)]" aria-label="Öğrenci listesini aç">
+                      <svg class="h-4 w-4 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div id="go-ogrenci-popover" class="go-ogrenci-combo__popover absolute left-0 right-0 top-full z-50 mt-1 hidden" role="presentation">
+                    <ul id="go-ogrenci-listbox" class="max-h-52 overflow-y-auto p-1" role="listbox" aria-label="Öğrenciler"></ul>
+                  </div>
+                </div>
+                <p class="mt-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+                  Veri
+                  <code class="rounded-md border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">derecepanel_student_catalog_v1</code>
+                  ile senkron.
+                </p>
+              </div>
+              <div
+                class="go-flow-callout hidden shrink-0 rounded-xl border border-dashed px-4 py-3 text-left shadow-sm lg:block lg:max-w-[240px]"
+              >
+                <p class="go-flow-callout__title text-[10px] uppercase tracking-wide">Akış</p>
+                <p class="go-flow-callout__body mt-1.5 text-sm font-medium leading-snug">Öğrenci → zamanlayıcı → notlar ve plan</p>
+              </div>
+            </div>
+          </section>
+
+          <div class="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:items-start xl:gap-10">
+            <!-- Sol kolon (~2/3) -->
+            <div class="flex min-w-0 flex-col gap-8 lg:gap-10">
+              <section class="rounded-2xl border border-[#ebe4d8] bg-[#fffefb] p-6 shadow-sm dark:border-[color:var(--header-border)] dark:bg-[color:var(--surface)]">
+                <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center sm:gap-10 lg:gap-12">
+                  <div class="flex shrink-0 flex-col items-center justify-center gap-3">
+                    <div id="go-timer-ring" class="go-timer-ring relative mx-auto flex h-[9rem] w-[9rem] shrink-0 items-center justify-center rounded-full shadow-lg ring-4 ring-[#faf7f2] ring-offset-2 ring-offset-[#fffefb] dark:ring-stone-900 dark:ring-offset-[color:var(--surface)] sm:h-[9.5rem] sm:w-[9.5rem]">
+                      <div class="go-timer-ring__face absolute inset-3 flex flex-col items-center justify-center gap-1 rounded-full bg-[color:var(--surface)] px-2 text-center shadow-inner">
+                        <span id="go-timer-text" class="w-full tabular-nums font-mono text-3xl font-bold leading-none tracking-tight text-[color:var(--text-primary)] sm:text-[2rem]">40:00</span>
+                        <span id="go-timer-label" class="w-full max-w-[11rem] text-center text-[10px] font-semibold uppercase leading-snug tracking-wide text-[color:var(--text-muted)] sm:text-[11px]">Hazır</span>
+                      </div>
+                    </div>
+                    <div class="flex w-full max-w-[11rem] items-stretch justify-center gap-2 sm:max-w-none">
+                      <button
+                        type="button"
+                        id="go-btn-timer-minus"
+                        class="min-h-[2.25rem] flex-1 rounded-lg border border-[color:var(--header-border)] bg-[color:var(--surface-muted)] px-2 py-1.5 text-center text-[11px] font-bold tabular-nums text-[color:var(--text-primary)] shadow-sm transition hover:bg-[color:var(--surface)] disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label="Beş dakika azalt"
+                      >
+                        −5 dk
+                      </button>
+                      <button
+                        type="button"
+                        id="go-btn-timer-plus"
+                        class="min-h-[2.25rem] flex-1 rounded-lg border border-[#d6cec2] bg-[#f5f0e8] px-2 py-1.5 text-center text-[11px] font-bold tabular-nums text-stone-700 shadow-sm transition hover:bg-[#ede4d8] dark:border-stone-600 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:bg-stone-700/70 disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label="Beş dakika ekle"
+                      >
+                        +5 dk
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex w-full min-w-0 max-w-xs flex-col gap-2 sm:w-auto sm:shrink-0 lg:max-w-sm">
+                      <button
+                        type="button"
+                        id="go-btn-start"
+                        disabled
+                        class="go-btn-pastel-primary inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Görüşmeyi Başlat
+                      </button>
+                      <div class="flex flex-wrap gap-2">
+                        <button type="button" id="go-btn-pause" disabled data-state="paused" class="min-w-[46%] flex-1 rounded-xl border border-[color:var(--header-border)] bg-[color:var(--surface)] px-3 py-2 text-xs font-semibold text-[color:var(--text-primary)] shadow-sm transition hover:bg-[color:var(--surface-muted)] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-600 dark:disabled:border-slate-600 dark:disabled:bg-slate-800 dark:disabled:text-slate-300">Duraklat</button>
+                        <button type="button" id="go-btn-reset" class="min-w-[46%] flex-1 rounded-xl border border-[color:var(--header-border)] px-3 py-2 text-xs font-semibold shadow-sm transition hover:bg-[color:var(--surface-muted)]">Sıfırla</button>
+                        <button
+                          type="button"
+                          id="go-btn-end"
+                          disabled
+                          class="w-full rounded-xl border border-[#e8dfd4] bg-[#faf7f2] px-3 py-2 text-xs font-bold text-stone-700 shadow-sm transition hover:bg-[#f3ede4] disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-500 dark:disabled:border-stone-600 dark:disabled:bg-stone-800 dark:disabled:text-stone-400 dark:border-stone-600 dark:bg-stone-800/50 dark:text-stone-200"
+                        >
+                          Görüşmeyi Bitir · Özet
+                        </button>
+                        <button
+                          type="button"
+                          id="go-btn-save-archive"
+                          disabled
+                          class="go-btn-pastel-save w-full rounded-xl border-2 px-3 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          Görüşmeyi Kaydet ve Bitir
+                        </button>
+                      </div>
+                      <p id="go-timer-foot" class="text-center text-[10px] text-[color:var(--text-muted)]">40 dk hedef · ±5 dk ile süre ayarı · geri sayım</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="flex flex-1 flex-col rounded-2xl border border-[color:var(--header-border)] bg-white p-6 shadow-sm dark:bg-[color:var(--surface)] sm:p-8">
+                <div
+                  class="mb-8 rounded-2xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/40 ring-1 ring-slate-100/80 dark:border-slate-700 dark:bg-slate-900 dark:shadow-xl dark:shadow-black/20 dark:ring-slate-700/80 sm:p-8"
+                >
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Öğrenci durumu</p>
+                      <p class="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        Seçim görüşme oturumuyla kaydedilir
+                        <code class="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-700 dark:bg-slate-800 dark:text-slate-300">dp_v2_session_[meetingId]_mood</code>.
+                      </p>
+                    </div>
+                  </div>
+                  <div id="go-mood-bar" class="mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3"></div>
+                </div>
+                <div class="mb-4 flex flex-wrap items-start justify-between gap-4">
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-base font-bold">Not defteri</h2>
+                    <p class="mt-1 text-xs leading-relaxed text-[color:var(--text-muted)]">
+                      Zengin metin araç çubuğu ile biçimlendirin; yazım durduğunda otomatik kaydedilir (<code class="rounded bg-[color:var(--surface-muted)] px-1 font-mono text-[10px]">derece_v2_notes_*</code>). Kalıcı arşiv:
+                      <strong>Görüşmeyi Kaydet ve Bitir</strong>.
+                    </p>
+                  </div>
+                  <div class="flex shrink-0 flex-wrap items-center gap-3">
+                    <span id="go-speech-status" class="max-w-[200px] truncate text-[11px] font-semibold tracking-tight text-rose-600 dark:text-rose-400"></span>
+                    <div
+                      id="go-speech-mic-cluster"
+                      class="go-speech-mic-cluster inline-flex shrink-0"
+                      aria-label="Sesli not kontrolü"
+                    >
+                      <div id="go-speech-waves" class="go-speech-waves" aria-hidden="true">
+                        <span class="go-speech-waves__bar"></span>
+                        <span class="go-speech-waves__bar"></span>
+                        <span class="go-speech-waves__bar"></span>
+                        <span class="go-speech-waves__bar"></span>
+                        <span class="go-speech-waves__bar"></span>
+                      </div>
+                      <span id="start_speech_wrap" class="relative inline-flex shrink-0">
+                        <button
+                          type="button"
+                          id="start_speech"
+                          class="go-v2-mic-btn relative z-[1] flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[color:var(--header-border)] bg-[color:var(--surface)] text-rose-600 shadow-sm hover:bg-rose-50 hover:shadow-md dark:hover:bg-rose-950/40"
+                          aria-label="Sesli notu başlat"
+                          aria-pressed="false"
+                          aria-describedby="go-speech-hint"
+                          title="Bir kez dokunun — sesli not başlar. Tekrar dokunun — durur."
+                        >
+                          <span class="go-v2-mic-btn__live-dot" aria-hidden="true"></span>
+                          <svg class="relative z-[1] h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                        </button>
+                      </span>
+                    </div>
+                    <span id="go-speech-hint" class="sr-only">Açıkken yanınızdaki çubuklar ses dinlendiğini gösterir.</span>
+                    <span
+                      id="go-save-indicator"
+                      class="pointer-events-none rounded-full bg-[#a8bfd4]/95 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#1e3348] opacity-0 shadow-sm transition-opacity duration-300"
+                    >Kaydedildi</span>
+                  </div>
+                </div>
+                <div
+                  class="mb-2 flex flex-wrap gap-1 rounded-t-xl border border-b-0 border-[color:var(--header-border)] bg-[color:var(--surface-muted)]/35 px-2 py-2"
+                  role="toolbar"
+                  aria-label="Not biçimlendirme"
+                >
+                  <button
+                    type="button"
+                    id="session_notes_bold"
+                    class="rounded-lg border border-[color:var(--header-border)] bg-[color:var(--surface)] px-3 py-1.5 text-xs font-bold text-[color:var(--text-primary)] shadow-sm transition hover:bg-[color:var(--surface-muted)]"
+                    title="Kalın"
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    id="session_notes_italic"
+                    class="rounded-lg border border-[color:var(--header-border)] bg-[color:var(--surface)] px-3 py-1.5 text-xs italic text-[color:var(--text-primary)] shadow-sm transition hover:bg-[color:var(--surface-muted)]"
+                    title="İtalik"
+                  >
+                    I
+                  </button>
+                  <button
+                    type="button"
+                    id="session_notes_underline"
+                    class="rounded-lg border border-[color:var(--header-border)] bg-[color:var(--surface)] px-3 py-1.5 text-xs font-semibold underline decoration-2 underline-offset-2 text-[color:var(--text-primary)] shadow-sm transition hover:bg-[color:var(--surface-muted)]"
+                    title="Altı çizili"
+                  >
+                    U
+                  </button>
+                </div>
+                <div
+                  id="session_notes"
+                  class="go-v2-session-notes min-h-[300px] w-full overflow-y-auto rounded-b-xl border border-[color:var(--header-border)] bg-[color:var(--surface-muted)]/40 p-4 text-sm leading-relaxed text-[color:var(--text-primary)] shadow-inner transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  tabindex="0"
+                  data-placeholder="Seans notları… Çift satır sonu ile paragrafları ayırın (görev aktarımı)."
+                ></div>
+                <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div class="min-w-0 flex-1">
+                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]" for="session_note_category">Not etiketi</label>
+                    <select
+                      id="session_note_category"
+                      class="mt-1.5 w-full rounded-xl border border-[color:var(--header-border)] bg-[color:var(--surface)] px-3 py-2.5 text-sm font-medium text-[color:var(--text-primary)] shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:max-w-md"
+                    >
+                      <option value="">Etiket seçin (isteğe bağlı)</option>
+                      <option value="Akademik Gelişim">Akademik Gelişim</option>
+                      <option value="Motivasyon ve Psikoloji">Motivasyon ve Psikoloji</option>
+                      <option value="Hata Analizi">Hata Analizi</option>
+                      <option value="Veli Görüşmesi">Veli Görüşmesi</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="go-para-actions" class="mt-4 flex max-h-48 flex-col gap-2 overflow-y-auto rounded-xl border border-dashed border-[color:var(--header-border)] bg-[color:var(--surface-muted)]/20 p-4"></div>
+
+                <section
+                  id="go-dm-card"
+                  class="mt-12 border-t border-[color:var(--header-border)] pt-10"
+                  aria-labelledby="go-dm-card-title"
+                >
+                  <div class="rounded-2xl border border-[color:var(--header-border)] bg-[color:var(--surface-muted)]/25 p-5 shadow-sm dark:bg-[color:var(--surface)]">
+                    <div class="flex flex-col gap-1 border-b border-[color:var(--header-border)] pb-4 sm:flex-row sm:items-end sm:justify-between">
+                      <div>
+                        <h2 id="go-dm-card-title" class="text-lg font-bold tracking-tight text-[color:var(--text-primary)]">
+                          Deneme Matrisi ve Konu Analizi
+                        </h2>
+                        <p id="go-dm-hint" class="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                          Öğrenci seçildiğinde denemeler listelenir; konu kırılımı için sınav matrisi veya sınav düzeni kullanılır.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="mt-4 flex flex-col gap-4">
+                      <label class="block">
+                        <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[color:var(--text-muted)]">Deneme seç</span>
+                        <select
+                          id="go-dm-select"
+                          disabled
+                          class="w-full max-w-xl rounded-xl border border-[color:var(--header-border)] bg-[color:var(--surface)] px-3 py-2.5 text-sm font-semibold text-[color:var(--text-primary)] outline-none ring-primary/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60"
+                        ></select>
+                      </label>
+                      <p class="text-[11px] font-bold uppercase tracking-wide text-[color:var(--text-muted)]">Dersler — açmak için tıklayın</p>
+                      <div id="go-dm-subjects-host" class="flex flex-col gap-2"></div>
+                    </div>
+                  </div>
+                </section>
+              </section>
+            </div>
+
+            <!-- Sağ kolon Öğrenci 360 (~1/3) -->
+            <div class="flex min-w-0 flex-col gap-8">
+              <section class="rounded-2xl border border-[color:var(--header-border)] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:bg-[color:var(--surface)]">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Görüşme planı</p>
+                    <p class="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                      İşaretledikçe ilerleme güncellenir; her görüşme oturumu için ayrı kayıt (
+                      <code class="rounded border border-slate-200 bg-slate-100 px-1 py-0.5 font-mono text-[10px] font-semibold text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">dp_v2_session_agenda_[öğrenci]_[oturum]</code>
+                      ).
+                    </p>
+                  </div>
+                  <span id="go-agenda-pct" class="rounded-full bg-[#f5f0e8] px-3 py-1 text-sm font-bold text-stone-700 dark:bg-stone-800/60 dark:text-stone-200">0%</span>
+                </div>
+                <div id="go-agenda-bar-host" class="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-[color:var(--surface-muted)]">
+                  <div id="go-agenda-bar" class="h-full w-0 rounded-full bg-gradient-to-r from-[#c5d8eb] to-[#b8cce8] transition-[width] duration-500 ease-out"></div>
+                </div>
+                <div id="go-agenda-list" class="mt-4 flex flex-col gap-2"></div>
+              </section>
+
+              <div class="grid min-w-0 gap-6 lg:grid-cols-2 lg:gap-8 xl:grid-cols-1 xl:gap-6">
+                <article
+                  class="flex min-h-[220px] min-w-0 flex-col overflow-visible rounded-2xl border border-[#ebe4d8] bg-[#faf7f2] p-8 shadow-sm shadow-stone-200/25 ring-1 ring-[#f5f0e8]/90 dark:border-slate-700 dark:bg-slate-900 dark:shadow-xl dark:shadow-black/20 dark:ring-slate-700/80"
+                >
+                  <div class="flex flex-wrap items-center gap-3">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-slate-300">Hedef</p>
+                    <span
+                      id="go-card-alan"
+                      class="inline-flex items-center rounded-full border border-slate-200/90 bg-slate-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                      >—</span>
+                  </div>
+                  <p id="go-card-goal" class="mt-6 line-clamp-6 text-base font-medium leading-relaxed text-slate-800 dark:text-slate-100">Öğrenci seçin</p>
+                </article>
+                <article
+                  class="flex min-h-[220px] min-w-0 flex-col justify-between overflow-visible rounded-2xl border border-[#ebe4d8] bg-[#faf7f2] p-8 shadow-sm shadow-stone-200/25 ring-1 ring-[#f5f0e8]/90 dark:border-slate-700 dark:bg-slate-900 dark:shadow-xl dark:shadow-black/20 dark:ring-slate-700/80"
+                >
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400">Son deneme neti</p>
+                    <p
+                      id="go-card-net"
+                      class="mt-6 bg-gradient-to-r from-stone-500 via-[#8fa9c4] to-stone-600 bg-clip-text pb-0.5 font-mono text-5xl font-extrabold tabular-nums leading-none tracking-tight text-transparent dark:from-stone-200 dark:via-[#b4c9de] dark:to-stone-300 sm:text-6xl"
+                    >
+                      —
+                    </p>
+                  </div>
+                  <p class="mt-8 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                    <code class="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-700 dark:bg-slate-800 dark:text-slate-300">examResults</code>
+                    havuzundan özetlenir.
+                  </p>
+                </article>
+              </div>
+
+              <section class="rounded-2xl border border-[color:var(--header-border)] bg-white p-6 shadow-sm dark:bg-[color:var(--surface)]">
+                <p class="text-[11px] font-bold uppercase tracking-wide text-rose-700 dark:text-rose-300">Hedef · net fark paneli</p>
+                <p class="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  YÖK Atlas satırı eşleştirilir; netler JSON’da yoksa Net Sihirbazı ile aynı <strong class="text-slate-800 dark:text-slate-200">model tahmini</strong> kullanılır. Öğrenci tarafı son denemeden branş netleri (
+                  <code class="rounded border border-slate-200 bg-slate-100 px-1 py-0.5 font-mono text-[10px] font-semibold text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">ogrenci-sim-bridge</code>) ile hesaplanır.
+                </p>
+                <div id="go-gap-panel" class="mt-4"></div>
+              </section>
+
+              <details class="go-acc group rounded-2xl border border-[color:var(--header-border)] bg-white shadow-sm open:shadow-md dark:bg-[color:var(--surface)]">
+                <summary class="flex cursor-pointer items-center justify-between gap-3 px-6 py-5 font-semibold transition hover:bg-[color:var(--surface-muted)]/50">
+                  <span>Geçmiş denemeler</span>
+                  <svg class="h-5 w-5 shrink-0 text-[color:var(--text-muted)] transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </summary>
+                <div class="border-t border-[color:var(--header-border)] px-6 py-5">
+                  <div id="go-trials-preview" class="flex flex-col gap-2"></div>
+                  <button type="button" id="go-btn-modal-trials" class="mt-4 inline-flex items-center gap-2 rounded-xl border border-[color:var(--header-border)] px-4 py-2 text-xs font-bold shadow-sm transition hover:bg-[color:var(--surface-muted)]">
+                    Tüm geçmişi modalda aç
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  </button>
+                </div>
+              </details>
+
+              <details class="go-acc group rounded-2xl border border-[color:var(--header-border)] bg-white shadow-sm open:shadow-md dark:bg-[color:var(--surface)]">
+                <summary class="flex cursor-pointer items-center justify-between gap-3 px-6 py-5 font-semibold transition hover:bg-[color:var(--surface-muted)]/50">
+                  <span>Haftalık program</span>
+                  <svg class="h-5 w-5 shrink-0 text-[color:var(--text-muted)] transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </summary>
+                <div class="border-t border-[color:var(--header-border)] px-6 py-5">
+                  <div id="go-program-preview" class="flex flex-col gap-2"></div>
+                  <button type="button" id="go-btn-modal-program" class="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#d6cec2] bg-[#f5f0e8] px-4 py-2 text-xs font-bold text-stone-800 shadow-sm transition hover:bg-[#ede4d8] dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white">
+                    Program detayları
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                  </button>
+                </div>
+              </details>
+
+              <details class="go-acc group rounded-2xl border border-[color:var(--header-border)] bg-white shadow-sm open:shadow-md dark:bg-[color:var(--surface)]">
+                <summary class="flex cursor-pointer items-center justify-between gap-3 px-6 py-5 font-semibold transition hover:bg-[color:var(--surface-muted)]/50">
+                  <span>Konu MR</span>
+                  <svg class="h-5 w-5 shrink-0 text-[color:var(--text-muted)] transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </summary>
+                <div class="border-t border-[color:var(--header-border)] px-4 py-4 sm:px-6 sm:py-5">
+                  <p class="mb-3 text-xs leading-relaxed text-[color:var(--text-muted)]">
+                    Konu MR sayfasıyla aynı müfredat kaynağı (<code class="rounded bg-[color:var(--surface-muted)] px-1 font-mono text-[10px]">YksMufredatApi</code>) ve kayıt (<code class="rounded bg-[color:var(--surface-muted)] px-1 font-mono text-[10px]">derece_mr_coach_track_v1</code>). Öğrenci görüşmede seçilince burada da seçilir; ders satırına tıklayınca konular açılır. Deneme tablosundaki <strong>MR</strong> ile tamamlandı işaretleyebilirsiniz.
+                  </p>
+                  <div
+                    class="mr-shell mr-shell--embed"
+                    data-mr-mount
+                    data-mr-kind="konu"
+                    data-mr-instance="go-konu"
+                  >
+                    <section class="mr-control card" aria-label="Konu MR filtreleri">
+                      <div class="mr-control__inner">
+                        <label class="mr-field mr-field--grow">
+                          <span class="mr-field__label">Öğrenci seç</span>
+                          <select data-mr-student class="mr-select kdy-input" aria-label="Öğrenci seç"></select>
+                        </label>
+                        <div class="mr-field mr-field--toggle">
+                          <span class="mr-field__label">Sınav</span>
+                          <div class="mr-toggle" role="group" aria-label="TYT veya AYT">
+                            <button type="button" data-mr-exam-tyt class="mr-toggle__btn mr-toggle__btn--active" aria-pressed="true">TYT</button>
+                            <button type="button" data-mr-exam-ayt class="mr-toggle__btn" aria-pressed="false">AYT</button>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                    <div data-mr-track-root class="mr-track"></div>
+                    <section data-mr-empty-root class="mr-empty card" hidden aria-hidden="true"></section>
+                    <template data-mr-row-tpl>
+                      <div class="mr-topic-row" data-mr-subject-id="" data-mr-topic-id="">
+                        <div class="mr-topic-row__name"></div>
+                        <div class="mr-topic-row__book">
+                          <label class="visually-hidden mr-topic-row__book-lbl">Kaynak kitap</label>
+                          <select class="mr-select kdy-input mr-topic-row__book-select" aria-label="Kaynak kitap">
+                            <option value="">— Kitap seçin —</option>
+                          </select>
+                        </div>
+                        <div class="mr-topic-row__solved">
+                          <span class="mr-topic-row__solved-lbl">Çözülen soru</span>
+                          <div class="mr-topic-row__inputs">
+                            <input type="number" min="0" class="mr-inp-num mr-topic-row__inp-solved" value="" placeholder="0" aria-label="Çözülen soru sayısı" />
+                            <span class="mr-topic-row__slash">/</span>
+                            <input type="number" min="0" class="mr-inp-num mr-topic-row__inp-target" value="" placeholder="0" aria-label="Hedef soru sayısı" />
+                          </div>
+                        </div>
+                        <div class="mr-topic-row__status">
+                          <button type="button" class="mr-status-btn mr-topic-row__status-btn mr-status-btn--todo" data-mr-status="todo" aria-pressed="false">
+                            <span class="mr-status-btn__text"></span>
+                            <span class="mr-status-btn__check" aria-hidden="true">
+                              <svg class="mr-status-btn__svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5l4 4 8-9" />
+                              </svg>
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </details>
+
+              <details class="go-acc group rounded-2xl border border-[color:var(--header-border)] bg-white shadow-sm open:shadow-md dark:bg-[color:var(--surface)]">
+                <summary class="flex cursor-pointer items-center justify-between gap-3 px-6 py-5 font-semibold transition hover:bg-[color:var(--surface-muted)]/50">
+                  <span>Soru MR</span>
+                  <svg class="h-5 w-5 shrink-0 text-[color:var(--text-muted)] transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </summary>
+                <div class="border-t border-[color:var(--header-border)] px-4 py-4 sm:px-6 sm:py-5">
+                  <p class="mb-3 text-xs leading-relaxed text-[color:var(--text-muted)]">
+                    Soru MR sayfasıyla aynı müfredat ve takip; çözüm durumu Konu MR’dan bağımsız kaydedilir (<code class="rounded bg-[color:var(--surface-muted)] px-1 font-mono text-[10px]">kind: soru</code>). Ders başlığına tıklayınca konu listesi açılır.
+                  </p>
+                  <div
+                    class="mr-shell mr-shell--embed"
+                    data-mr-mount
+                    data-mr-kind="soru"
+                    data-mr-instance="go-soru"
+                  >
+                    <section class="mr-control card" aria-label="Soru MR filtreleri">
+                      <div class="mr-control__inner">
+                        <label class="mr-field mr-field--grow">
+                          <span class="mr-field__label">Öğrenci seç</span>
+                          <select data-mr-student class="mr-select kdy-input" aria-label="Öğrenci seç"></select>
+                        </label>
+                        <div class="mr-field mr-field--toggle">
+                          <span class="mr-field__label">Sınav</span>
+                          <div class="mr-toggle" role="group" aria-label="TYT veya AYT">
+                            <button type="button" data-mr-exam-tyt class="mr-toggle__btn mr-toggle__btn--active" aria-pressed="true">TYT</button>
+                            <button type="button" data-mr-exam-ayt class="mr-toggle__btn" aria-pressed="false">AYT</button>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                    <div data-mr-track-root class="mr-track"></div>
+                    <section data-mr-empty-root class="mr-empty card" hidden aria-hidden="true"></section>
+                    <template data-mr-row-tpl>
+                      <div class="mr-topic-row" data-mr-subject-id="" data-mr-topic-id="">
+                        <div class="mr-topic-row__name"></div>
+                        <div class="mr-topic-row__book">
+                          <label class="visually-hidden mr-topic-row__book-lbl">Kaynak kitap</label>
+                          <select class="mr-select kdy-input mr-topic-row__book-select" aria-label="Kaynak kitap">
+                            <option value="">— Kitap seçin —</option>
+                          </select>
+                        </div>
+                        <div class="mr-topic-row__solved">
+                          <span class="mr-topic-row__solved-lbl">Çözülen soru</span>
+                          <div class="mr-topic-row__inputs">
+                            <input type="number" min="0" class="mr-inp-num mr-topic-row__inp-solved" value="" placeholder="0" aria-label="Çözülen soru sayısı" />
+                            <span class="mr-topic-row__slash">/</span>
+                            <input type="number" min="0" class="mr-inp-num mr-topic-row__inp-target" value="" placeholder="0" aria-label="Hedef soru sayısı" />
+                          </div>
+                        </div>
+                        <div class="mr-topic-row__status">
+                          <button type="button" class="mr-status-btn mr-topic-row__status-btn mr-status-btn--todo" data-mr-status="todo" aria-pressed="false">
+                            <span class="mr-status-btn__text"></span>
+                            <span class="mr-status-btn__check" aria-hidden="true">
+                              <svg class="mr-status-btn__svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 10.5l4 4 8-9" />
+                              </svg>
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <footer class="go-footer sticky bottom-6 z-20 mt-4 flex flex-col gap-3 rounded-2xl border border-[#e8dfd4] bg-[#fffefb]/95 px-4 py-4 shadow-md shadow-stone-200/30 backdrop-blur-sm dark:border-stone-700 dark:bg-stone-900/95 sm:flex-row sm:items-center sm:justify-between sm:px-5 mb-6">
+            <div class="go-footer-desc flex min-w-0 flex-col gap-2 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-1">
+              <span class="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full border border-[#e8dfd4] bg-[#faf7f2] px-3 py-1 font-bold text-stone-700 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200">
+                <span class="h-2 w-2 animate-pulse rounded-full bg-[#a8bfd4]" aria-hidden="true"></span>
+                Hızlı işlemler
+              </span>
+              <span class="hidden text-slate-400 sm:inline" aria-hidden="true">|</span>
+              <span class="leading-snug">
+                Görev satırı için anahtar <span class="go-footer-kbd">transfer_gorev</span>, öğrenci köprüsü
+                <span class="go-footer-kbd">aktarilanOgrenci</span>.
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                id="go-btn-recete-footer"
+                disabled
+                class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-55 dark:border-slate-500 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600 sm:flex-none"
+              >
+                Reçete Yaz
+              </button>
+              <button
+                type="button"
+                id="go-btn-save-footer"
+                disabled
+                class="go-btn-pastel-save inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-45 sm:flex-none"
+              >
+                Görüşmeyi kaydet
+              </button>
+              <button type="button" id="go-btn-kaynak-footer" disabled class="go-btn-pastel-primary inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-55 sm:flex-none">
+                Kaynak Ata
+              </button>
+            </div>
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modallar (#tw-scope dışı — go-modal-overlay ile gizlenir) -->
+    <div id="go-modal-trials" class="go-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="go-modal-trials-title">
+      <div class="go-modal-panel go-modal-panel--lg">
+        <div class="go-modal-panel__head">
+          <h2 id="go-modal-trials-title" class="text-lg font-bold tracking-tight text-slate-50">Geçmiş denemeler</h2>
+          <button type="button" id="go-modal-trials-close" class="go-modal-close" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div id="go-modal-trials-body" class="go-modal-panel__body text-sm text-slate-200"></div>
+      </div>
+    </div>
+
+    <div id="go-modal-summary" class="go-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="go-modal-summary-title">
+      <div class="go-modal-panel go-modal-panel--sm">
+        <div class="go-modal-panel__head">
+          <div class="min-w-0">
+            <h2 id="go-modal-summary-title" class="go-modal-summary__title">Görüşme özeti</h2>
+            <p class="go-modal-summary__sub">Seans sonrası paylaşım metni</p>
+          </div>
+          <button type="button" id="go-modal-summary-close" class="go-modal-close shrink-0" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="go-modal-panel__body">
+          <textarea id="go-summary-text" readonly rows="14" aria-label="Görüşme özet metni"></textarea>
+          <div class="go-summary-actions">
+            <button type="button" id="go-summary-copy" class="go-summary-btn go-summary-btn--ghost">Kopyala</button>
+            <button type="button" id="go-summary-wa" class="go-summary-btn go-summary-btn--primary">WhatsApp'ta Aç</button>
+            <button type="button" id="go-summary-finish" class="go-summary-btn go-summary-btn--neutral">Oturumu Kapat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="go-modal-program" class="go-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="go-modal-program-title">
+      <div class="go-modal-panel go-modal-panel--sm">
+        <div class="go-modal-panel__head">
+          <h2 id="go-modal-program-title" class="text-lg font-bold tracking-tight text-slate-50">Haftalık programlar</h2>
+          <button type="button" id="go-modal-program-close" class="go-modal-close" aria-label="Kapat">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div id="go-modal-program-body" class="go-modal-panel__body text-sm text-slate-200"></div>
+      </div>
+    </div>
+
+    <div id="go-toast" class="go-toast--hidden go-toast--success" role="status"></div>
+
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script src="../js/student-catalog.js" defer></script>
+    <script src="../js/deneme-exam-layout.js" defer></script>
+    <script src="../js/student-karne-api.js" defer></script>
+    <script src="../js/exam-matrix.js" defer></script>
+    <script src="../js/ogrenci-sim-bridge.js" defer></script>
+    <script src="../js/ogrenci-coach-bridge.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+    <script type="module" src="../js/yks-mufredat.js"></script>
+    <script src="../js/mr-pages.js" defer></script>
+    <script src="../js/voice-recognition.js" defer></script>
+    <script src="../js/gorusme-odasi.js" defer></script>
+  </body>
+</html>

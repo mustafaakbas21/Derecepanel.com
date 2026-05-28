@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kurucu Paneli – DerecePanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+            boxShadow: {
+              "glow-purple": "0 0 32px rgba(168, 85, 247, 0.45), 0 0 64px rgba(88, 28, 135, 0.35)",
+              "glow-purple-sm": "0 0 20px rgba(168, 85, 247, 0.35)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html,
+      body {
+        font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+      }
+      .sa-nav-active {
+        background-color: rgba(88, 28, 135, 0.2);
+        --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+        --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+        box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+        --tw-ring-color: rgba(168, 85, 247, 0.2);
+        color: rgb(226 232 240);
+      }
+      .sa-stat-oval {
+        position: absolute;
+        border-radius: 9999px;
+        pointer-events: none;
+      }
+      .sa-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(0, 0, 0, 0.45);
+        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      }
+      .sa-icon-btn:hover {
+        transform: translateY(-1px);
+      }
+      .sa-icon-btn:focus-visible {
+        outline: 2px solid rgba(0, 229, 153, 0.45);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <div class="flex h-screen overflow-hidden bg-[#050509] text-slate-300">
+      <aside
+        class="flex w-[260px] shrink-0 flex-col border-r border-purple-500/10 bg-[#0b0914]"
+        aria-label="Kurucu menü"
+      >
+        <div class="flex h-16 items-center gap-2 border-b border-purple-500/10 px-5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#00e599]/15 text-[#00e599]" aria-hidden="true">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <div class="leading-tight">
+            <div class="text-sm font-bold text-[#00e599]">DerecePanel</div>
+            <div class="text-[11px] font-medium uppercase tracking-wider text-slate-500">Kurucu</div>
+          </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-4 text-[13px]" id="sa-sidebar-nav">
+          <p class="px-3 pb-2 pt-1 text-[10px] font-semibold tracking-widest text-slate-500">GENEL</p>
+          <a
+            href="super-admin.html#ana-sayfa"
+            data-sa-route="ana-sayfa"
+            class="sa-nav flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+            Ana sayfa
+          </a>
+          <a
+            href="super-admin.html#ozet-istatistikler"
+            data-sa-route="ozet-istatistikler"
+            class="sa-nav mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
+            Özet istatistikler
+          </a>
+
+          <p class="mt-5 px-3 pb-2 text-[10px] font-semibold tracking-widest text-slate-500">YÖNETİM</p>
+          <a
+            href="super-admin.html#bakim-modu"
+            data-sa-route="bakim-modu"
+            class="sa-nav flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Bakım modu
+          </a>
+          <a
+            href="super-admin.html#teklif-talepleri"
+            data-sa-route="teklif-talepleri"
+            class="sa-nav mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+            </svg>
+            Teklif talepleri
+          </a>
+          <a
+            href="super-admin.html#sorunlar-destek"
+            data-sa-route="sorunlar-destek"
+            class="sa-nav mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <path d="M22 6l-10 7L2 6" />
+            </svg>
+            Sorunlar / Destek talepleri
+          </a>
+          <a
+            href="super-admin.html#admin-yonetimi"
+            data-sa-route="admin-yonetimi"
+            class="sa-nav mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            Admin Yönetimi
+          </a>
+
+          <p class="mt-5 px-3 pb-2 text-[10px] font-semibold tracking-widest text-slate-500">DENEMELER</p>
+          <a
+            href="super-admin.html#global-deneme-takvimi"
+            data-sa-route="global-deneme-takvimi"
+            class="sa-nav flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            Global Deneme Takvimi
+          </a>
+
+          <p class="mt-5 px-3 pb-2 text-[10px] font-semibold tracking-widest text-slate-500">KOÇLAR</p>
+          <a
+            href="super-admin.html#kurumlar"
+            data-sa-route="kurumlar"
+            class="sa-nav flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
+            </svg>
+            Kurumlar
+          </a>
+          <a
+            href="super-admin.html#yeni-koc"
+            data-sa-route="yeni-koc"
+            class="sa-nav mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Yeni koç
+          </a>
+          <a
+            href="super-admin.html#koc-listesi"
+            data-sa-route="koc-listesi"
+            class="sa-nav mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+            </svg>
+            Koç listesi
+          </a>
+
+          <p class="mt-5 px-3 pb-2 text-[10px] font-semibold tracking-widest text-slate-500">ÖĞRENCİLER</p>
+          <a href="#" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200">
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Yeni öğrenci
+          </a>
+          <a href="#" class="mt-0.5 flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200">
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            Öğrenci listesi
+          </a>
+
+          <p class="mt-5 px-3 pb-2 text-[10px] font-semibold tracking-widest text-slate-500">SİSTEM</p>
+          <a
+            href="super-admin-login.html?logout=1"
+            class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-300"
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
+            Çıkış
+          </a>
+        </nav>
+      </aside>
+
+      <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-visible">
+        <header
+          class="relative z-40 flex h-16 shrink-0 items-center justify-end gap-2 overflow-visible border-b border-purple-500/10 bg-[#0b0914]/80 px-6 backdrop-blur-sm"
+        >
+          <div class="relative z-[60]" id="sa-profile-wrap">
+            <button
+              type="button"
+              id="sa-profile-trigger"
+              class="inline-flex items-center gap-2 rounded-lg border border-purple-500/15 bg-black/40 px-3 py-2 text-xs font-medium text-slate-300 hover:border-[#00e599]/30 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/40"
+              title="Profil"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              aria-controls="sa-profile-menu"
+            >
+              <svg class="h-4 w-4 text-[#00e599]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Profil
+            </button>
+            <div
+              id="sa-profile-menu"
+              class="pointer-events-auto fixed z-[200] hidden w-[min(100vw-1.5rem,17.5rem)] overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-[0_22px_50px_-12px_rgba(15,23,42,0.35)]"
+              role="menu"
+              aria-label="Profil menüsü"
+            >
+              <div class="flex gap-3 border-b border-slate-100 p-4">
+                <div
+                  id="sa-profile-avatar"
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0f172a] text-[13px] font-bold tracking-tight text-white shadow-[0_0_20px_rgba(139,92,246,0.45)]"
+                  aria-hidden="true"
+                >
+                  KR
+                </div>
+                <div class="min-w-0 flex-1 leading-tight">
+                  <div id="sa-profile-menu-name" class="truncate text-sm font-bold text-slate-900">Kurucu</div>
+                  <div id="sa-profile-menu-username" class="truncate text-xs font-medium text-slate-500">kurucu</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                id="sa-profile-open-detail"
+                class="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+                role="menuitem"
+              >
+                Detay
+                <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                id="sa-profile-open-edit"
+                class="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+                role="menuitem"
+              >
+                Düzenle
+                <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <div class="h-px bg-slate-100" role="separator"></div>
+              <a
+                href="super-admin-login.html?logout=1"
+                class="flex w-full items-center justify-between gap-2 px-4 py-3.5 text-sm font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                role="menuitem"
+              >
+                Çıkış yap
+                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <a
+            href="#teklif-talepleri"
+            class="inline-flex items-center gap-2 rounded-lg border border-purple-500/15 bg-black/40 px-3 py-2 text-xs font-medium text-slate-300 hover:border-[#00e599]/30 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/40"
+            title="Teklifler"
+            id="sa-header-teklif-link"
+          >
+            <svg class="h-4 w-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+            </svg>
+            Teklifler
+            <span
+              id="sa-teklif-header-badge"
+              class="hidden min-w-[1.25rem] rounded-full border border-amber-500/40 bg-amber-500/15 px-1.5 py-0.5 text-center text-[10px] font-bold leading-none text-amber-200"
+              >0</span
+            >
+          </a>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-purple-500/15 bg-black/40 px-3 py-2 text-xs font-medium text-slate-300 hover:border-[#00e599]/30 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/40"
+            title="Yenile"
+            onclick="location.reload()"
+          >
+            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6" />
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+            </svg>
+            Yenile
+          </button>
+          <a
+            href="super-admin-login.html?logout=1"
+            class="inline-flex items-center gap-2 rounded-lg border border-purple-500/15 bg-black/40 px-3 py-2 text-xs font-medium text-slate-300 hover:border-red-500/30 hover:text-red-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+            title="Çıkış"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
+            Çıkış
+          </a>
+        </header>
+
+        <main class="relative z-0 flex-1 overflow-y-auto p-8">
+          <!-- Ana sayfa + Özet istatistikler (aynı pano) -->
+          <section id="sa-view-dashboard" class="sa-view hidden max-w-6xl space-y-8">
+            <div
+              class="relative overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-br from-[#1a0f2e] via-[#120a22] to-[#0b0914] px-8 py-10 shadow-[0_0_0_1px_rgba(168,85,247,0.12),0_32px_64px_-28px_rgba(0,0,0,0.65)]"
+            >
+              <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_0%,rgba(168,85,247,0.35),transparent_50%)]"></div>
+              <div class="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-purple-600/20 blur-3xl"></div>
+              <div class="relative">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-purple-200/80">Kurucu paneli</p>
+                <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Kurucu paneline hoş geldiniz</h1>
+                <p class="mt-3 max-w-2xl text-sm leading-relaxed text-purple-100/70">
+                  Günlük trafik ve kapasite özetini buradan izleyebilirsiniz. Detaylı raporlar yakında eklenecek.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div class="mb-4 flex items-end justify-between gap-4">
+                <h2 class="text-lg font-bold text-slate-100">Günlük analiz</h2>
+                <span class="text-xs text-slate-500">Canlı özet · localStorage</span>
+              </div>
+
+              <div class="grid gap-4 lg:grid-cols-2">
+                <article
+                  class="relative overflow-hidden rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                >
+                  <div
+                    class="sa-stat-oval -right-16 -top-20 h-52 w-[22rem] rotate-12 border-2 border-purple-500/25 bg-gradient-to-br from-purple-600/30 to-fuchsia-600/10 blur-sm"
+                  ></div>
+                  <div class="sa-stat-oval -right-8 -top-10 h-36 w-56 bg-purple-500/20 blur-xl"></div>
+                  <div class="relative">
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Bugün giriş yapan öğrenci</p>
+                    <p
+                      id="stat-today-student"
+                      class="mt-4 text-5xl font-extrabold tabular-nums tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-300 via-purple-400 to-violet-500 drop-shadow-[0_0_24px_rgba(192,132,252,0.45)]"
+                    >
+                      0
+                    </p>
+                    <p class="mt-2 text-xs text-slate-500">Son 24 saat · benzersiz oturum</p>
+                  </div>
+                </article>
+
+                <article
+                  class="relative overflow-hidden rounded-2xl border border-emerald-500/10 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                >
+                  <div
+                    class="sa-stat-oval -right-14 -top-24 h-56 w-[20rem] -rotate-6 border-2 border-[#00e599]/20 bg-gradient-to-bl from-[#00e599]/25 to-emerald-600/5 blur-sm"
+                  ></div>
+                  <div class="sa-stat-oval -right-6 -top-8 h-32 w-48 bg-[#00e599]/15 blur-2xl"></div>
+                  <div class="relative">
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Bugün giriş yapan koç</p>
+                    <p id="stat-today-coach" class="mt-4 text-5xl font-extrabold tabular-nums tracking-tight text-[#00e599] drop-shadow-[0_0_28px_rgba(0,229,153,0.5)]">
+                      0
+                    </p>
+                    <p class="mt-2 text-xs text-slate-500">Son 24 saat · aktif hesap</p>
+                  </div>
+                </article>
+              </div>
+
+              <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <article class="relative overflow-hidden rounded-2xl border border-purple-500/12 bg-[#0b0914] p-6">
+                  <div class="sa-stat-oval -right-10 -top-16 h-40 w-44 rounded-full bg-violet-600/15 blur-2xl"></div>
+                  <p class="relative text-[11px] font-bold uppercase tracking-widest text-slate-500">Toplam koç</p>
+                  <p id="stat-total-coach" class="relative mt-3 text-3xl font-bold tabular-nums text-slate-100">0</p>
+                </article>
+                <article class="relative overflow-hidden rounded-2xl border border-purple-500/12 bg-[#0b0914] p-6">
+                  <div class="sa-stat-oval -right-8 -top-14 h-36 w-40 rounded-full bg-fuchsia-600/12 blur-2xl"></div>
+                  <p class="relative text-[11px] font-bold uppercase tracking-widest text-slate-500">Toplam öğrenci</p>
+                  <p id="stat-total-student" class="relative mt-3 text-3xl font-bold tabular-nums text-slate-100">0</p>
+                </article>
+                <article class="relative overflow-hidden rounded-2xl border border-slate-700/40 bg-[#0b0914] p-6 sm:col-span-2 xl:col-span-1">
+                  <div class="sa-stat-oval -right-6 -top-12 h-32 w-52 bg-[#00e599]/10 blur-2xl"></div>
+                  <div class="sa-stat-oval right-4 top-4 h-24 w-40 -rotate-12 border border-purple-500/15 bg-purple-600/10"></div>
+                  <p class="relative text-[11px] font-bold uppercase tracking-widest text-slate-500">Sistem yükü</p>
+                  <p class="relative mt-3 text-3xl font-bold tabular-nums text-slate-100">
+                    <span id="stat-cpu-value">—</span> <span id="stat-cpu-suffix" class="text-lg font-semibold text-slate-500">CPU</span>
+                  </p>
+                  <p class="relative mt-2 text-xs text-slate-500">Canlı metrik yok · sunucu entegrasyonu sonrası doldurulur</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <!-- Sorunlar & Destek (system_bug_reports) -->
+          <section id="sa-view-sorunlar-destek" class="sa-view hidden max-w-[92rem] space-y-6">
+            <div>
+              <h1 class="text-xl font-bold text-slate-100">Sorunlar &amp; Destek talepleri</h1>
+              <p class="mt-1 text-sm text-slate-500">
+                Tüm panellerden <code class="text-purple-300">bug-reporter</code> ile gelen kayıtlar (<code class="text-purple-300">system_bug_reports</code>).
+              </p>
+            </div>
+            <div class="overflow-hidden rounded-2xl border border-purple-500/15 bg-[#0b0914] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div class="overflow-x-auto">
+                <table class="min-w-[1100px] w-full border-collapse text-left text-[13px]">
+                  <thead>
+                    <tr
+                      class="border-b border-purple-500/10 bg-black/60 text-[10px] font-bold uppercase tracking-widest text-slate-500"
+                    >
+                      <th class="whitespace-nowrap px-4 py-3">TARİH</th>
+                      <th class="whitespace-nowrap px-4 py-3">GÖNDEREN</th>
+                      <th class="whitespace-nowrap px-4 py-3">KATEGORİ</th>
+                      <th class="whitespace-nowrap px-4 py-3">ÖNCELİK</th>
+                      <th class="whitespace-nowrap px-4 py-3">DURUM</th>
+                      <th class="min-w-[140px] px-4 py-3">SAYFA</th>
+                      <th class="whitespace-nowrap px-4 py-3">DETAY / GÖRSEL</th>
+                      <th class="whitespace-nowrap px-4 py-3 text-right">İŞLEM</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sa-support-tbody" class="divide-y divide-purple-500/10 text-slate-300"></tbody>
+                </table>
+              </div>
+              <p id="sa-support-empty" class="hidden px-4 py-12 text-center text-sm text-slate-500">
+                Henüz destek kaydı yok. Panellerdeki sorun bildirimi kullanıldığında burada listelenir.
+              </p>
+            </div>
+          </section>
+
+          <!-- Bakım modu -->
+          <section id="sa-view-bakim-modu" class="sa-view hidden max-w-3xl">
+            <div
+              class="rounded-2xl border border-purple-500/15 bg-[#0b0914] p-8 shadow-[0_0_0_1px_rgba(139,92,246,0.08),0_24px_48px_-24px_rgba(0,0,0,0.5)]"
+            >
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h1 class="text-xl font-bold text-slate-100">Bakım modu</h1>
+                  <p class="mt-3 max-w-xl text-sm leading-relaxed text-slate-500">
+                    Açıkken koç ve öğrenci hesapları giriş ekranında reddedilir; yalnızca kurucu paneli ve tanımlı yönetim
+                    oturumları erişebilir. Kapattığınızda paneller normale döner.
+                  </p>
+                </div>
+                <span
+                  id="sa-maintenance-badge"
+                  class="shrink-0 rounded-full border border-slate-600/50 bg-black/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400"
+                >
+                  Durum: —
+                </span>
+              </div>
+
+              <div class="mt-8 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  id="sa-maintenance-start"
+                  class="inline-flex items-center gap-2 rounded-xl border border-purple-400/40 bg-gradient-to-r from-purple-900/80 to-violet-800/80 px-5 py-3 text-sm font-bold text-white shadow-glow-purple-sm transition hover:shadow-glow-purple focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                >
+                  <span class="text-lg leading-none" aria-hidden="true">⏻</span>
+                  Bakımı başlat
+                </button>
+                <button
+                  type="button"
+                  id="sa-maintenance-stop"
+                  class="inline-flex items-center gap-2 rounded-xl border border-red-900/50 bg-red-950/80 px-5 py-3 text-sm font-bold text-red-100 transition hover:bg-red-900/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
+                >
+                  <span class="text-lg leading-none" aria-hidden="true">✕</span>
+                  Bakımı durdur
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Teklif talepleri -->
+          <section id="sa-view-teklif-talepleri" class="sa-view hidden max-w-[92rem] space-y-6">
+            <div
+              class="rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-8"
+            >
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex gap-4">
+                  <div
+                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#00e599]/30 bg-[#00e599]/10 text-[#00e599]"
+                    aria-hidden="true"
+                  >
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 class="text-xl font-bold text-slate-100">Teklif talepleri</h1>
+                    <p class="mt-1 max-w-2xl text-sm text-slate-500">
+                      Ana sayfadaki teklif formundan gelen talepler burada listelenir. <strong class="font-medium text-slate-400">Yeni</strong> durumundaki
+                      kayıt sayısı üst menüdeki rozetle gösterilir.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-8 overflow-hidden rounded-xl border border-purple-500/10 bg-black/30">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b border-purple-500/10 bg-black/50 text-[11px] font-bold uppercase tracking-wider text-purple-300/90">
+                        <th class="whitespace-nowrap px-3 py-3">Tarih</th>
+                        <th class="whitespace-nowrap px-3 py-3">Paket</th>
+                        <th class="whitespace-nowrap px-3 py-3">Kurum</th>
+                        <th class="whitespace-nowrap px-3 py-3">Yetkili</th>
+                        <th class="whitespace-nowrap px-3 py-3">E-posta</th>
+                        <th class="whitespace-nowrap px-3 py-3">Telefon</th>
+                        <th class="min-w-[140px] px-3 py-3">Mesaj</th>
+                        <th class="whitespace-nowrap px-3 py-3">Durum</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Sil</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sa-teklif-tbody" class="divide-y divide-purple-500/10 text-slate-300"></tbody>
+                  </table>
+                </div>
+                <p id="sa-teklif-empty" class="px-4 py-12 text-center text-sm text-slate-500">Henüz teklif talebi yok.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Admin yönetimi -->
+          <section id="sa-view-admin-yonetimi" class="sa-view hidden max-w-6xl space-y-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 class="text-xl font-bold text-slate-100">Admin yönetimi</h1>
+                <p class="mt-1 text-sm text-slate-500">Kurucu paneli yetkilileri ve erişim seviyeleri</p>
+              </div>
+              <button
+                type="button"
+                id="sa-admin-open-modal"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-violet-600 to-[#00e599] px-5 py-2.5 text-sm font-bold text-white shadow-[0_0_24px_rgba(139,92,246,0.35)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/50"
+              >
+                Yeni Yetkili Ekle
+              </button>
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div class="relative flex-1">
+                <svg
+                  class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+                <input
+                  id="sa-admin-search"
+                  type="search"
+                  placeholder="Kullanıcı adı, ad veya e-posta ara..."
+                  class="w-full rounded-xl border border-purple-500/15 bg-black py-2.5 pl-10 pr-4 text-sm text-slate-200 placeholder:text-slate-600 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <div class="overflow-hidden rounded-2xl border border-purple-500/15 bg-[#0b0914] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                  <thead>
+                    <tr class="border-b border-purple-500/10 bg-black/40 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      <th class="px-5 py-3">Kullanıcı adı</th>
+                      <th class="px-5 py-3">Ad soyad</th>
+                      <th class="px-5 py-3">E-posta</th>
+                      <th class="px-5 py-3">Yetki seviyesi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sa-admin-tbody" class="divide-y divide-purple-500/10 text-slate-300"></tbody>
+                </table>
+              </div>
+              <p id="sa-admin-empty" class="hidden px-5 py-8 text-center text-sm text-slate-500"></p>
+            </div>
+          </section>
+
+          <!-- Global Deneme Takvimi (canlı → koç / öğrenci panelleri) -->
+          <section id="sa-view-global-deneme-takvimi" class="sa-view hidden max-w-5xl space-y-6">
+            <div
+              class="rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                <div
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-500/25 bg-cyan-500/10 text-cyan-300"
+                  aria-hidden="true"
+                >
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                  </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h1 class="text-lg font-bold text-slate-100">Merkezi Global Deneme Takvimi</h1>
+                  <p class="mt-1 text-sm leading-relaxed text-slate-500">
+                    Varsayılan kaynak <span class="text-purple-300">denemeler.net/takvim</span> (veya aylık URL). Sayfa
+                    <code class="text-purple-300">global_exams_live</code> ile koç ve öğrenci panellerine yansır. Harici siteden
+                    çekim tarayıcıda CORS nedeniyle vekil üzerinden yapılır; sonuçlar önce önizlemede listelenir, seçtiklerinizi
+                    kaydedin.
+                  </p>
+                </div>
+              </div>
+              <label for="sa-ge-url" class="mt-5 mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500"
+                >Hedef sayfa URL (opsiyonel)</label
+              >
+              <input
+                id="sa-ge-url"
+                type="url"
+                inputmode="url"
+                placeholder="https://denemeler.net/takvim veya …/takvim/mayis-2026"
+                class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+              />
+              <div class="mt-4 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  id="sa-ge-fetch"
+                  class="inline-flex items-center gap-2 rounded-xl border border-[#00e599]/40 bg-[#00e599]/10 px-4 py-2.5 text-sm font-bold text-[#00e599] shadow-[0_0_20px_rgba(0,229,153,0.15)] transition hover:bg-[#00e599]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/50"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                  </svg>
+                  <span id="sa-ge-fetch-label">Verileri Çek</span>
+                </button>
+                <button
+                  type="button"
+                  id="sa-ge-bulk-select"
+                  class="rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm font-semibold text-purple-200 transition hover:bg-purple-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/50"
+                >
+                  Toplu seç
+                </button>
+                <button
+                  type="button"
+                  id="sa-ge-delete-selected-preview"
+                  class="inline-flex items-center gap-2 rounded-xl border border-red-500/35 bg-red-950/40 px-4 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                  </svg>
+                  Seçilenleri Sil
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
+              <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-purple-300/90">Çekilen denemeler (önizleme)</h2>
+                <span id="sa-ge-preview-count" class="text-xs text-slate-500"></span>
+              </div>
+              <div class="overflow-hidden rounded-xl border border-purple-500/10 bg-black/30">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b border-purple-500/10 bg-black/50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        <th class="w-12 px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            id="sa-ge-select-all"
+                            class="h-4 w-4 rounded border-slate-600 bg-black text-purple-600 focus:ring-purple-500/40"
+                            title="Tümünü seç / kaldır"
+                            aria-label="Tümünü seç"
+                          />
+                        </th>
+                        <th class="px-3 py-3">Yayın</th>
+                        <th class="px-3 py-3">Sınav adı</th>
+                        <th class="px-3 py-3">Tarih</th>
+                        <th class="px-3 py-3">Tür</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sa-ge-preview-tbody" class="divide-y divide-purple-500/10 text-slate-300"></tbody>
+                  </table>
+                </div>
+                <p id="sa-ge-preview-empty" class="px-4 py-10 text-center text-sm text-slate-500">
+                  Henüz çekilen satır yok. Üstteki URL ile <strong class="text-slate-400">Verileri Çek</strong> deyin.
+                </p>
+              </div>
+              <button
+                type="button"
+                id="sa-ge-save-selected"
+                class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-purple-900/30 transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/50 sm:w-auto"
+              >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                Seçilenleri sisteme kaydet
+              </button>
+            </div>
+
+            <div
+              class="rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
+              <h2 class="text-sm font-bold uppercase tracking-wider text-purple-300/90">Manuel sınav ekle</h2>
+              <form id="sa-ge-manual-form" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+                <div class="sm:col-span-2 lg:col-span-2">
+                  <label for="sa-ge-ad" class="mb-1.5 block text-xs font-medium text-slate-500">Deneme adı</label>
+                  <input
+                    id="sa-ge-ad"
+                    type="text"
+                    required
+                    class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                    placeholder="Örn: Paraf Yayınları TYT Geneli"
+                  />
+                </div>
+                <div>
+                  <label for="sa-ge-tarih" class="mb-1.5 block text-xs font-medium text-slate-500">Tarih</label>
+                  <input
+                    id="sa-ge-tarih"
+                    type="date"
+                    required
+                    class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                  />
+                </div>
+                <div>
+                  <label for="sa-ge-saat" class="mb-1.5 block text-xs font-medium text-slate-500">Saat</label>
+                  <input
+                    id="sa-ge-saat"
+                    type="time"
+                    value="10:00"
+                    class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                  />
+                </div>
+                <div>
+                  <label for="sa-ge-tur" class="mb-1.5 block text-xs font-medium text-slate-500">Tür</label>
+                  <select
+                    id="sa-ge-tur"
+                    class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                  >
+                    <option value="TYT">TYT</option>
+                    <option value="AYT">AYT</option>
+                    <option value="YDT">YDT</option>
+                    <option value="YKS">YKS</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="sa-ge-yayin" class="mb-1.5 block text-xs font-medium text-slate-500">Yayınevi</label>
+                  <input
+                    id="sa-ge-yayin"
+                    type="text"
+                    class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                    placeholder="Opsiyonel"
+                  />
+                </div>
+                <div class="sm:col-span-2 lg:col-span-1">
+                  <button
+                    type="submit"
+                    class="w-full rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(124,58,237,0.35)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                  >
+                    Tabloya ekle
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div>
+              <div class="mb-3 flex items-center justify-between gap-2">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Yayında olan sınavlar</h2>
+                <span id="sa-ge-count" class="text-xs text-slate-500"></span>
+              </div>
+              <div class="overflow-hidden rounded-2xl border border-purple-500/15 bg-[#0b0914] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b border-purple-500/10 bg-black/50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        <th class="px-4 py-3">Deneme</th>
+                        <th class="px-4 py-3">Tarih</th>
+                        <th class="px-4 py-3">Saat</th>
+                        <th class="px-4 py-3">Tür</th>
+                        <th class="px-4 py-3">Yayınevi</th>
+                        <th class="px-4 py-3 text-right">İşlem</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sa-ge-tbody" class="divide-y divide-purple-500/10 text-slate-300"></tbody>
+                  </table>
+                </div>
+                <p id="sa-ge-empty" class="hidden px-4 py-10 text-center text-sm text-slate-500">
+                  Yayında henüz kayıt yok. Önizlemeden seçip <strong class="text-slate-400">Seçilenleri sisteme kaydet</strong> deyin veya
+                  manuel ekleyin.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Kurumlar (multi-tenant) -->
+          <section id="sa-view-kurumlar" class="sa-view hidden max-w-4xl space-y-8">
+            <div>
+              <h1 class="text-xl font-bold text-slate-100">Kurumlar</h1>
+              <p class="mt-1 text-sm text-slate-500">Kurum kaydı; koç hesapları bir kuruma bağlanır.</p>
+            </div>
+
+            <div
+              class="rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
+              <h2 class="text-sm font-bold uppercase tracking-wider text-purple-300/90">Kurum oluştur</h2>
+              <form id="sa-institution-form" class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div class="min-w-0 flex-1">
+                  <label for="sa-institution-name" class="mb-1.5 block text-xs font-medium text-slate-500">Kurum Adı</label>
+                  <input
+                    id="sa-institution-name"
+                    type="text"
+                    required
+                    autocomplete="organization"
+                    class="w-full rounded-xl border border-purple-500/20 bg-black px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                    placeholder="Örn: VIP Derece Kursu"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="shrink-0 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 px-6 py-3 text-sm font-bold text-white shadow-[0_0_20px_rgba(124,58,237,0.35)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                >
+                  Kurumu kaydet
+                </button>
+              </form>
+            </div>
+
+            <div>
+              <h2 class="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">Kayıtlı Kurumlar</h2>
+              <div class="overflow-hidden rounded-2xl border border-purple-500/15 bg-[#0b0914] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b border-purple-500/10 bg-black/50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        <th class="px-5 py-3">KURUM ADI</th>
+                        <th class="px-5 py-3">BELGE ID</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sa-institutions-tbody" class="divide-y divide-purple-500/10 text-slate-300"></tbody>
+                  </table>
+                </div>
+                <p id="sa-institutions-empty" class="hidden px-5 py-10 text-center text-sm text-slate-500">
+                  Henüz kurum yok. Yukarıdan ilk kurumu oluşturun.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Yeni koç -->
+          <section id="sa-view-yeni-koc" class="sa-view hidden max-w-2xl space-y-6">
+            <div>
+              <h1 class="text-xl font-bold text-slate-100">Yeni koç</h1>
+              <p class="mt-1 text-sm text-slate-500">Koç mutlaka bir kuruma atanmalıdır.</p>
+            </div>
+
+            <form
+              id="sa-new-coach-form"
+              class="space-y-5 rounded-2xl border border-purple-500/15 bg-[#0b0914] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
+              <div>
+                <label for="sa-coach-username" class="mb-1.5 block text-xs font-medium text-slate-500">Koç Kullanıcı Adı</label>
+                <input
+                  id="sa-coach-username"
+                  type="text"
+                  required
+                  autocomplete="username"
+                  class="w-full rounded-xl border border-purple-500/20 bg-black px-4 py-3 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                />
+              </div>
+              <div>
+                <label for="sa-coach-password" class="mb-1.5 block text-xs font-medium text-slate-500">Şifre</label>
+                <input
+                  id="sa-coach-password"
+                  type="password"
+                  required
+                  autocomplete="new-password"
+                  class="w-full rounded-xl border border-purple-500/20 bg-black px-4 py-3 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                />
+              </div>
+              <div>
+                <label for="sa-coach-phone" class="mb-1.5 block text-xs font-medium text-slate-500">İletişim Telefonu</label>
+                <input
+                  id="sa-coach-phone"
+                  type="tel"
+                  required
+                  autocomplete="tel"
+                  class="w-full rounded-xl border border-purple-500/20 bg-black px-4 py-3 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                  placeholder="05xx xxx xx xx"
+                />
+              </div>
+              <div>
+                <label for="sa-coach-package" class="mb-1.5 block text-xs font-medium text-slate-500">Paket Tipi</label>
+                <select
+                  id="sa-coach-package"
+                  required
+                  class="w-full rounded-xl border border-purple-500/20 bg-black px-4 py-3 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                >
+                  <option value="Başlangıç">Başlangıç</option>
+                  <option value="Pro">Pro</option>
+                  <option value="Ultra">Ultra</option>
+                </select>
+              </div>
+              <div>
+                <label for="sa-coach-institution" class="mb-1.5 block text-xs font-medium text-slate-500">Kurum</label>
+                <select
+                  id="sa-coach-institution"
+                  required
+                  class="w-full rounded-xl border border-purple-500/20 bg-black px-4 py-3 text-sm text-slate-100 focus:border-[#00e599]/40 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+                >
+                  <option value="">Yükleniyor…</option>
+                </select>
+                <p id="sa-coach-institution-hint" class="mt-2 hidden text-xs text-amber-400/90">
+                  Kayıtlı kurum yok. Önce <a href="#kurumlar" class="underline hover:text-amber-300">Kurumlar</a> sayfasından kurum oluşturun.
+                </p>
+              </div>
+              <button
+                type="submit"
+                class="w-full rounded-xl bg-[#00e599] py-3.5 text-sm font-bold text-black shadow-[0_0_24px_rgba(0,229,153,0.35)] transition hover:bg-[#33f0b3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/50"
+              >
+                Hesabı Oluştur
+              </button>
+            </form>
+          </section>
+
+          <!-- Koç listesi -->
+          <section id="sa-view-koc-listesi" class="sa-view hidden max-w-[90rem] space-y-6">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h1 class="text-xl font-bold text-slate-100">Koç listesi</h1>
+                <p class="text-sm text-slate-500">Kurum hiyerarşisi, paket ve güvenlik aksiyonları</p>
+              </div>
+            </div>
+
+            <div class="overflow-hidden rounded-2xl border border-purple-500/15 bg-[#0b0914] shadow-[0_0_0_1px_rgba(139,92,246,0.06)]">
+              <div class="overflow-x-auto">
+                <table class="min-w-[960px] w-full border-collapse text-left text-[13px]">
+                  <thead>
+                    <tr
+                      class="border-b border-purple-500/10 bg-gradient-to-r from-black/80 to-purple-950/20 text-[10px] font-bold uppercase tracking-widest text-slate-500"
+                    >
+                      <th class="whitespace-nowrap px-5 py-4">Koç / Kurum</th>
+                      <th class="whitespace-nowrap px-4 py-4">Aktif öğrenci</th>
+                      <th class="whitespace-nowrap px-4 py-4">Son giriş</th>
+                      <th class="whitespace-nowrap px-4 py-4">Paket</th>
+                      <th class="whitespace-nowrap px-4 py-4">Durum</th>
+                      <th class="whitespace-nowrap px-5 py-4 text-right">Güvenlik &amp; aksiyonlar</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sa-coaches-tbody" class="divide-y divide-purple-500/[0.08]"></tbody>
+                </table>
+              </div>
+              <p id="sa-coaches-empty" class="hidden px-5 py-12 text-center text-sm text-slate-500">
+                Henüz koç yok. <a href="#yeni-koc" class="text-[#00e599] underline hover:text-[#33f0b3]">Yeni koç</a> ile ekleyin.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Yeni yetkili ekle (system_admins) -->
+    <div
+      id="sa-admin-modal-overlay"
+      class="fixed inset-0 z-[100000] hidden items-center justify-center bg-black/70 px-4 py-8 backdrop-blur-md"
+      aria-hidden="true"
+    >
+      <div
+        id="sa-admin-modal-panel"
+        class="relative w-full max-w-lg rounded-2xl border border-purple-500/25 bg-[#0c0814] p-6 shadow-[0_0_0_1px_rgba(139,92,246,0.12),0_24px_64px_rgba(0,0,0,0.65)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sa-admin-modal-title"
+      >
+        <div class="mb-6 flex items-start justify-between gap-3">
+          <h2 id="sa-admin-modal-title" class="text-lg font-bold tracking-tight text-white">Yeni yetkili ekle</h2>
+          <button
+            type="button"
+            id="sa-admin-modal-close-x"
+            class="rounded-lg border border-slate-600/50 p-1.5 text-slate-400 transition hover:bg-white/5 hover:text-white"
+            aria-label="Kapat"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form id="sa-admin-modal-form" class="space-y-4">
+          <div>
+            <label for="sa-admin-modal-name" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#00e599]">Ad soyad</label>
+            <input
+              id="sa-admin-modal-name"
+              type="text"
+              required
+              autocomplete="name"
+              class="w-full rounded-xl border border-purple-500/25 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+            />
+          </div>
+          <div>
+            <label for="sa-admin-modal-user" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#00e599]">Kullanıcı adı</label>
+            <input
+              id="sa-admin-modal-user"
+              type="text"
+              required
+              autocomplete="username"
+              pattern="[a-z0-9_]+"
+              title="Yalnızca a-z, 0-9, _"
+              class="w-full rounded-xl border border-purple-500/25 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+              placeholder="Yalnızca a-z, 0-9, _"
+            />
+          </div>
+          <div>
+            <label for="sa-admin-modal-email" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#00e599]">E-posta (iletişim)</label>
+            <input
+              id="sa-admin-modal-email"
+              type="email"
+              required
+              autocomplete="email"
+              class="w-full rounded-xl border border-purple-500/25 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+            />
+          </div>
+          <div>
+            <label for="sa-admin-modal-password" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#00e599]"
+              >Şifre <span class="font-normal normal-case text-slate-500">(Appwrite girişi + tablo notu)</span></label
+            >
+            <div class="relative">
+              <input
+                id="sa-admin-modal-password"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="En az 8 karakter; girişte kullanılır"
+                class="w-full rounded-xl border border-purple-500/25 bg-black py-2.5 pl-3 pr-11 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+              />
+              <button
+                type="button"
+                id="sa-admin-modal-pwd-toggle"
+                class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-500 hover:bg-white/5 hover:text-slate-300"
+                aria-label="Şifreyi göster"
+              >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label for="sa-admin-modal-role" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#00e599]">Yetki seviyesi</label>
+            <select
+              id="sa-admin-modal-role"
+              class="w-full rounded-xl border border-purple-500/25 bg-black px-3 py-2.5 text-sm text-slate-100 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+            >
+              <option value="Tam yetki" selected>Tam yetki</option>
+              <option value="Kurucu">Kurucu</option>
+              <option value="Sistem">Sistem</option>
+              <option value="Destek L1">Destek L1</option>
+              <option value="İçerik">İçerik</option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              id="sa-admin-modal-cancel"
+              class="rounded-xl border border-slate-600/50 bg-black/40 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/5"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              class="rounded-xl bg-gradient-to-r from-purple-600 via-violet-600 to-cyan-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-purple-900/30 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00e599]/50"
+            >
+              Kaydet
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Profil: detay / düzenle modalları -->
+    <div
+      id="sa-profile-modal-root"
+      class="fixed inset-0 z-[100] hidden cursor-default items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
+      role="presentation"
+      aria-hidden="true"
+    >
+      <div
+        id="sa-profile-panel-detail"
+        class="relative z-10 hidden w-full max-w-md cursor-auto rounded-2xl border border-purple-500/25 bg-[#12101c] p-6 text-slate-200 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.75)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sa-profile-detail-title"
+      >
+        <div class="mb-5 flex items-start justify-between gap-3">
+          <div>
+            <h2 id="sa-profile-detail-title" class="text-lg font-bold text-white">Profil detayı</h2>
+            <p class="mt-1 text-xs text-slate-500">Kayıtlı kurucu bilgileri (bu tarayıcı)</p>
+          </div>
+          <button
+            type="button"
+            id="sa-profile-detail-close"
+            class="rounded-lg border border-slate-600/50 p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
+            aria-label="Kapat"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+        <dl class="space-y-4 text-sm">
+          <div>
+            <dt class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Ad soyad</dt>
+            <dd id="sa-profile-detail-name" class="mt-1 font-semibold text-slate-100">—</dd>
+          </div>
+          <div>
+            <dt class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Kullanıcı adı</dt>
+            <dd id="sa-profile-detail-username" class="mt-1 font-mono text-sm text-purple-200">—</dd>
+          </div>
+          <div>
+            <dt class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Şifre</dt>
+            <dd id="sa-profile-detail-pw-hint" class="mt-1 text-slate-400">—</dd>
+          </div>
+          <div>
+            <dt class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Son güncelleme</dt>
+            <dd id="sa-profile-detail-updated" class="mt-1 text-slate-400">—</dd>
+          </div>
+        </dl>
+        <div class="mt-6 flex justify-end">
+          <button
+            type="button"
+            id="sa-profile-detail-to-edit"
+            class="rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-purple-900/30 hover:brightness-110"
+          >
+            Düzenle
+          </button>
+        </div>
+      </div>
+      <div
+        id="sa-profile-panel-edit"
+        class="relative z-10 hidden w-full max-w-md cursor-auto rounded-2xl border border-purple-500/25 bg-[#12101c] p-6 text-slate-200 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.75)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sa-profile-edit-title"
+      >
+        <div class="mb-5 flex items-start justify-between gap-3">
+          <div>
+            <h2 id="sa-profile-edit-title" class="text-lg font-bold text-white">Profili düzenle</h2>
+            <p class="mt-1 text-xs text-slate-500">İsim, kullanıcı adı ve şifre</p>
+          </div>
+          <button
+            type="button"
+            id="sa-profile-edit-close"
+            class="rounded-lg border border-slate-600/50 p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
+            aria-label="Kapat"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+        <p id="sa-profile-edit-msg" class="mb-4 hidden rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100"></p>
+        <form id="sa-profile-edit-form" class="space-y-4">
+          <div>
+            <label for="sa-profile-in-name" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Ad soyad</label>
+            <input
+              id="sa-profile-in-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+            />
+          </div>
+          <div>
+            <label for="sa-profile-in-username" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Kullanıcı adı</label>
+            <input
+              id="sa-profile-in-username"
+              name="username"
+              type="text"
+              autocomplete="username"
+              class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+            />
+          </div>
+          <div id="sa-profile-row-current-pw" class="hidden">
+            <label for="sa-profile-in-current-pw" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Mevcut şifre</label>
+            <input
+              id="sa-profile-in-current-pw"
+              type="password"
+              autocomplete="current-password"
+              class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+              placeholder="Değişiklik için gerekli"
+            />
+          </div>
+          <div>
+            <label for="sa-profile-in-new-pw" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Yeni şifre</label>
+            <input
+              id="sa-profile-in-new-pw"
+              type="password"
+              autocomplete="new-password"
+              class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+              placeholder="Boş bırakırsanız değişmez"
+            />
+          </div>
+          <div>
+            <label for="sa-profile-in-new-pw2" class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Yeni şifre (tekrar)</label>
+            <input
+              id="sa-profile-in-new-pw2"
+              type="password"
+              autocomplete="new-password"
+              class="w-full rounded-xl border border-purple-500/20 bg-black px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-[#00e599]/45 focus:outline-none focus:ring-2 focus:ring-[#00e599]/20"
+            />
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              id="sa-profile-edit-cancel"
+              class="rounded-xl border border-slate-600/50 bg-black/40 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/5"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              class="rounded-xl bg-[#00e599] px-5 py-2.5 text-sm font-bold text-black shadow-[0_0_24px_rgba(0,229,153,0.25)] hover:bg-[#33f0b3]"
+            >
+              Kaydet
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/super-admin.js"></script>
+    <script>
+      (function () {
+        var MAINT_KEY = "maintenance_mode";
+        var LS_INST = "institutions";
+        var LS_COACH = "coaches";
+        var LS_ADMINS = "system_admins";
+        var LS_TEKLIF = "teklif_talepleri_v1";
+
+        var routes = {
+          "ana-sayfa": "sa-view-dashboard",
+          "ozet-istatistikler": "sa-view-dashboard",
+          "bakim-modu": "sa-view-bakim-modu",
+          "teklif-talepleri": "sa-view-teklif-talepleri",
+          "sorunlar-destek": "sa-view-sorunlar-destek",
+          "admin-yonetimi": "sa-view-admin-yonetimi",
+          "global-deneme-takvimi": "sa-view-global-deneme-takvimi",
+          kurumlar: "sa-view-kurumlar",
+          "yeni-koc": "sa-view-yeni-koc",
+          "koc-listesi": "sa-view-koc-listesi",
+        };
+
+        var defaultRoute = "ana-sayfa";
+
+        function getRouteFromHash() {
+          var h = (window.location.hash || "").replace(/^#/, "").trim();
+          if (!h) return defaultRoute;
+          if (routes[h]) return h;
+          return defaultRoute;
+        }
+
+        function setActiveNav(route) {
+          document.querySelectorAll(".sa-nav[data-sa-route]").forEach(function (el) {
+            el.classList.remove("sa-nav-active", "text-slate-200");
+            el.classList.add("text-slate-400");
+            el.removeAttribute("aria-current");
+          });
+          var active = document.querySelector('.sa-nav[data-sa-route="' + route + '"]');
+          if (active) {
+            active.classList.add("sa-nav-active");
+            active.classList.remove("text-slate-400");
+            active.setAttribute("aria-current", "page");
+          }
+        }
+
+        function showView(route) {
+          var viewId = routes[route] || routes[defaultRoute];
+          document.querySelectorAll(".sa-view").forEach(function (el) {
+            el.classList.add("hidden");
+          });
+          var panel = document.getElementById(viewId);
+          if (panel) panel.classList.remove("hidden");
+        }
+
+        function readJsonArray(key) {
+          try {
+            var raw = localStorage.getItem(key);
+            if (!raw) return [];
+            var p = JSON.parse(raw);
+            return Array.isArray(p) ? p : [];
+          } catch (e) {
+            return [];
+          }
+        }
+
+        function writeJsonArray(key, arr) {
+          localStorage.setItem(key, JSON.stringify(arr));
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        function newDocumentId() {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
+          }
+          return "doc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
+        }
+
+        function newCoachId() {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
+          }
+          return "coach_" + Date.now().toString(36);
+        }
+
+        function isSaLocalHost() {
+          try {
+            var h = String(window.location.hostname || "").toLowerCase();
+            return h === "localhost" || h === "127.0.0.1" || h === "[::1]";
+          } catch (eH) {
+            return false;
+          }
+        }
+
+        function saCoachEmailHost() {
+          return isSaLocalHost() ? "localhost" : "derecepanel.local";
+        }
+
+        function readInstitutions() {
+          return readJsonArray(LS_INST);
+        }
+
+        function writeInstitutions(arr) {
+          writeJsonArray(LS_INST, arr);
+        }
+
+        function readCoaches() {
+          return readJsonArray(LS_COACH);
+        }
+
+        function writeCoaches(arr) {
+          writeJsonArray(LS_COACH, arr);
+          try {
+            if (window.applyDashboardStats) window.applyDashboardStats();
+          } catch (eSa) {}
+        }
+
+        /** Yerleşik demo koç; yerelde Appwrite ile uyum için admin1@localhost kullanılır. */
+        function seedBuiltinAdmin1Coach() {
+          try {
+            var CANON_EMAIL = "admin1@" + saCoachEmailHost();
+            var inst = readInstitutions();
+            var instId;
+            if (inst.length === 0) {
+              instId = newDocumentId();
+              inst.push({ name: "Kurum", documentId: instId });
+              writeInstitutions(inst);
+            } else {
+              instId = inst[0].documentId;
+            }
+            var coaches = readCoaches();
+            if (isSaLocalHost()) {
+              var dirty = false;
+              coaches = coaches.map(function (c) {
+                var le = String(c.loginEmail || "");
+                if (/@derecepanel\.local$/i.test(le)) {
+                  dirty = true;
+                  var n = Object.assign({}, c);
+                  n.loginEmail = le.replace(/@derecepanel\.local$/i, "@" + saCoachEmailHost());
+                  return n;
+                }
+                return c;
+              });
+              if (dirty) writeCoaches(coaches);
+            }
+            var has = coaches.some(function (c) {
+              var u = String(c.username || "").trim().toLowerCase();
+              var le = String(c.loginEmail || "").trim().toLowerCase();
+              return u === "admin1" || le === CANON_EMAIL || le === "admin1@derecepanel.local";
+            });
+            if (!has) {
+              coaches.push({
+                id: newCoachId(),
+                username: "admin1",
+                loginEmail: CANON_EMAIL,
+                password: "admin123",
+                phone: "—",
+                package: "",
+                institutionBelgeId: instId,
+                activeStudents: 0,
+                lastLogin: "—",
+                status: "Aktif",
+              });
+              writeCoaches(coaches);
+            }
+          } catch (eSeed) {}
+        }
+
+        function institutionNameByBelgeId(belgeId) {
+          var list = readInstitutions();
+          for (var i = 0; i < list.length; i++) {
+            if (list[i].documentId === belgeId) return list[i].name || "—";
+          }
+          return "—";
+        }
+
+        function renderInstitutionsTable() {
+          var tbody = document.getElementById("sa-institutions-tbody");
+          var empty = document.getElementById("sa-institutions-empty");
+          if (!tbody || !empty) return;
+          var rows = readInstitutions();
+          tbody.innerHTML = "";
+          if (rows.length === 0) {
+            empty.classList.remove("hidden");
+            return;
+          }
+          empty.classList.add("hidden");
+          rows.forEach(function (row) {
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-white/[0.03]";
+            tr.innerHTML =
+              '<td class="px-5 py-3 font-medium text-slate-100">' +
+              escapeHtml(row.name || "") +
+              '</td><td class="px-5 py-3 font-mono text-xs text-purple-300/90">' +
+              escapeHtml(row.documentId || "") +
+              "</td>";
+            tbody.appendChild(tr);
+          });
+        }
+
+        function populateInstitutionSelect() {
+          var sel = document.getElementById("sa-coach-institution");
+          var hint = document.getElementById("sa-coach-institution-hint");
+          if (!sel) return;
+          var list = readInstitutions();
+          sel.innerHTML = "";
+          if (list.length === 0) {
+            var o = document.createElement("option");
+            o.value = "";
+            o.textContent = "Önce kurum oluşturun";
+            o.disabled = true;
+            o.selected = true;
+            sel.appendChild(o);
+            sel.required = false;
+            sel.setAttribute("disabled", "disabled");
+            if (hint) hint.classList.remove("hidden");
+            return;
+          }
+          if (hint) hint.classList.add("hidden");
+          sel.removeAttribute("disabled");
+          sel.required = true;
+          var ph = document.createElement("option");
+          ph.value = "";
+          ph.textContent = "Kurum seçin…";
+          ph.disabled = true;
+          ph.selected = true;
+          sel.appendChild(ph);
+          list.forEach(function (inst) {
+            var opt = document.createElement("option");
+            opt.value = inst.documentId;
+            opt.textContent = inst.name;
+            sel.appendChild(opt);
+          });
+        }
+
+        function coachActionIcons(coachId) {
+          var mk = function (action, title, extraClass, inner) {
+            return (
+              '<button type="button" class="sa-icon-btn ' +
+              extraClass +
+              '" data-sa-coach-action="' +
+              action +
+              '" data-coach-id="' +
+              escapeHtml(coachId) +
+              '" title="' +
+              escapeHtml(title) +
+              '">' +
+              inner +
+              "</button>"
+            );
+          };
+          var keySvg =
+            '<svg class="h-4 w-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" stroke-linecap="round"/></svg>';
+          var pinkSvg =
+            '<svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="#ec4899" opacity="0.9"/></svg>';
+          var penSvg =
+            '<svg class="h-4 w-4 text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+          var trashSvg =
+            '<svg class="h-4 w-4 text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg>';
+          var eyeSvg =
+            '<svg class="h-4 w-4 text-slate-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+          return (
+            '<div class="flex flex-wrap items-center justify-end gap-2">' +
+            mk("pwd", "Şifre değiştir", "border-amber-500/30 bg-amber-500/10", keySvg) +
+            mk("pink", "Durum: askı / aktif", "border-pink-500/35 bg-pink-500/10", pinkSvg) +
+            mk("edit", "Düzenle", "border-slate-500/40", penSvg) +
+            mk("del", "Sil", "border-red-500/30 bg-red-950/40", trashSvg) +
+            mk("login", "Giriş yap", "border-slate-500/40", eyeSvg) +
+            "</div>"
+          );
+        }
+
+        function statusPill(status) {
+          var on = status === "Aktif";
+          return (
+            '<span class="inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ' +
+            (on
+              ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-300"
+              : "border-amber-500/35 bg-amber-500/10 text-amber-200") +
+            '">' +
+            escapeHtml(status || "—") +
+            "</span>"
+          );
+        }
+
+        function renderCoachTable() {
+          var tbody = document.getElementById("sa-coaches-tbody");
+          var empty = document.getElementById("sa-coaches-empty");
+          if (!tbody || !empty) return;
+          var coaches = readCoaches();
+          tbody.innerHTML = "";
+          if (coaches.length === 0) {
+            empty.classList.remove("hidden");
+            return;
+          }
+          empty.classList.add("hidden");
+          coaches.forEach(function (c) {
+            var instName = institutionNameByBelgeId(c.institutionBelgeId);
+            var tr = document.createElement("tr");
+            tr.className = "align-middle hover:bg-white/[0.02]";
+            tr.innerHTML =
+              '<td class="px-5 py-4">' +
+              '<div class="font-semibold text-slate-100">' +
+              escapeHtml(c.username || "") +
+              "</div>" +
+              (c.loginEmail
+                ? '<div class="mt-0.5 text-[11px] text-slate-500">Giriş e-postası: ' + escapeHtml(c.loginEmail) + "</div>"
+                : "") +
+              '<div class="mt-1 text-[11px] leading-snug text-slate-500">' +
+              "Şifre: " +
+              escapeHtml(c.password || "") +
+              "</div>" +
+              '<div class="mt-0.5 text-xs text-purple-300/90">' +
+              escapeHtml(instName) +
+              "</div></td>" +
+              '<td class="whitespace-nowrap px-4 py-4 tabular-nums text-slate-200">' +
+              escapeHtml(String(c.activeStudents != null ? c.activeStudents : "0")) +
+              "</td>" +
+              '<td class="whitespace-nowrap px-4 py-4 text-slate-400">' +
+              escapeHtml(c.lastLogin || "—") +
+              "</td>" +
+              '<td class="whitespace-nowrap px-4 py-4"><span class="rounded-lg border border-purple-500/25 bg-purple-500/10 px-2 py-0.5 text-xs font-semibold text-purple-200">' +
+              escapeHtml(c.package || "") +
+              "</span></td>" +
+              '<td class="whitespace-nowrap px-4 py-4">' +
+              statusPill(c.status) +
+              "</td>" +
+              '<td class="px-5 py-4 text-right">' +
+              coachActionIcons(c.id) +
+              "</td>";
+            tbody.appendChild(tr);
+          });
+        }
+
+        function findCoachIndex(id) {
+          var coaches = readCoaches();
+          for (var i = 0; i < coaches.length; i++) {
+            if (coaches[i].id === id) return i;
+          }
+          return -1;
+        }
+
+        function updateCoach(id, mutator) {
+          var coaches = readCoaches();
+          var idx = findCoachIndex(id);
+          if (idx < 0) return;
+          mutator(coaches[idx]);
+          writeCoaches(coaches);
+          renderCoachTable();
+        }
+
+        function onCoachTableClick(e) {
+          var btn = e.target.closest("[data-sa-coach-action]");
+          if (!btn) return;
+          var id = btn.getAttribute("data-coach-id");
+          var action = btn.getAttribute("data-sa-coach-action");
+          if (!id || !action) return;
+          var coaches = readCoaches();
+          var idx = findCoachIndex(id);
+          if (idx < 0) return;
+          var c = coaches[idx];
+          if (action === "pwd") {
+            var np = window.prompt("Yeni şifre:", c.password || "");
+            if (np === null) return;
+            if (!String(np).trim()) {
+              window.alert("Şifre boş olamaz.");
+              return;
+            }
+            updateCoach(id, function (row) {
+              row.password = String(np).trim();
+            });
+          } else if (action === "pink") {
+            updateCoach(id, function (row) {
+              row.status = row.status === "Askıda" ? "Aktif" : "Askıda";
+            });
+          } else if (action === "edit") {
+            var phone = window.prompt("İletişim telefonu:", c.phone || "");
+            if (phone === null) return;
+            var pkg = window.prompt("Paket (Başlangıç / Pro / Ultra):", c.package || "Pro");
+            if (pkg === null) return;
+            var insts = readInstitutions();
+            var opts = insts
+              .map(function (i, n) {
+                return n + 1 + ") " + i.name + " [" + i.documentId + "]";
+              })
+              .join("\n");
+            var pick = window.prompt("Kurum satır numarası (1-" + insts.length + "):\n" + (opts || "Kurum yok"), "1");
+            if (pick === null) return;
+            var n = parseInt(pick, 10);
+            if (!insts.length || isNaN(n) || n < 1 || n > insts.length) {
+              window.alert("Geçersiz kurum seçimi.");
+              return;
+            }
+            updateCoach(id, function (row) {
+              row.phone = String(phone).trim();
+              row.package = String(pkg).trim();
+              row.institutionBelgeId = insts[n - 1].documentId;
+            });
+          } else if (action === "del") {
+            if (!window.confirm("Bu koçu silmek istediğinize emin misiniz?")) return;
+            coaches.splice(idx, 1);
+            writeCoaches(coaches);
+            renderCoachTable();
+          } else if (action === "login") {
+            window.open("../koc-paneli.html", "_blank", "noopener,noreferrer");
+          }
+        }
+
+        var instForm = document.getElementById("sa-institution-form");
+        if (instForm) {
+          instForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var input = document.getElementById("sa-institution-name");
+            if (!input) return;
+            var name = String(input.value || "").trim();
+            if (!name) return;
+            var list = readInstitutions();
+            list.push({ name: name, documentId: newDocumentId() });
+            writeInstitutions(list);
+            input.value = "";
+            renderInstitutionsTable();
+            populateInstitutionSelect();
+          });
+        }
+
+        var coachForm = document.getElementById("sa-new-coach-form");
+        if (coachForm) {
+          coachForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var usernameEl = document.getElementById("sa-coach-username");
+            var passEl = document.getElementById("sa-coach-password");
+            var phoneEl = document.getElementById("sa-coach-phone");
+            var pkgEl = document.getElementById("sa-coach-package");
+            var instEl = document.getElementById("sa-coach-institution");
+            if (!usernameEl || !passEl || !phoneEl || !pkgEl || !instEl) return;
+            var belgeId = String(instEl.value || "").trim();
+            if (!belgeId) {
+              window.alert("Bir kurum seçmelisiniz.");
+              return;
+            }
+            var valid = readInstitutions().some(function (i) {
+              return i.documentId === belgeId;
+            });
+            if (!valid) {
+              window.alert("Seçilen kurum geçersiz. Sayfayı yenileyip tekrar deneyin.");
+              return;
+            }
+            var coaches = readCoaches();
+            var unameRaw = String(usernameEl.value || "").trim();
+            var host = saCoachEmailHost();
+            var loginEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(unameRaw)
+              ? unameRaw.toLowerCase()
+              : unameRaw.toLowerCase() + "@" + host;
+            coaches.push({
+              id: newCoachId(),
+              username: unameRaw,
+              loginEmail: loginEmail,
+              password: String(passEl.value || ""),
+              phone: String(phoneEl.value || "").trim(),
+              package: String(pkgEl.value || "").trim(),
+              institutionBelgeId: belgeId,
+              activeStudents: 0,
+              lastLogin: "—",
+              status: "Aktif",
+            });
+            writeCoaches(coaches);
+            coachForm.reset();
+            populateInstitutionSelect();
+            window.location.hash = "#koc-listesi";
+          });
+        }
+
+        var LS_GLOBAL_EXAMS = "global_exams_live";
+
+        function readSaGlobalExams() {
+          try {
+            var raw = localStorage.getItem(LS_GLOBAL_EXAMS);
+            if (!raw) return [];
+            var a = JSON.parse(raw);
+            return Array.isArray(a) ? a : [];
+          } catch (e) {
+            return [];
+          }
+        }
+
+        function writeSaGlobalExams(arr) {
+          localStorage.setItem(LS_GLOBAL_EXAMS, JSON.stringify(arr));
+          try {
+            localStorage.setItem("global_denemeler_v1", JSON.stringify(arr));
+            localStorage.setItem("globalExams", JSON.stringify(arr));
+          } catch (e2) {}
+          try {
+            window.dispatchEvent(new CustomEvent("globalDenemeler:updated"));
+          } catch (e3) {}
+        }
+
+        function newGeId() {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+          return "ge_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+        }
+
+        var GE_DEFAULT_URL = "https://denemeler.net/takvim";
+        var saGePreview = [];
+
+        function normalizeGeTargetUrl(raw) {
+          var s = String(raw || "").trim();
+          if (!s) return GE_DEFAULT_URL;
+          if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+          return s;
+        }
+
+        function pad2(n) {
+          return n < 10 ? "0" + n : String(n);
+        }
+
+        function trLower(s) {
+          return String(s || "")
+            .toLowerCase()
+            .replace(/ğ/g, "g")
+            .replace(/ü/g, "u")
+            .replace(/ş/g, "s")
+            .replace(/ı/g, "i")
+            .replace(/ö/g, "o")
+            .replace(/ç/g, "c")
+            .replace(/â/g, "a")
+            .replace(/î/g, "i")
+            .replace(/û/g, "u");
+        }
+
+        function monthFromTrToken(tok) {
+          var t = trLower(tok).replace(/\./g, "").trim();
+          var k = t.slice(0, 3);
+          var M = { oca: 1, sub: 2, mar: 3, nis: 4, may: 5, haz: 6, tem: 7, agu: 8, eyl: 9, eki: 10, kas: 11, ara: 12 };
+          if (M[k]) return M[k];
+          var full = [
+            ["ocak", 1],
+            ["subat", 2],
+            ["mart", 3],
+            ["nisan", 4],
+            ["mayis", 5],
+            ["haziran", 6],
+            ["temmuz", 7],
+            ["agustos", 8],
+            ["eylul", 9],
+            ["ekim", 10],
+            ["kasim", 11],
+            ["aralik", 12],
+          ];
+          for (var i = 0; i < full.length; i++) {
+            if (t.indexOf(full[i][0]) === 0) return full[i][1];
+          }
+          return null;
+        }
+
+        function inferDenemelerBannerYearMonth(doc) {
+          var el =
+            doc.querySelector("p.text-sm.text-muted-foreground.mb-4") ||
+            doc.querySelector("p.mb-4.text-muted-foreground") ||
+            doc.querySelector("p.text-muted-foreground.mb-4");
+          var txt = el ? el.textContent : "";
+          var yMatch = txt.match(/(20\d{2})/);
+          var year = yMatch ? parseInt(yMatch[1], 10) : new Date().getFullYear();
+          var month = new Date().getMonth() + 1;
+          var tl = trLower(txt);
+          var full = [
+            ["ocak", 1],
+            ["subat", 2],
+            ["mart", 3],
+            ["nisan", 4],
+            ["mayis", 5],
+            ["haziran", 6],
+            ["temmuz", 7],
+            ["agustos", 8],
+            ["eylul", 9],
+            ["ekim", 10],
+            ["kasim", 11],
+            ["aralik", 12],
+          ];
+          for (var i = 0; i < full.length; i++) {
+            if (tl.indexOf(full[i][0]) !== -1) {
+              month = full[i][1];
+              break;
+            }
+          }
+          return { year: year, month: month };
+        }
+
+        function isoFromDayAndToken(day, monToken, ym) {
+          var m = monthFromTrToken(monToken);
+          if (!m) m = ym.month;
+          var y = ym.year;
+          return y + "-" + pad2(m) + "-" + pad2(day);
+        }
+
+        function parseDenemelerCardsFromDoc(doc) {
+          var ym = inferDenemelerBannerYearMonth(doc);
+          var anchors = doc.querySelectorAll('a[href*="/deneme/"]');
+          var seen = {};
+          var rows = [];
+          anchors.forEach(function (a) {
+            var href = String(a.getAttribute("href") || "");
+            var idx = href.indexOf("/deneme/");
+            if (idx === -1) return;
+            var slug = href
+              .slice(idx + "/deneme/".length)
+              .split("?")[0]
+              .split("#")[0]
+              .replace(/\/$/, "");
+            if (!slug || seen[slug]) return;
+            seen[slug] = true;
+            var h4 = a.querySelector("h4");
+            var ad = h4 ? String(h4.textContent || "").trim() : "";
+            var pubEl =
+              a.querySelector("p.text-sm.text-muted-foreground.mt-1") ||
+              a.querySelector("p.text-muted-foreground.mt-1") ||
+              a.querySelector("p.mt-1.text-muted-foreground");
+            var yayinevi = pubEl ? String(pubEl.textContent || "").trim() : "";
+            var tur = "TYT";
+            var badgeRow = a.querySelector("div.flex.items-center.gap-2.mb-1");
+            if (badgeRow) {
+              badgeRow.querySelectorAll("span").forEach(function (sp) {
+                var tx = String(sp.textContent || "").trim();
+                if (!tx || /^TG$/i.test(tx) || /^kurumsal$/i.test(tx)) return;
+                if (/TYT-AYT|TYT|AYT|YKS|LGS|YDT/i.test(tx)) tur = tx;
+              });
+            }
+            var dateEl =
+              a.querySelector("div.text-right p.text-sm.font-medium") ||
+              a.querySelector(".text-right.flex-shrink-0 p.text-sm.font-medium");
+            var dateRaw = dateEl ? String(dateEl.textContent || "").trim() : "";
+            var dm = dateRaw.match(/^(\d{1,2})\s+(.+)$/);
+            var tarih = "";
+            if (dm) {
+              var dayNum = parseInt(dm[1], 10);
+              tarih = isoFromDayAndToken(dayNum, dm[2], ym);
+            }
+            if (!ad) return;
+            rows.push({
+              slug: slug,
+              ad: ad,
+              yayinevi: yayinevi || "—",
+              tarih: tarih,
+              tur: tur,
+              saat: "10:00",
+              sel: false,
+            });
+          });
+          return rows;
+        }
+
+        function parseFetchedTakvimHtml(html, baseUrl) {
+          try {
+            var doc = new DOMParser().parseFromString(html, "text/html");
+            var fromDom = parseDenemelerCardsFromDoc(doc);
+            if (fromDom.length) return fromDom;
+          } catch (e0) {}
+          try {
+            var m = html.match(/<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+            if (m) {
+              var j = JSON.parse(m[1]);
+              var buckets = [];
+              function collectArrays(o, depth) {
+                if (depth > 16 || o == null) return;
+                if (Array.isArray(o)) {
+                  if (
+                    o.length &&
+                    o.every(function (it) {
+                      return it && typeof it === "object" && !Array.isArray(it);
+                    })
+                  ) {
+                    var k0 = Object.keys(o[0]);
+                    var score = 0;
+                    if (k0.some(function (k) { return /tarih|date|examDate/i.test(k); })) score++;
+                    if (k0.some(function (k) { return /ad|name|title|baslik/i.test(k); })) score++;
+                    if (k0.some(function (k) { return /tur|sinav|type|examType/i.test(k); })) score++;
+                    if (score >= 2) buckets.push(o);
+                  }
+                  o.forEach(function (it) {
+                    collectArrays(it, depth + 1);
+                  });
+                  return;
+                }
+                if (typeof o !== "object") return;
+                Object.keys(o).forEach(function (k) {
+                  collectArrays(o[k], depth + 1);
+                });
+              }
+              collectArrays(j, 0);
+              var best = [];
+              buckets.forEach(function (arr) {
+                if (arr.length > best.length) best = arr;
+              });
+              return best
+                .map(function (x) {
+                  return {
+                    slug: String(x.slug || x.id || "").trim() || String(newGeId()),
+                    ad: String(x.ad || x.name || x.title || "").trim(),
+                    yayinevi: String(x.yayinevi || x.publisher || x.yayin || "—").trim() || "—",
+                    tarih: String(x.tarih || x.date || "").trim(),
+                    tur: String(x.tur || x.sinav || x.type || "TYT").trim(),
+                    saat: String(x.saat || x.time || "10:00").trim() || "10:00",
+                    sel: false,
+                  };
+                })
+                .filter(function (r) {
+                  return r.ad;
+                });
+            }
+          } catch (e1) {}
+          return [];
+        }
+
+        function fetchTakvimThroughProxy(targetUrl) {
+          var enc = encodeURIComponent(targetUrl);
+          var chain = [
+            "https://api.codetabs.com/v1/proxy?quest=" + enc,
+            "https://api.allorigins.win/raw?url=" + enc,
+          ];
+          function attempt(i) {
+            if (i >= chain.length) return Promise.reject(new Error("Vekil sunucularına ulaşılamadı veya HTML boş."));
+            return fetch(chain[i], { cache: "no-store" })
+              .then(function (r) {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.text();
+              })
+              .then(function (txt) {
+                if (!txt || txt.length < 200) throw new Error("Boş yanıt");
+                return txt;
+              })
+              .catch(function () {
+                return attempt(i + 1);
+              });
+          }
+          return attempt(0);
+        }
+
+        function syncGeSelectAllCheckbox() {
+          var master = document.getElementById("sa-ge-select-all");
+          if (!master) return;
+          if (!saGePreview.length) {
+            master.checked = false;
+            master.indeterminate = false;
+            return;
+          }
+          var nSel = saGePreview.filter(function (r) {
+            return r.sel;
+          }).length;
+          master.checked = nSel === saGePreview.length;
+          master.indeterminate = nSel > 0 && nSel < saGePreview.length;
+        }
+
+        function renderSaGePreviewTable() {
+          var tbody = document.getElementById("sa-ge-preview-tbody");
+          var empty = document.getElementById("sa-ge-preview-empty");
+          var countEl = document.getElementById("sa-ge-preview-count");
+          if (!tbody) return;
+          tbody.innerHTML = "";
+          if (countEl) countEl.textContent = saGePreview.length ? saGePreview.length + " satır" : "";
+          if (!saGePreview.length) {
+            if (empty) empty.classList.remove("hidden");
+            syncGeSelectAllCheckbox();
+            return;
+          }
+          if (empty) empty.classList.add("hidden");
+          saGePreview.forEach(function (r, idx) {
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-white/[0.03]";
+            var tarihDisp = r.tarih ? formatGeTrDate(r.tarih) : "—";
+            tr.innerHTML =
+              '<td class="px-3 py-2.5 text-center"><input type="checkbox" class="sa-ge-row-chk h-4 w-4 rounded border-slate-600 bg-black text-purple-600" data-sa-ge-ix="' +
+              idx +
+              '"' +
+              (r.sel ? " checked" : "") +
+              " /></td>" +
+              '<td class="px-3 py-2.5 text-slate-400">' +
+              escapeHtml(r.yayinevi) +
+              "</td>" +
+              '<td class="px-3 py-2.5 font-medium text-slate-100">' +
+              escapeHtml(r.ad) +
+              "</td>" +
+              '<td class="px-3 py-2.5 text-slate-400">' +
+              escapeHtml(tarihDisp) +
+              "</td>" +
+              '<td class="px-3 py-2.5"><span class="rounded border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-xs font-semibold text-purple-200">' +
+              escapeHtml(r.tur) +
+              "</span></td>";
+            tbody.appendChild(tr);
+          });
+          syncGeSelectAllCheckbox();
+        }
+
+        function formatGeTrDate(iso) {
+          if (!iso || String(iso).length < 10) return iso || "—";
+          var p = String(iso).split("-");
+          return p[2] + "." + p[1] + "." + p[0];
+        }
+
+        function renderSaGlobalExamsTable() {
+          var tbody = document.getElementById("sa-ge-tbody");
+          var empty = document.getElementById("sa-ge-empty");
+          var countEl = document.getElementById("sa-ge-count");
+          if (!tbody) return;
+          var rows = readSaGlobalExams().slice().sort(function (a, b) {
+            return String(a.tarih || "").localeCompare(String(b.tarih || "")) || String(a.saat || "").localeCompare(String(b.saat || ""));
+          });
+          tbody.innerHTML = "";
+          if (countEl) countEl.textContent = rows.length ? rows.length + " sınav" : "";
+          if (!rows.length) {
+            if (empty) empty.classList.remove("hidden");
+            return;
+          }
+          if (empty) empty.classList.add("hidden");
+          rows.forEach(function (r) {
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-white/[0.03]";
+            var tur = r.tur || r.sinav || "TYT";
+            tr.innerHTML =
+              '<td class="px-4 py-3 font-medium text-slate-100">' +
+              escapeHtml(r.ad || r.name || "") +
+              "</td>" +
+              '<td class="px-4 py-3 text-slate-400">' +
+              escapeHtml(formatGeTrDate(r.tarih)) +
+              "</td>" +
+              '<td class="px-4 py-3 text-slate-400">' +
+              escapeHtml(r.saat || "—") +
+              "</td>" +
+              '<td class="px-4 py-3"><span class="rounded border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-xs font-semibold text-purple-200">' +
+              escapeHtml(tur) +
+              "</span></td>" +
+              '<td class="px-4 py-3 text-slate-400">' +
+              escapeHtml(r.yayinevi && String(r.yayinevi).trim() ? r.yayinevi : "—") +
+              '</td><td class="px-4 py-3 text-right">' +
+              '<button type="button" class="rounded-lg border border-red-500/30 bg-red-950/50 px-3 py-1 text-xs font-semibold text-red-200 hover:bg-red-900/60" data-sa-ge-del="' +
+              escapeHtml(r.id) +
+              '">Sil</button></td>';
+            tbody.appendChild(tr);
+          });
+        }
+
+        var fetchGeBtn = document.getElementById("sa-ge-fetch");
+        if (fetchGeBtn) {
+          fetchGeBtn.addEventListener("click", function () {
+            var urlEl = document.getElementById("sa-ge-url");
+            var target = normalizeGeTargetUrl(urlEl ? urlEl.value : "");
+            fetchGeBtn.disabled = true;
+            var lab = document.getElementById("sa-ge-fetch-label");
+            var prev = lab ? lab.textContent : "Verileri Çek";
+            if (lab) lab.textContent = "Çekiliyor…";
+            fetchTakvimThroughProxy(target)
+              .then(function (html) {
+                var parsed = parseFetchedTakvimHtml(html, target);
+                if (!parsed.length) {
+                  window.alert(
+                    "Bu sayfadan deneme satırı çıkarılamadı. URL’nin denemeler.net takvim sayfası olduğundan emin olun veya sayfa yapısı değişmiş olabilir."
+                  );
+                  return;
+                }
+                saGePreview = parsed;
+                renderSaGePreviewTable();
+              })
+              .catch(function (err) {
+                window.alert(
+                  "Veri çekilemedi: " +
+                    (err && err.message ? err.message : String(err)) +
+                    "\nAğ / vekil engeli olabilir; bir süre sonra tekrar deneyin."
+                );
+              })
+              .finally(function () {
+                fetchGeBtn.disabled = false;
+                if (lab) lab.textContent = prev;
+              });
+          });
+        }
+
+        var saGeSelectAll = document.getElementById("sa-ge-select-all");
+        if (saGeSelectAll) {
+          saGeSelectAll.addEventListener("change", function () {
+            var on = saGeSelectAll.checked;
+            saGePreview.forEach(function (r) {
+              r.sel = on;
+            });
+            renderSaGePreviewTable();
+          });
+        }
+
+        var saGeBulk = document.getElementById("sa-ge-bulk-select");
+        if (saGeBulk) {
+          saGeBulk.addEventListener("click", function () {
+            if (!saGePreview.length) return;
+            var allOn = saGePreview.every(function (r) {
+              return r.sel;
+            });
+            saGePreview.forEach(function (r) {
+              r.sel = !allOn;
+            });
+            renderSaGePreviewTable();
+          });
+        }
+
+        var saGeDelPrev = document.getElementById("sa-ge-delete-selected-preview");
+        if (saGeDelPrev) {
+          saGeDelPrev.addEventListener("click", function () {
+            var next = saGePreview.filter(function (r) {
+              return !r.sel;
+            });
+            if (next.length === saGePreview.length) {
+              window.alert("Silmek için en az bir satır seçin.");
+              return;
+            }
+            saGePreview = next;
+            renderSaGePreviewTable();
+          });
+        }
+
+        var saGeSaveSel = document.getElementById("sa-ge-save-selected");
+        if (saGeSaveSel) {
+          saGeSaveSel.addEventListener("click", function () {
+            var pick = saGePreview.filter(function (r) {
+              return r.sel;
+            });
+            if (!pick.length) {
+              window.alert("Kaydetmek için önizlemeden en az bir satır seçin.");
+              return;
+            }
+            var list = readSaGlobalExams();
+            var sigSeen = {};
+            list.forEach(function (x) {
+              var g = (x.kaynakSlug || x.slug || "") + "|" + (x.ad || "") + "|" + (x.tarih || "") + "|" + (x.tur || "");
+              sigSeen[g] = true;
+            });
+            var added = 0;
+            pick.forEach(function (r) {
+              var sig = (r.slug || "") + "|" + r.ad + "|" + (r.tarih || "") + "|" + r.tur;
+              if (sigSeen[sig]) return;
+              sigSeen[sig] = true;
+              var tur = r.tur || "TYT";
+              list.push({
+                id: newGeId(),
+                ad: r.ad,
+                tarih: r.tarih || "",
+                saat: r.saat || "10:00",
+                tur: tur,
+                sinav: tur,
+                yayinevi: r.yayinevi && r.yayinevi !== "—" ? r.yayinevi : "—",
+                kaynakSlug: r.slug || "",
+              });
+              added++;
+            });
+            if (!added) {
+              window.alert("Seçilenlerin tümü zaten yayında görünüyor (yinelenen kayıt).");
+              return;
+            }
+            writeSaGlobalExams(list);
+            saGePreview = saGePreview.filter(function (r) {
+              return !r.sel;
+            });
+            renderSaGePreviewTable();
+            renderSaGlobalExamsTable();
+          });
+        }
+
+        var saGePreviewTbody = document.getElementById("sa-ge-preview-tbody");
+        if (saGePreviewTbody) {
+          saGePreviewTbody.addEventListener("change", function (e) {
+            var t = e.target;
+            if (!t || !t.classList || !t.classList.contains("sa-ge-row-chk")) return;
+            var ix = parseInt(t.getAttribute("data-sa-ge-ix"), 10);
+            if (isNaN(ix) || !saGePreview[ix]) return;
+            saGePreview[ix].sel = !!t.checked;
+            syncGeSelectAllCheckbox();
+          });
+        }
+
+        var geManual = document.getElementById("sa-ge-manual-form");
+        if (geManual) {
+          geManual.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var adEl = document.getElementById("sa-ge-ad");
+            var tarihEl = document.getElementById("sa-ge-tarih");
+            var saatEl = document.getElementById("sa-ge-saat");
+            var turEl = document.getElementById("sa-ge-tur");
+            var yayinEl = document.getElementById("sa-ge-yayin");
+            if (!adEl || !tarihEl || !turEl) return;
+            var tur = String(turEl.value || "TYT").trim();
+            var row = {
+              id: newGeId(),
+              ad: String(adEl.value || "").trim(),
+              tarih: String(tarihEl.value || "").trim(),
+              saat: saatEl && saatEl.value ? String(saatEl.value).trim() : "—",
+              tur: tur,
+              sinav: tur,
+              yayinevi: yayinEl && String(yayinEl.value || "").trim() ? String(yayinEl.value).trim() : "—",
+            };
+            if (!row.ad || !row.tarih) return;
+            var list = readSaGlobalExams();
+            list.push(row);
+            writeSaGlobalExams(list);
+            geManual.reset();
+            var se = document.getElementById("sa-ge-saat");
+            if (se) se.value = "10:00";
+            renderSaGlobalExamsTable();
+          });
+        }
+
+        var geTbody = document.getElementById("sa-ge-tbody");
+        if (geTbody) {
+          geTbody.addEventListener("click", function (e) {
+            var del = e.target.closest("[data-sa-ge-del]");
+            if (!del || !geTbody.contains(del)) return;
+            var id = del.getAttribute("data-sa-ge-del");
+            if (!id || !window.confirm("Bu sınavı global listeden kaldırmak istiyor musunuz?")) return;
+            var next = readSaGlobalExams().filter(function (x) {
+              return x.id !== id;
+            });
+            writeSaGlobalExams(next);
+            renderSaGlobalExamsTable();
+          });
+        }
+
+        var coachTbody = document.getElementById("sa-coaches-tbody");
+        if (coachTbody) {
+          coachTbody.addEventListener("click", onCoachTableClick);
+        }
+
+        function readTeklifler() {
+          return readJsonArray(LS_TEKLIF);
+        }
+
+        function writeTeklifler(arr) {
+          writeJsonArray(LS_TEKLIF, arr);
+        }
+
+        function formatTeklifTarih(iso) {
+          if (!iso) return "—";
+          try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return String(iso);
+            var p2 = function (n) {
+              return n < 10 ? "0" + n : String(n);
+            };
+            return (
+              p2(d.getDate()) +
+              "." +
+              p2(d.getMonth() + 1) +
+              "." +
+              d.getFullYear() +
+              " " +
+              p2(d.getHours()) +
+              ":" +
+              p2(d.getMinutes())
+            );
+          } catch (e) {
+            return String(iso);
+          }
+        }
+
+        function updateSaTeklifHeaderBadge() {
+          var n = readTeklifler().filter(function (x) {
+            return (x.durum || "Yeni") === "Yeni";
+          }).length;
+          var el = document.getElementById("sa-teklif-header-badge");
+          if (!el) return;
+          if (n > 0) {
+            el.textContent = String(n);
+            el.classList.remove("hidden");
+          } else {
+            el.classList.add("hidden");
+          }
+        }
+
+        function renderTeklifTable() {
+          var tbody = document.getElementById("sa-teklif-tbody");
+          var empty = document.getElementById("sa-teklif-empty");
+          if (!tbody) return;
+          var rows = readTeklifler().slice().sort(function (a, b) {
+            return String(b.olusturulma || "").localeCompare(String(a.olusturulma || ""));
+          });
+          tbody.innerHTML = "";
+          if (!rows.length) {
+            if (empty) empty.classList.remove("hidden");
+            updateSaTeklifHeaderBadge();
+            return;
+          }
+          if (empty) empty.classList.add("hidden");
+          rows.forEach(function (t) {
+            var durum = t.durum || "Yeni";
+            var mesaj = String(t.mesaj || "").trim();
+            var mesajShort = mesaj.length > 80 ? mesaj.slice(0, 77) + "…" : mesaj;
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-white/[0.03]";
+            var opts = ["Yeni", "İncelendi", "Kapandı"]
+              .map(function (opt) {
+                return (
+                  '<option value="' +
+                  escapeHtml(opt) +
+                  '"' +
+                  (durum === opt ? " selected" : "") +
+                  ">" +
+                  escapeHtml(opt) +
+                  "</option>"
+                );
+              })
+              .join("");
+            tr.innerHTML =
+              '<td class="whitespace-nowrap px-3 py-3 text-slate-400">' +
+              escapeHtml(formatTeklifTarih(t.olusturulma)) +
+              "</td>" +
+              '<td class="whitespace-nowrap px-3 py-3 font-medium text-slate-100">' +
+              escapeHtml(t.paket || "—") +
+              "</td>" +
+              '<td class="max-w-[140px] truncate px-3 py-3 text-slate-400" title="' +
+              escapeHtml(t.kurum || "") +
+              '">' +
+              escapeHtml((t.kurum && String(t.kurum).trim()) || "—") +
+              "</td>" +
+              '<td class="whitespace-nowrap px-3 py-3">' +
+              escapeHtml(t.yetkili || "—") +
+              "</td>" +
+              '<td class="max-w-[180px] truncate px-3 py-3 text-slate-400">' +
+              escapeHtml(t.email || "—") +
+              "</td>" +
+              '<td class="whitespace-nowrap px-3 py-3 text-slate-400">' +
+              escapeHtml(t.telefon || "—") +
+              "</td>" +
+              '<td class="max-w-[220px] px-3 py-3 text-slate-400" title="' +
+              escapeHtml(mesaj) +
+              '">' +
+              escapeHtml(mesajShort || "—") +
+              "</td>" +
+              '<td class="whitespace-nowrap px-3 py-3">' +
+              '<select data-sa-teklif-durum="' +
+              escapeHtml(t.id) +
+              '" class="rounded-lg border border-purple-500/25 bg-black px-2 py-1 text-xs text-slate-200 focus:border-[#00e599]/40 focus:outline-none focus:ring-1 focus:ring-[#00e599]/30">' +
+              opts +
+              "</select></td>" +
+              '<td class="whitespace-nowrap px-3 py-3 text-right">' +
+              '<button type="button" class="inline-flex rounded-lg border border-red-500/35 p-2 text-red-300 transition hover:bg-red-950/60" data-sa-teklif-del="' +
+              escapeHtml(t.id) +
+              '" title="Sil" aria-label="Sil">' +
+              '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>' +
+              "</button></td>";
+            tbody.appendChild(tr);
+          });
+          updateSaTeklifHeaderBadge();
+        }
+
+        var saTeklifTbody = document.getElementById("sa-teklif-tbody");
+        if (saTeklifTbody) {
+          saTeklifTbody.addEventListener("change", function (e) {
+            var t = e.target;
+            if (!t || t.tagName !== "SELECT" || !t.hasAttribute("data-sa-teklif-durum")) return;
+            if (!saTeklifTbody.contains(t)) return;
+            var id = t.getAttribute("data-sa-teklif-durum");
+            var val = String(t.value || "Yeni");
+            var arr = readTeklifler();
+            var hit = false;
+            arr.forEach(function (x) {
+              if (x.id === id) {
+                x.durum = val;
+                hit = true;
+              }
+            });
+            if (hit) {
+              writeTeklifler(arr);
+              updateSaTeklifHeaderBadge();
+            }
+          });
+          saTeklifTbody.addEventListener("click", function (e) {
+            var btn = e.target.closest("[data-sa-teklif-del]");
+            if (!btn || !saTeklifTbody.contains(btn)) return;
+            var id = btn.getAttribute("data-sa-teklif-del");
+            if (!id || !window.confirm("Bu teklif talebini kalıcı olarak silmek istiyor musunuz?")) return;
+            writeTeklifler(
+              readTeklifler().filter(function (x) {
+                return x.id !== id;
+              })
+            );
+            renderTeklifTable();
+          });
+        }
+
+        window.addEventListener("storage", function (e) {
+          if (e.key === LS_TEKLIF) {
+            updateSaTeklifHeaderBadge();
+            if (getRouteFromHash() === "teklif-talepleri") renderTeklifTable();
+          }
+        });
+
+        function applyRoute() {
+          var r = getRouteFromHash();
+          showView(r);
+          setActiveNav(r);
+          syncMaintenanceUI();
+          if (r === "admin-yonetimi") {
+            var s = document.getElementById("sa-admin-search");
+            renderAdminTable(s ? s.value : "");
+          }
+          if (r === "kurumlar") renderInstitutionsTable();
+          if (r === "yeni-koc") populateInstitutionSelect();
+          if (r === "koc-listesi") renderCoachTable();
+          if (r === "global-deneme-takvimi") {
+            renderSaGlobalExamsTable();
+            renderSaGePreviewTable();
+          }
+          if (r === "ana-sayfa" || r === "ozet-istatistikler") {
+            try {
+              if (window.applyDashboardStats) window.applyDashboardStats();
+            } catch (eSt) {}
+          }
+          if (r === "sorunlar-destek") {
+            try {
+              if (window.renderSupportInbox) window.renderSupportInbox();
+            } catch (eSb) {}
+          }
+          if (r === "teklif-talepleri") renderTeklifTable();
+        }
+
+        function syncMaintenanceUI() {
+          var badge = document.getElementById("sa-maintenance-badge");
+          if (!badge) return;
+          var on = localStorage.getItem(MAINT_KEY) === "true";
+          badge.textContent = on ? "Durum: AÇIK" : "Durum: KAPALI";
+          badge.className =
+            "shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider " +
+            (on
+              ? "border-amber-500/40 bg-amber-500/10 text-amber-200"
+              : "border-slate-600/50 bg-black/50 text-slate-400");
+        }
+
+        var startBtn = document.getElementById("sa-maintenance-start");
+        if (startBtn) {
+          startBtn.addEventListener("click", function () {
+            localStorage.setItem(MAINT_KEY, "true");
+            syncMaintenanceUI();
+          });
+        }
+        var stopBtn = document.getElementById("sa-maintenance-stop");
+        if (stopBtn) {
+          stopBtn.addEventListener("click", function () {
+            localStorage.setItem(MAINT_KEY, "false");
+            syncMaintenanceUI();
+          });
+        }
+
+        function readAdmins() {
+          return readJsonArray(LS_ADMINS);
+        }
+
+        function writeAdmins(arr) {
+          writeJsonArray(LS_ADMINS, arr);
+        }
+
+        function newAdminId() {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+          return "adm_" + Date.now().toString(36);
+        }
+
+        function renderAdminTable(filter) {
+          var tbody = document.getElementById("sa-admin-tbody");
+          var empty = document.getElementById("sa-admin-empty");
+          if (!tbody) return;
+          var q = (filter || "").toLowerCase().trim();
+          var all = readAdmins();
+          tbody.innerHTML = "";
+          var shown = 0;
+          all.forEach(function (row) {
+            var u = row.user || row.username || "";
+            var n = row.name || "";
+            var em = row.email || "";
+            var ro = row.role || "";
+            var hay = (u + " " + n + " " + em + " " + ro).toLowerCase();
+            if (q && hay.indexOf(q) === -1) return;
+            shown++;
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-white/[0.03]";
+            tr.innerHTML =
+              '<td class="px-5 py-3 font-medium text-slate-200">' +
+              escapeHtml(u) +
+              "</td>" +
+              '<td class="px-5 py-3">' +
+              escapeHtml(n) +
+              "</td>" +
+              '<td class="px-5 py-3 text-slate-400">' +
+              escapeHtml(em) +
+              "</td>" +
+              '<td class="px-5 py-3"><span class="rounded-lg border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-xs font-semibold text-purple-200">' +
+              escapeHtml(ro) +
+              "</span></td>";
+            tbody.appendChild(tr);
+          });
+          if (empty) {
+            if (shown === 0) {
+              empty.classList.remove("hidden");
+              if (all.length === 0 && !q) {
+                empty.textContent = "Henüz yetkili yok. Yeni Yetkili Ekle ile ekleyin.";
+              } else {
+                empty.textContent = "Sonuç bulunamadı.";
+              }
+            } else empty.classList.add("hidden");
+          }
+        }
+
+        function openSaAdminModal() {
+          var ov = document.getElementById("sa-admin-modal-overlay");
+          var form = document.getElementById("sa-admin-modal-form");
+          if (!ov || !form) return;
+          form.reset();
+          var roleEl = document.getElementById("sa-admin-modal-role");
+          if (roleEl) roleEl.value = "Tam yetki";
+          var pwd = document.getElementById("sa-admin-modal-password");
+          if (pwd) pwd.type = "password";
+          ov.classList.remove("hidden");
+          ov.classList.add("flex");
+          ov.setAttribute("aria-hidden", "false");
+          document.body.style.overflow = "hidden";
+          var n = document.getElementById("sa-admin-modal-name");
+          if (n) setTimeout(function () {
+            n.focus();
+          }, 50);
+        }
+
+        function closeSaAdminModal() {
+          var ov = document.getElementById("sa-admin-modal-overlay");
+          if (!ov) return;
+          ov.classList.add("hidden");
+          ov.classList.remove("flex");
+          ov.setAttribute("aria-hidden", "true");
+          document.body.style.overflow = "";
+        }
+
+        var saAdminOpenBtn = document.getElementById("sa-admin-open-modal");
+        if (saAdminOpenBtn) {
+          saAdminOpenBtn.addEventListener("click", function () {
+            openSaAdminModal();
+          });
+        }
+        var saAdminOv = document.getElementById("sa-admin-modal-overlay");
+        var saAdminPanel = document.getElementById("sa-admin-modal-panel");
+        if (saAdminPanel) {
+          saAdminPanel.addEventListener("click", function (e) {
+            e.stopPropagation();
+          });
+        }
+        if (saAdminOv) {
+          saAdminOv.addEventListener("click", function () {
+            closeSaAdminModal();
+          });
+        }
+        var saAdminCloseX = document.getElementById("sa-admin-modal-close-x");
+        if (saAdminCloseX) saAdminCloseX.addEventListener("click", closeSaAdminModal);
+        var saAdminCancel = document.getElementById("sa-admin-modal-cancel");
+        if (saAdminCancel) saAdminCancel.addEventListener("click", closeSaAdminModal);
+
+        var saAdminPwd = document.getElementById("sa-admin-modal-password");
+        var saAdminPwdToggle = document.getElementById("sa-admin-modal-pwd-toggle");
+        if (saAdminPwdToggle && saAdminPwd) {
+          saAdminPwdToggle.addEventListener("click", function () {
+            var isPwd = saAdminPwd.type === "password";
+            saAdminPwd.type = isPwd ? "text" : "password";
+            saAdminPwdToggle.setAttribute("aria-label", isPwd ? "Şifreyi gizle" : "Şifreyi göster");
+          });
+        }
+
+        var saAdminModalForm = document.getElementById("sa-admin-modal-form");
+        if (saAdminModalForm) {
+          saAdminModalForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var nameEl = document.getElementById("sa-admin-modal-name");
+            var userEl = document.getElementById("sa-admin-modal-user");
+            var emailEl = document.getElementById("sa-admin-modal-email");
+            var pwdEl = document.getElementById("sa-admin-modal-password");
+            var roleEl = document.getElementById("sa-admin-modal-role");
+            if (!nameEl || !userEl || !emailEl || !pwdEl || !roleEl) return;
+            var name = String(nameEl.value || "").trim();
+            var user = String(userEl.value || "").trim().toLowerCase();
+            var email = String(emailEl.value || "").trim();
+            var pwd = String(pwdEl.value || "");
+            var role = String(roleEl.value || "Tam yetki").trim();
+            if (!/^[a-z0-9_]+$/.test(user)) {
+              window.alert("Kullanıcı adı yalnızca küçük harf, rakam ve alt çizgi (_) içerebilir.");
+              return;
+            }
+            if (pwd.length < 8) {
+              window.alert("Şifre en az 8 karakter olmalıdır.");
+              return;
+            }
+            var list = readAdmins();
+            for (var i = 0; i < list.length; i++) {
+              var ex = (list[i].user || list[i].username || "").toLowerCase();
+              if (ex === user) {
+                window.alert("Bu kullanıcı adı zaten kayıtlı.");
+                return;
+              }
+            }
+            list.push({
+              id: newAdminId(),
+              user: user,
+              name: name,
+              email: email,
+              role: role,
+              password: pwd,
+            });
+            writeAdmins(list);
+            closeSaAdminModal();
+            var s = document.getElementById("sa-admin-search");
+            renderAdminTable(s ? s.value : "");
+          });
+        }
+
+        document.addEventListener("keydown", function (e) {
+          if (e.key !== "Escape") return;
+          var ov = document.getElementById("sa-admin-modal-overlay");
+          if (ov && !ov.classList.contains("hidden")) closeSaAdminModal();
+        });
+
+        var searchEl = document.getElementById("sa-admin-search");
+        if (searchEl) {
+          searchEl.addEventListener("input", function () {
+            renderAdminTable(searchEl.value);
+          });
+        }
+
+        seedBuiltinAdmin1Coach();
+
+        if (!window.location.hash) {
+          window.location.hash = "#" + defaultRoute;
+        }
+
+        applyRoute();
+        updateSaTeklifHeaderBadge();
+
+        window.addEventListener("hashchange", function () {
+          applyRoute();
+          updateSaTeklifHeaderBadge();
+        });
+      })();
+    </script>
+    <script src="../js/bug-reporter.js" defer></script>
+  </body>
+</html>

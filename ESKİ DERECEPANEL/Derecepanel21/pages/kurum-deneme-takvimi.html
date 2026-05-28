@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="tr" data-dnm-context="kurum">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kurum İçi Deneme Yönetimi – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet" />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div id="panel-shell" class="app">
+      <aside class="sidebar" aria-label="Ana menü">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span class="sidebar__title">Derecepanel</span>
+        </div>
+
+        <nav class="sidebar__nav">
+          <a href="../koc-paneli.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+            Dashboard
+          </a>
+          <a href="ogrencilerim.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            Öğrencilerim
+          </a>
+                    <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-gorusme-sub-coach" id="nav-gorusme-btn-coach">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Görüşme Odası
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-gorusme-sub-coach" role="group" aria-label="Görüşme Odası alt menü">
+              <a href="gorusme-odasi.html" class="nav-sub">Yeni Görüşme</a>
+              <a href="gorusme-arsivi.html" class="nav-sub">Görüşme Arşivi</a>
+            </div>
+          </div>
+
+          <a href="koclar.html" class="nav-item">
+            <svg
+              class="nav-item__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path
+                d="M12 14l6.16 3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01-.665-6.479L12 14z"
+              />
+            </svg>
+            Koçlar
+          </a>
+          <a href="randevular.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Randevular
+          </a>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-yks-sub" id="nav-yks-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 14v7M9 18h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              YKS Simülasyon
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-yks-sub" role="group" aria-label="YKS Simülasyon alt menü">
+              <a href="tercih-sihirbazi.html" class="nav-sub">Tercih Sihirbazı</a>
+              <a href="yks-konulari.html" class="nav-sub">YKS Konuları</a>
+              <a href="net-sihirbazi.html" class="nav-sub">Net Sihirbazı</a>
+              <a href="puan-hesaplama.html" class="nav-sub">Puan Hesaplama</a>
+            </div>
+          </div>
+          <div class="nav-group nav-group--open" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="true" aria-controls="nav-den-sub-kurum">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Denemeler
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-den-sub-kurum" role="group" aria-label="Denemeler alt menü">
+              <a href="basit-deneme-sonuclari.html" class="nav-sub">Sonuç Merkezi</a>
+              <a href="analiz-merkezi.html" class="nav-sub nav-sub--analiz-beta"><span class="nav-analiz-beta"><span class="nav-analiz-beta__row1">Analiz ve Raporlama</span><span class="nav-analiz-beta__row2"><span class="nav-analiz-beta__suffix">Merkezi</span><span class="nav-analiz-beta__pill">BETA</span></span></span></a>
+              <a href="denemeler-global-takvim.html" class="nav-sub">Global Deneme Takvimi</a>
+              <a href="kurum-deneme-takvimi.html" class="nav-sub nav-sub--active">Kurum Deneme Takvimi</a>
+              <a href="deneme-sonuclari-yukleme.html" class="nav-sub">Deneme Sonuçları Yükleme</a>
+              <a href="optik-okuyucu.html" class="nav-sub">Optik Okuyucu</a>
+              <a href="okutulan-denemeler.html" class="nav-sub">Okutulan Denemeler</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-wp-sub-kurum">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Haftalık Program
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-wp-sub-kurum" role="group" aria-label="Haftalık Program alt menü">
+              <a href="haftalik-program-olusturucu.html" class="nav-sub">Haftalık Program Oluşturucu</a>
+              <a href="kayitli-haftalik-programlar.html" class="nav-sub">Kayıtlı Haftalık Programlar</a>
+              <a href="haftalik-program.html" class="nav-sub">Öğrenciye program gönder</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-mr-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+              MR
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-mr-sub" role="group" aria-label="MR alt menü">
+              <a href="konu-mr.html" class="nav-sub">Konu MR</a>
+              <a href="soru-mr.html" class="nav-sub">Soru MR</a>
+              <a href="deneme-mr.html" class="nav-sub">Deneme MR</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-kitap-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Kitap Kütüphanesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-kitap-sub" role="group" aria-label="Kitap Kütüphanesi alt menü">
+              <a href="kitaplar.html" class="nav-sub">Kitap Listesi &amp; Kayıt</a>
+              <a href="kaynak-atama.html" class="nav-sub">Kaynak Atama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tm-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Test Maker
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tm-sub" role="group" aria-label="Test Maker alt menü">
+              <a href="test-olusturucu.html" class="nav-sub">Test Oluşturucu</a>
+              <a href="otomatik-soru-kirpici.html" class="nav-sub">Otomatik Soru Kırpıcı</a>
+              <a href="soru-havuzu.html" class="nav-sub">Soru Havuzu</a>
+            </div>
+          </div>
+          
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-hr-sub" id="nav-hr-trigger">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 2H6a2 2 0 0 1-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+                <path d="M14 2v4h4" />
+                <path d="M12 11v6" />
+                <path d="M9 14h6" />
+              </svg>
+              Hata Reçetesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-hr-sub" role="group" aria-label="Hata Reçetesi alt menü">
+              <a href="recete-yaz.html" class="nav-sub">Reçete Yaz</a>
+              <a href="recete-deposu.html" class="nav-sub">Reçete Deposu</a>
+              <a href="hatali-soru-havuzu.html" class="nav-sub">Hatalı Soru Havuzu</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tf-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Taramalar ve Fasiküller
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" role="group" aria-label="Taramalar ve Fasiküller alt menü">
+              <a href="tarama-analiz.html" class="nav-sub"><span>Tarama Analiz ve Raporlama</span></a>
+              <a href="tarama-olusturucu.html" class="nav-sub"><span>Tarama Oluşturma</span></a>
+              <a href="tarama-deposu.html" class="nav-sub"><span>Tarama Deposu</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Oluşturma</span><span class="nav-sub__badge">Yakında</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Deposu</span><span class="nav-sub__badge">Yakında</span></a>
+            </div>
+          </div>
+
+        </nav>
+
+        <div class="theme-switcher" role="group" aria-label="Görünüm teması">
+          <span class="theme-switcher__label">Tema</span>
+          <div class="theme-switcher__swatches">
+            <button type="button" class="theme-swatch theme-swatch--dark" data-theme="dark" aria-pressed="false" aria-label="Koyu tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--light" data-theme="light" aria-pressed="false" aria-label="Açık tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--blue" data-theme="blue" aria-pressed="false" aria-label="Okyanus teması"></button>
+            <button type="button" class="theme-swatch theme-swatch--orange" data-theme="orange" aria-pressed="false" aria-label="Gün batımı teması"></button>
+          </div>
+        </div>
+
+        <div class="sidebar__logout">
+          <button type="button" class="btn-logout">
+            Çıkış
+            <span class="btn-logout__arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+                <header class="dp-topbar-sheet flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap w-full p-3 mb-6 bg-slate-50/50 border border-slate-200 rounded-2xl shadow-sm">
+
+          <div class="flex items-center gap-4 flex-1 max-w-2xl">
+            <button onclick="window.history.back()" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input type="text" id="fm-global-search" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-700 placeholder:text-slate-400" placeholder="Öğrenci, deneme, koç veya konu ara...">
+
+              <div id="fm-search-results" class="absolute w-full bg-white shadow-2xl border border-slate-100 rounded-2xl mt-2 z-50 hidden max-h-[400px] overflow-y-auto p-2" role="listbox" aria-label="Arama sonuçları"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-4">
+
+            <button type="button" id="dp-header-notify" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+
+            <button type="button" id="dp-header-theme" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+
+        <div class="kdy-page">
+          <header class="kdy-head">
+            <div class="kdy-head__text">
+              <h1 class="kdy-head__title">Kurum İçi Deneme Yönetimi</h1>
+            </div>
+            <button type="button" class="btn-add kdy-head__cta" id="kdy-open-modal" aria-haspopup="dialog">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+              </svg>
+              Yeni Deneme Oluştur
+            </button>
+          </header>
+
+          <div class="kdy-filter-bar" role="region" aria-label="Deneme filtreleri">
+            <div class="kdy-filter-bar__search">
+              <svg class="kdy-filter-bar__search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input type="search" id="kdy-filter-search" class="kdy-filter-input" placeholder="Deneme adı ile ara…" autocomplete="off" aria-label="Deneme adı ile ara" />
+            </div>
+            <label class="kdy-filter-field">
+              <span class="kdy-filter-field__label">Durum</span>
+              <select id="kdy-filter-durum" class="kdy-filter-select" aria-label="Durum filtresi">
+                <option value="">Tümü</option>
+                <option value="aktif">Aktif</option>
+                <option value="taslak">Taslak</option>
+                <option value="tamamlandi">Tamamlandı</option>
+              </select>
+            </label>
+            <label class="kdy-filter-field">
+              <span class="kdy-filter-field__label">Sınav tipi</span>
+              <select id="kdy-filter-sinav" class="kdy-filter-select" aria-label="Sınav tipi filtresi">
+                <option value="">Tümü</option>
+                <option value="TYT">TYT</option>
+                <option value="AYT">AYT</option>
+                <option value="YDT">YDT</option>
+              </select>
+            </label>
+            <p class="kdy-filter-count" id="kdy-filter-count" aria-live="polite"></p>
+          </div>
+
+          <div id="kdy-empty" class="kdy-empty" hidden>
+            <p id="kdy-empty-msg">Henüz kurum denemesi yok. Sağ üstten yeni deneme oluşturarak başlayın.</p>
+          </div>
+
+          <section class="dgt-list-section kdy-list-section" aria-label="Kurum denemeleri listesi">
+            <div class="dgt-list-section__head">
+              <div class="dgt-list-section__intro">
+                <h2 class="dgt-list-section__title">Kurum denemeleri</h2>
+                <p class="dgt-list-section__sub">Filtrelerle daraltın; matris doluluğunu çubuktan takip edin. Düzenle ile ana akışa, menüden diğer işlemlere erişin.</p>
+              </div>
+            </div>
+            <div class="dgt-exam-table-wrap kdy-list-table-wrap">
+              <table class="dgt-exam-table dgt-exam-table--dense kdy-list-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Deneme</th>
+                    <th scope="col">Sınav tipi</th>
+                    <th scope="col">Matris durumu</th>
+                    <th scope="col">Katılımcı</th>
+                    <th scope="col" class="dgt-exam-table__actions"><span class="dgt-th-actions">İşlemler</span></th>
+                  </tr>
+                </thead>
+                <tbody id="kdy-exam-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script type="module" src="../js/yks-mufredat.js"></script>
+    <script src="../js/deneme-exam-layout.js"></script>
+    <script src="../js/deneme-modal-shell.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="../js/deneme-konu-bulk.js"></script>
+    <script src="../js/kurum-deneme-takvimi.js"></script>
+  </body>
+</html>

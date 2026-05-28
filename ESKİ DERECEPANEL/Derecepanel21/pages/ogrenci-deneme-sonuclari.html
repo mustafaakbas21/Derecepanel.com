@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deneme Sonuçları — Derecepanel</title>
+    <script src="../js/theme-boot.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/ogrenci-deneme-karne-screen.css" />
+    <style>
+      :root {
+        --ogr-ds-bg: #f9f7f2;
+        --ogr-ds-card: #ffffff;
+        --ogr-ds-border: #ebe4d8;
+        --ogr-ds-ice: #dceef6;
+        --ogr-ds-ice2: #c5d8eb;
+        --ogr-ds-accent: #3b82c4;
+        --ogr-ds-text: #1e293b;
+        --ogr-ds-muted: #64748b;
+      }
+      body.og-student-embed {
+        margin: 0;
+        min-height: 100%;
+        background: var(--ogr-ds-bg);
+        color: var(--ogr-ds-text);
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      .ogr-ds-wrap {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 1.25rem 1.25rem 2.5rem;
+      }
+      .ogr-ds-head h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .ogr-ds-head p {
+        margin: 0.35rem 0 0;
+        font-size: 0.85rem;
+        color: var(--ogr-ds-muted);
+        max-width: 42rem;
+        line-height: 1.5;
+      }
+      .ogr-ds-kpi-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+      @media (min-width: 768px) {
+        .ogr-ds-kpi-row {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+      .ogr-ds-kpi {
+        background: var(--ogr-ds-card);
+        border: 1px solid var(--ogr-ds-border);
+        border-radius: 1rem;
+        padding: 0.85rem 1rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+      .ogr-ds-kpi__label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--ogr-ds-muted);
+      }
+      .ogr-ds-kpi__val {
+        margin-top: 0.25rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+      }
+      .ogr-ds-kpi__sub {
+        font-size: 0.72rem;
+        color: #334155;
+        margin-top: 0.15rem;
+      }
+      .ogr-ds-charts {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+      @media (min-width: 900px) {
+        .ogr-ds-charts {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .ogr-ds-chart-card--feature {
+        grid-column: 1 / -1;
+      }
+      .ogr-ds-charts-sub {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      @media (min-width: 640px) {
+        .ogr-ds-charts-sub {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 1100px) {
+        .ogr-ds-charts-sub {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      .ogr-ds-chart-card {
+        background: var(--ogr-ds-card);
+        border: 1px solid var(--ogr-ds-border);
+        border-radius: 1rem;
+        padding: 1rem 1.1rem 0.85rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        min-height: 11rem;
+        display: flex;
+        flex-direction: column;
+      }
+      .ogr-ds-chart-card__title {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: var(--ogr-ds-text);
+      }
+      .ogr-ds-chart-card__hint {
+        margin: 0.2rem 0 0.65rem;
+        font-size: 0.68rem;
+        color: #334155;
+      }
+      /* Detaylı yatay net grafiği (son 5 deneme) */
+      .ogr-ds-hbar {
+        margin-top: 0.35rem;
+        padding: 0.65rem 0.35rem 0.5rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(180deg, #f4f8fc 0%, #faf8f4 100%);
+        border: 1px solid var(--ogr-ds-border);
+      }
+      .ogr-ds-hbar__title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.55rem;
+        padding: 0 0.35rem;
+      }
+      .ogr-ds-hbar__title-row h4 {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--ogr-ds-text);
+        letter-spacing: -0.01em;
+      }
+      .ogr-ds-hbar__title-row h4::after {
+        content: "";
+        display: block;
+        width: 2.5rem;
+        height: 3px;
+        margin-top: 0.3rem;
+        border-radius: 999px;
+        background: var(--ogr-ds-accent);
+      }
+      .ogr-ds-hbar__scale-top {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 0.35rem 7.5rem;
+        padding: 0 0.15rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--ogr-ds-muted);
+      }
+      .ogr-ds-hbar__body {
+        position: relative;
+      }
+      .ogr-ds-hbar__grid-bg {
+        position: absolute;
+        left: 7.5rem;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        pointer-events: none;
+      }
+      .ogr-ds-hbar__gridline {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        border-left: 1px dashed rgba(100, 116, 139, 0.35);
+      }
+      .ogr-ds-hbar__rows {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+      .ogr-ds-hbar-row {
+        display: grid;
+        grid-template-columns: 7.5rem minmax(0, 1fr);
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 2rem;
+      }
+      .ogr-ds-hbar-row__label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--ogr-ds-text);
+        text-align: right;
+        line-height: 1.25;
+        padding-right: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .ogr-ds-hbar-row__track {
+        position: relative;
+        height: 1.35rem;
+        min-width: 0;
+      }
+      .ogr-ds-hbar-row__fill {
+        position: relative;
+        height: 100%;
+        min-width: 2.5rem;
+        border-radius: 0 6px 6px 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 0.45rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        transition: width 0.45s ease;
+      }
+      .ogr-ds-hbar-row__val {
+        font-size: 0.68rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(15, 23, 42, 0.35);
+        white-space: nowrap;
+      }
+      .ogr-ds-hbar-row--group .ogr-ds-hbar-row__track {
+        height: auto;
+        min-height: 1.35rem;
+      }
+      .ogr-ds-hbar-row__stack {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        width: 100%;
+      }
+      .ogr-ds-hbar-mini {
+        position: relative;
+        height: 11px;
+        min-width: 1.75rem;
+        border-radius: 0 5px 5px 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 0.35rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+      .ogr-ds-hbar-mini__val {
+        font-size: 0.58rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        color: #fff;
+        text-shadow: 0 1px 1px rgba(15, 23, 42, 0.35);
+      }
+      .ogr-ds-chart-card--feature {
+        min-height: auto;
+        padding-bottom: 1.1rem;
+      }
+      .ogr-ds-hbar-legend {
+        list-style: none;
+        margin: 0.85rem 0 0;
+        padding: 0.5rem 0 0;
+        border-top: 1px solid var(--ogr-ds-border);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem 1rem;
+      }
+      .ogr-ds-hbar-legend li {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--ogr-ds-muted);
+        max-width: 11rem;
+      }
+      .ogr-ds-hbar-legend i {
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+      .ogr-ds-hbar-legend strong {
+        color: var(--ogr-ds-text);
+        font-weight: 800;
+      }
+      @media (max-width: 520px) {
+        .ogr-ds-hbar__scale-top {
+          margin-left: 5rem;
+        }
+        .ogr-ds-hbar__grid-bg {
+          left: 5rem;
+        }
+        .ogr-ds-hbar-row {
+          grid-template-columns: 5rem minmax(0, 1fr);
+        }
+      }
+      .ogr-ds-donut-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+      .ogr-ds-donut-svg {
+        width: 5.5rem;
+        height: 5.5rem;
+        flex-shrink: 0;
+      }
+      .ogr-ds-donut-legend {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.68rem;
+        flex: 1;
+        min-width: 0;
+      }
+      .ogr-ds-donut-legend li {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.3rem;
+        color: var(--ogr-ds-muted);
+      }
+      .ogr-ds-donut-legend i {
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      .ogr-ds-bar-chart {
+        flex: 1;
+        display: flex;
+        align-items: flex-end;
+        gap: 0.35rem;
+        padding-top: 0.5rem;
+        min-height: 5.5rem;
+      }
+      .ogr-ds-bar-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        min-width: 0;
+      }
+      .ogr-ds-bar-fill {
+        width: 100%;
+        max-width: 2rem;
+        border-radius: 0.35rem 0.35rem 0 0;
+        background: linear-gradient(180deg, var(--ogr-ds-ice2), var(--ogr-ds-accent));
+        min-height: 4px;
+        transition: height 0.35s ease;
+      }
+      .ogr-ds-bar-lbl {
+        font-size: 0.55rem;
+        color: #334155;
+        text-align: center;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .ogr-ds-line-trend {
+        flex: 1;
+        min-height: 10rem;
+        padding: 0.35rem 0.15rem 0;
+      }
+      .ogr-ds-line-trend svg {
+        width: 100%;
+        height: auto;
+        min-height: 9.5rem;
+        display: block;
+      }
+      .ogr-ds-vcol {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 10rem;
+        padding-top: 0.25rem;
+      }
+      .ogr-ds-vcol__plot {
+        flex: 1;
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+        padding: 0 0.25rem;
+        border-bottom: 1px solid var(--ogr-ds-border);
+        min-height: 7.5rem;
+      }
+      .ogr-ds-vcol__col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+        min-width: 0;
+      }
+      .ogr-ds-vcol__val {
+        font-size: 0.62rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        color: var(--ogr-ds-text);
+      }
+      .ogr-ds-vcol__fill {
+        width: 100%;
+        max-width: 2.25rem;
+        border-radius: 0.4rem 0.4rem 0 0;
+        min-height: 4px;
+        transition: height 0.4s ease;
+      }
+      .ogr-ds-vcol__lbl {
+        font-size: 0.55rem;
+        font-weight: 600;
+        color: #334155;
+        text-align: center;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .ogr-ds-branch-bars {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        padding: 0.25rem 0;
+      }
+      .ogr-ds-branch-bar {
+        display: grid;
+        grid-template-columns: 4.5rem minmax(0, 1fr) 2.25rem;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.65rem;
+      }
+      .ogr-ds-branch-bar__name {
+        font-weight: 700;
+        color: var(--ogr-ds-text);
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .ogr-ds-branch-bar__track {
+        height: 0.5rem;
+        background: #eef2f6;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .ogr-ds-branch-bar__fill {
+        height: 100%;
+        border-radius: 999px;
+        min-width: 2px;
+      }
+      .ogr-ds-branch-bar__net {
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        color: var(--ogr-ds-text);
+      }
+      .ogr-ds-delta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 0.35rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 700;
+      }
+      .ogr-ds-delta-pill--up {
+        background: rgba(52, 211, 153, 0.15);
+        color: #047857;
+      }
+      .ogr-ds-delta-pill--down {
+        background: rgba(248, 113, 113, 0.12);
+        color: #b91c1c;
+      }
+      .ogr-ds-delta-pill--flat {
+        background: rgba(148, 163, 184, 0.15);
+        color: #475569;
+      }
+      .ogr-ds-table-card {
+        margin-top: 0.75rem;
+        background: var(--ogr-ds-card);
+        border: 1px solid var(--ogr-ds-border);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+      .ogr-ds-table-head {
+        padding: 0.85rem 1.1rem;
+        border-bottom: 1px solid var(--ogr-ds-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .ogr-ds-table-head h2 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 800;
+      }
+      .ogr-ds-table-hint {
+        font-size: 0.72rem;
+        color: #334155;
+      }
+      .ogr-ds-table-scroll {
+        overflow-x: auto;
+      }
+      .ogr-ds-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+      .ogr-ds-table th {
+        text-align: left;
+        padding: 0.65rem 1rem;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--ogr-ds-muted);
+        background: #faf8f4;
+        border-bottom: 1px solid var(--ogr-ds-border);
+      }
+      .ogr-ds-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f5f0e8;
+      }
+      .ogr-ds-row {
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .ogr-ds-row:hover {
+        background: #f0f7fc;
+      }
+      .ogr-ds-row:focus-visible {
+        outline: 2px solid var(--ogr-ds-accent);
+        outline-offset: -2px;
+      }
+      .ogr-ds-exam-name {
+        font-weight: 700;
+        color: var(--ogr-ds-text);
+      }
+      .ogr-ds-badge {
+        display: inline-block;
+        font-size: 0.62rem;
+        font-weight: 700;
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #2563eb;
+        margin-left: 0.35rem;
+        vertical-align: middle;
+      }
+      .ogr-ds-empty {
+        padding: 2.5rem 1rem;
+        text-align: center;
+        color: var(--ogr-ds-muted);
+        font-size: 0.9rem;
+      }
+      html.ogr-ds-modal-open,
+      html.ogr-ds-modal-open body {
+        overflow: hidden !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+      }
+      .ogr-ds-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        z-index: 2147483646;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(0.75rem, env(safe-area-inset-top, 0px))
+          max(0.75rem, env(safe-area-inset-right, 0px))
+          max(0.75rem, env(safe-area-inset-bottom, 0px))
+          max(0.75rem, env(safe-area-inset-left, 0px));
+        box-sizing: border-box;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        overflow: hidden;
+        overscroll-behavior: contain;
+        margin: 0;
+      }
+      .ogr-ds-modal.hidden {
+        display: none !important;
+      }
+      .ogr-ds-modal__panel {
+        display: flex;
+        flex-direction: column;
+        width: min(52rem, calc(100vw - 1.5rem));
+        max-width: 52rem;
+        max-height: min(90vh, 90dvh, 880px);
+        margin: 0;
+        flex-shrink: 0;
+        background: #fff;
+        border-radius: 1.1rem;
+        border: 1px solid var(--ogr-ds-border);
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+        overflow: hidden;
+      }
+      .ogr-ds-modal__bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.85rem 1.1rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(180deg, #f8fafc, #fff);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .ogr-ds-modal__bar h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 800;
+      }
+      .ogr-ds-modal__actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+      }
+      .ogr-ds-btn {
+        border: 1px solid var(--ogr-ds-border);
+        background: #fff;
+        color: var(--ogr-ds-text);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 0.45rem 0.85rem;
+        border-radius: 0.55rem;
+        cursor: pointer;
+      }
+      .ogr-ds-btn:hover {
+        background: #f8fafc;
+      }
+      .ogr-ds-btn--primary {
+        background: var(--ogr-ds-accent);
+        border-color: #2d6ba8;
+        color: #fff;
+      }
+      .ogr-ds-btn--primary:hover {
+        background: #2d6ba8;
+      }
+      .ogr-ds-modal__body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 1rem 1.1rem 1.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+      }
+      .ogr-ds-modal__body::-webkit-scrollbar {
+        width: 8px;
+      }
+      .ogr-ds-modal__body::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: rgba(100, 116, 139, 0.45);
+      }
+      .ogr-ds-modal__body::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .ogr-ds-btn:disabled {
+        opacity: 0.65;
+        cursor: wait;
+      }
+    </style>
+  </head>
+  <body class="og-student-embed og-partial-page">
+    <div class="ogr-ds-wrap">
+      <header class="ogr-ds-head">
+        <h1>Deneme Sonuçları</h1>
+        <p>
+          Koç panelinden yüklenen sınav sonuçlarınız. Grafiklerde gelişiminizi izleyin; bir satıra tıklayarak
+          Sonuç Merkezi ile aynı detaylı karnenizi açın.
+        </p>
+      </header>
+
+      <div class="ogr-ds-kpi-row" id="ogr-ds-kpis" aria-label="Özet göstergeler"></div>
+
+      <section class="ogr-ds-charts" id="ogr-ds-charts" aria-label="Grafikler"></section>
+
+      <div class="ogr-ds-table-card">
+        <div class="ogr-ds-table-head">
+          <h2>Tüm denemeler</h2>
+          <span class="ogr-ds-table-hint">Detay için satıra tıklayın</span>
+        </div>
+        <div class="ogr-ds-table-scroll">
+          <table class="ogr-ds-table" aria-label="Deneme listesi">
+            <thead>
+              <tr>
+                <th>Sınav adı</th>
+                <th>Tarih</th>
+                <th>Net</th>
+                <th>Puan</th>
+              </tr>
+            </thead>
+            <tbody id="ogr-ds-tbody"></tbody>
+          </table>
+        </div>
+        <div id="ogr-ds-empty" class="ogr-ds-empty hidden">Henüz kayıtlı deneme sonucunuz yok.</div>
+      </div>
+    </div>
+
+    <div id="ogr-ds-modal" class="ogr-ds-modal hidden" role="dialog" aria-modal="true" aria-labelledby="ogr-ds-modal-title">
+      <div class="ogr-ds-modal__panel">
+        <div class="ogr-ds-modal__bar">
+          <h3 id="ogr-ds-modal-title">Deneme karnesi</h3>
+          <div class="ogr-ds-modal__actions">
+            <button type="button" class="ogr-ds-btn" id="ogr-ds-modal-close">Kapat</button>
+            <button type="button" class="ogr-ds-btn ogr-ds-btn--primary hidden" id="ogr-ds-modal-pdf">PDF / Yazdır</button>
+          </div>
+        </div>
+        <div class="ogr-ds-modal__body" id="ogr-ds-modal-body"></div>
+      </div>
+    </div>
+
+    <script src="../js/og-student-perf.js"></script>
+    <script src="../js/deneme-exam-layout.js"></script>
+    <script src="../js/yks-mufredat.js"></script>
+    <script src="../js/ogrenci-mufredat-gate.js"></script>
+    <script src="../js/exam-matrix.js"></script>
+    <script src="../js/utils/score-calculator.js"></script>
+    <script src="../js/student-karne-api.js"></script>
+    <script src="../js/student-catalog.js"></script>
+    <script src="../js/ogrenci-deneme-sonuclari.js"></script>
+  </body>
+</html>

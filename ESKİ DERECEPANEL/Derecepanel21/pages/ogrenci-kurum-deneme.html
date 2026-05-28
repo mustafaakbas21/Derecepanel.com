@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kurum Deneme Sınavları – Öğrenci – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext" rel="stylesheet" />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .ogr-kdy-ro {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 1rem 1rem 2rem;
+      }
+      .ogr-kdy-ro__hero {
+        margin-bottom: 1.25rem;
+      }
+      .ogr-kdy-ro__hero h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary, #0f172a);
+      }
+      .ogr-kdy-ro__hero p {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-muted, #64748b);
+        line-height: 1.5;
+      }
+      .ogr-kdy-ro-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+      .ogr-kdy-ro-item {
+        border-radius: 14px;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface-elevated, #fff);
+        padding: 1rem 1.1rem;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+      }
+      .ogr-kdy-ro-item__top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.5rem 0.75rem;
+        margin-bottom: 0.55rem;
+      }
+      .ogr-kdy-ro-item__title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary, #0f172a);
+        flex: 1;
+        min-width: 0;
+        line-height: 1.35;
+      }
+      .ogr-kdy-ro-item__pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(14, 165, 233, 0.12);
+        color: #0369a1;
+        white-space: nowrap;
+      }
+      .ogr-kdy-ro-item__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        font-size: 0.82rem;
+        color: var(--text-muted, #64748b);
+        font-weight: 500;
+      }
+      .ogr-kdy-ro-item__date {
+        font-weight: 700;
+        color: #4338ca;
+      }
+      .ogr-kdy-ro-empty {
+        margin: 0;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px dashed var(--header-border, #cbd5e1);
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-muted, #64748b);
+      }
+    </style>
+  </head>
+  <body class="og-student-embed">
+    <div class="ogr-kdy-ro">
+      <header class="ogr-kdy-ro__hero">
+        <h1>Kurum Deneme Sınavları</h1>
+        <p>Bu liste koç panelindeki kurum takvimiyle aynıdır. Salt okunur; yaklaşan sınavlar tarihe göre sıralanır.</p>
+      </header>
+      <p id="ogr-kdy-ro-empty" class="ogr-kdy-ro-empty" hidden>Yaklaşan kurum denemesi kaydı yok.</p>
+      <div id="ogr-kdy-ro-list" class="ogr-kdy-ro-list" aria-live="polite"></div>
+    </div>
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/ogrenci-kurum-deneme-ro.js" defer></script>
+  </body>
+</html>

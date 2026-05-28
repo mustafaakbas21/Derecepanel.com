@@ -1,0 +1,120 @@
+/* Test Maker alt sayfaları — viewport + ESKİ panel yapısı (renkler: test-maker-theme.css) */
+
+/* Kırpıcı / Havuz — sabit viewport, panel içi scroll */
+.coach-panel-main:has(.tm-module-shell):not(:has(.tm-saas-shell--document-scroll)) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  padding: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Test Oluşturucu — tarayıcı / ana panel kaydırması */
+.coach-panel-main:has(.tm-saas-shell--document-scroll) {
+  display: block;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tm-module-shell {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.tm-module-shell .tm-subnav {
+  flex-shrink: 0;
+}
+
+/* Kırpıcı / Havuz tam yükseklik */
+.tm-module-shell:has(#tw-scope) {
+  min-height: 0;
+}
+
+#tw-scope {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.sh-card .sh-ans-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sh-card .sh-ans-btn:hover {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.sh-card .sh-ans-btn.active {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: #6ee7b7 !important;
+  box-shadow: 0 0 0 2px #34d399;
+}
+
+@keyframes shFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+#sh-empty-icon {
+  animation: shFloat 3s ease-in-out infinite;
+}
+
+/* Kırpıcı / Havuz — tam yükseklik flex shell */
+.tm-saas-shell:not(.tm-saas-shell--document-scroll) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+
+/* Test Oluşturucu — doğal yükseklik, scroll üst main'de */
+.tm-saas-shell--document-scroll {
+  display: block;
+  flex: none;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+  width: 100%;
+}
+
+.tm-module-shell:has(.tm-saas-shell--document-scroll) {
+  height: auto;
+  min-height: 0;
+  flex: none;
+  overflow: visible;
+}
+
+.tm-module-shell:has(.tm-saas-shell--document-scroll) > div:last-child {
+  display: block;
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+}
+
+#tw-scope.tm-saas-shell--document-scroll {
+  flex: none;
+  min-height: auto;
+}

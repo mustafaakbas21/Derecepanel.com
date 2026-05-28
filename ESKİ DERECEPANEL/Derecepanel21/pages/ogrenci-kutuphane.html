@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+
+<html lang="tr" class="og-student-embed-root">
+
+  <head>
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Kütüphanem – Derecepanel</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=latin-ext"
+
+      rel="stylesheet"
+
+    />
+
+    <script src="../js/theme-boot.js"></script>
+
+    <link rel="stylesheet" href="../css/style.css" />
+
+    <style>
+
+      .og-lib-wrap {
+
+        width: 100%;
+
+        max-width: none;
+
+        margin: 0;
+
+        padding: 0 0.5rem 2.5rem;
+
+        box-sizing: border-box;
+
+      }
+
+      .og-lib-hero-title {
+
+        margin: 0 0 0.5rem;
+
+        font-size: clamp(1.65rem, 3.2vw, 2.125rem);
+
+        font-weight: 800;
+
+        letter-spacing: -0.035em;
+
+        line-height: 1.15;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-hero-sub {
+
+        margin: 0;
+
+        max-width: 42rem;
+
+        font-size: 0.9375rem;
+
+        line-height: 1.6;
+
+        font-weight: 500;
+
+        color: #64748b;
+
+      }
+
+      .og-lib-source-bar {
+
+        display: inline-flex;
+
+        flex-wrap: wrap;
+
+        gap: 0.35rem;
+
+        margin-top: 1.15rem;
+
+        padding: 0.35rem;
+
+        border-radius: 1rem;
+
+        border: 1px solid #e2e8f0;
+
+        background: #f8fafc;
+
+      }
+
+      .og-lib-source-btn {
+
+        border: 0;
+
+        border-radius: 0.75rem;
+
+        padding: 0.62rem 1.15rem;
+
+        font-size: 0.8125rem;
+
+        font-weight: 700;
+
+        color: #64748b;
+
+        background: transparent;
+
+        cursor: pointer;
+
+        transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+      }
+
+      .og-lib-source-btn:hover {
+
+        color: #334155;
+
+      }
+
+      .og-lib-source-btn--active {
+
+        color: #0f172a;
+
+        background: #fff;
+
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+
+      }
+
+      .og-lib-panel {
+
+        width: 100%;
+
+        margin-top: 1.25rem;
+
+        border-radius: 1.15rem;
+
+        border: 1px solid #e8ecf2;
+
+        background: #fff;
+
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.05);
+
+        padding: 1.15rem 1.2rem 1.35rem;
+
+        box-sizing: border-box;
+
+      }
+
+      .og-lib-panel__head {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        align-items: flex-start;
+
+        justify-content: space-between;
+
+        gap: 0.75rem;
+
+        margin-bottom: 1rem;
+
+      }
+
+      .og-lib-panel__title {
+
+        margin: 0;
+
+        font-size: 1.05rem;
+
+        font-weight: 800;
+
+        letter-spacing: -0.02em;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-panel__sub {
+
+        margin: 0.35rem 0 0;
+
+        font-size: 0.8125rem;
+
+        line-height: 1.5;
+
+        font-weight: 500;
+
+        color: #64748b;
+
+        max-width: 36rem;
+
+      }
+
+      .og-lib-panel__count {
+
+        font-size: 0.75rem;
+
+        font-weight: 800;
+
+        color: #1e3a5f;
+
+        font-variant-numeric: tabular-nums;
+
+        white-space: nowrap;
+
+      }
+
+      .og-lib-toolbar {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        align-items: center;
+
+        gap: 0.55rem;
+
+        margin-bottom: 1rem;
+
+        padding: 0.65rem 0.75rem;
+
+        border-radius: 0.85rem;
+
+        border: 1px solid #e8ecf2;
+
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+
+      }
+
+      .og-lib-toolbar__label {
+
+        font-size: 0.68rem;
+
+        font-weight: 800;
+
+        letter-spacing: 0.06em;
+
+        text-transform: uppercase;
+
+        color: #64748b;
+
+        margin-right: 0.15rem;
+
+      }
+
+      .og-lib-sinav-pills {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 0.35rem;
+
+        align-items: center;
+
+      }
+
+      .og-lib-pill {
+
+        border: 1px solid #cbd5e1;
+
+        border-radius: 999px;
+
+        padding: 0.38rem 0.85rem;
+
+        font-size: 0.75rem;
+
+        font-weight: 700;
+
+        color: #475569;
+
+        background: #fff;
+
+        cursor: pointer;
+
+        transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+      }
+
+      .og-lib-pill:hover {
+
+        border-color: #94a3b8;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-pill--active {
+
+        border-color: #1e3a5f;
+
+        background: #1e3a5f;
+
+        color: #fff;
+
+      }
+
+      .og-lib-inp {
+
+        flex: 1 1 12rem;
+
+        min-width: 0;
+
+        border-radius: 0.65rem;
+
+        border: 1px solid #cbd5e1;
+
+        background: #fff;
+
+        padding: 0.5rem 0.75rem;
+
+        font-size: 0.8125rem;
+
+        font-weight: 600;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-inp:focus {
+
+        outline: none;
+
+        border-color: #1e3a5f;
+
+        box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+
+      }
+
+      .og-lib-subject-select {
+
+        flex: 1 1 14rem;
+
+        min-width: 10rem;
+
+        max-width: 100%;
+
+      }
+
+      .og-lib-books-grid {
+
+        display: grid;
+
+        grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+
+        gap: 0.85rem;
+
+        width: 100%;
+
+      }
+
+      .og-lib-book-tile {
+
+        display: flex;
+
+        flex-direction: column;
+
+        min-width: 0;
+
+        border-radius: 0.9rem;
+
+        border: 1px solid #e8ecf2;
+
+        background: #fff;
+
+        overflow: hidden;
+
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+
+        transition: transform 0.14s ease, box-shadow 0.14s ease;
+
+      }
+
+      .og-lib-book-tile:hover {
+
+        transform: translateY(-2px);
+
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+
+      }
+
+      .og-lib-book-tile__cover {
+
+        aspect-ratio: 3 / 4;
+
+        background: linear-gradient(145deg, #e8eef5, #f8fafc);
+
+        overflow: hidden;
+
+      }
+
+      .og-lib-book-tile__cover img {
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: cover;
+
+        display: block;
+
+      }
+
+      .og-lib-book-tile__body {
+
+        padding: 0.5rem 0.55rem 0.6rem;
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 0.28rem;
+
+        flex: 1;
+
+      }
+
+      .og-lib-book-tile__title {
+
+        margin: 0;
+
+        font-size: 0.72rem;
+
+        font-weight: 800;
+
+        line-height: 1.25;
+
+        color: #0f172a;
+
+        display: -webkit-box;
+
+        -webkit-line-clamp: 2;
+
+        -webkit-box-orient: vertical;
+
+        overflow: hidden;
+
+      }
+
+      .og-lib-book-tile__meta {
+
+        margin: 0;
+
+        font-size: 0.6rem;
+
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.04em;
+
+        color: #475569;
+
+      }
+
+      .og-lib-book-prog {
+
+        height: 4px;
+
+        border-radius: 999px;
+
+        background: #e2e8f0;
+
+        overflow: hidden;
+
+      }
+
+      .og-lib-book-prog__bar {
+
+        height: 100%;
+
+        border-radius: inherit;
+
+        background: linear-gradient(90deg, #1e3a5f, #3b6ea8);
+
+      }
+
+      .og-lib-book-due {
+
+        margin: 0;
+
+        font-size: 0.6rem;
+
+        font-weight: 600;
+
+        color: #64748b;
+
+      }
+
+      .og-lib-book-pdf {
+
+        margin-top: auto;
+
+        border: 0;
+
+        border-radius: 0.5rem;
+
+        padding: 0.38rem 0.45rem;
+
+        font-size: 0.65rem;
+
+        font-weight: 800;
+
+        background: #1e3a5f;
+
+        color: #fff;
+
+        cursor: pointer;
+
+      }
+
+      .og-lib-book-pdf:disabled {
+
+        opacity: 0.45;
+
+        cursor: not-allowed;
+
+        background: #94a3b8;
+
+      }
+
+      .og-lib-grid {
+
+        display: grid;
+
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+
+        gap: 1.25rem;
+
+        width: 100%;
+
+      }
+
+      @media (min-width: 768px) {
+
+        .og-lib-grid {
+
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        }
+
+      }
+
+      @media (min-width: 1280px) {
+
+        .og-lib-grid {
+
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+
+        }
+
+      }
+
+      .og-lib-card {
+
+        display: flex;
+
+        min-height: 20rem;
+
+        flex-direction: column;
+
+        overflow: hidden;
+
+        border-radius: 1rem;
+
+        border: 1px solid #e8ecf2;
+
+        background: #fff;
+
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+
+        transition: box-shadow 0.15s ease, transform 0.12s ease;
+
+      }
+
+      .og-lib-card:hover {
+
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.09);
+
+        transform: translateY(-2px);
+
+      }
+
+      .og-lib-card__hero {
+
+        position: relative;
+
+        display: flex;
+
+        min-height: 9rem;
+
+        flex: 0 0 38%;
+
+        flex-direction: column;
+
+        justify-content: flex-end;
+
+        padding: 1rem 1rem 0.9rem;
+
+        color: #fff;
+
+      }
+
+      .og-lib-card__hero--tyt-mat { background: linear-gradient(135deg, #1e3a5f, #3d6a9e); }
+
+      .og-lib-card__hero--tyt-tr { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+
+      .og-lib-card__hero--tyt-fen { background: linear-gradient(135deg, #0369a1, #38bdf8); }
+
+      .og-lib-card__hero--tyt-sos { background: linear-gradient(135deg, #b45309, #f59e0b); }
+
+      .og-lib-card__hero--ayt-say { background: linear-gradient(135deg, #9f1239, #e11d48); }
+
+      .og-lib-card__hero--ayt-ea { background: linear-gradient(135deg, #334155, #64748b); }
+
+      .og-lib-card__hero--uncat { background: linear-gradient(135deg, #475569, #94a3b8); }
+
+      .og-lib-card__tag {
+
+        font-size: 0.62rem;
+
+        font-weight: 800;
+
+        letter-spacing: 0.14em;
+
+        text-transform: uppercase;
+
+        opacity: 0.88;
+
+      }
+
+      .og-lib-card__branch {
+
+        margin-top: 0.25rem;
+
+        font-size: 1.05rem;
+
+        font-weight: 800;
+
+        line-height: 1.2;
+
+        letter-spacing: -0.02em;
+
+      }
+
+      .og-lib-card__body {
+
+        display: flex;
+
+        flex: 1;
+
+        flex-direction: column;
+
+        padding: 1rem;
+
+      }
+
+      .og-lib-card__title {
+
+        margin: 0;
+
+        font-size: 0.95rem;
+
+        font-weight: 800;
+
+        line-height: 1.35;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-card__meta {
+
+        margin: 0.35rem 0 0;
+
+        font-size: 0.8125rem;
+
+        font-weight: 600;
+
+        color: #64748b;
+
+      }
+
+      .og-lib-card__actions {
+
+        margin-top: auto;
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 0.5rem;
+
+        padding-top: 0.85rem;
+
+        border-top: 1px solid #f1f5f9;
+
+      }
+
+      .og-lib-btn-outline {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 0.35rem;
+
+        border-radius: 0.65rem;
+
+        border: 1px solid #cbd5e1;
+
+        background: #fff;
+
+        padding: 0.55rem 0.5rem;
+
+        font-size: 0.72rem;
+
+        font-weight: 800;
+
+        color: #334155;
+
+        cursor: pointer;
+
+        transition: background 0.12s ease, border-color 0.12s ease;
+
+      }
+
+      .og-lib-btn-outline:hover {
+
+        background: #f8fafc;
+
+        border-color: #94a3b8;
+
+      }
+
+      .og-lib-btn-primary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 0.35rem;
+
+        border: 0;
+
+        border-radius: 0.65rem;
+
+        background: #1e3a5f;
+
+        padding: 0.55rem 0.5rem;
+
+        font-size: 0.72rem;
+
+        font-weight: 800;
+
+        color: #fff;
+
+        cursor: pointer;
+
+        transition: background 0.12s ease;
+
+      }
+
+      .og-lib-btn-primary:hover {
+
+        background: #152a45;
+
+      }
+
+      .og-lib-btn-primary:disabled {
+
+        opacity: 0.45;
+
+        cursor: not-allowed;
+
+      }
+
+      .og-lib-urgent {
+
+        margin-bottom: 1.25rem;
+
+        padding: 1rem 1.1rem;
+
+        border-radius: 0.9rem;
+
+        border: 1px solid #dbe4ef;
+
+        border-left: 4px solid #1e3a5f;
+
+        background: linear-gradient(135deg, #f8fafc, #fff);
+
+      }
+
+      .og-lib-urgent__title {
+
+        margin: 0 0 0.65rem;
+
+        font-size: 1rem;
+
+        font-weight: 800;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-empty {
+
+        border-radius: 1rem;
+
+        border: 1px dashed #cbd5e1;
+
+        background: linear-gradient(180deg, #f8fafc, #fff);
+
+        padding: 2.5rem 1.5rem;
+
+        text-align: center;
+
+      }
+
+      .og-lib-empty__icon {
+
+        margin: 0 auto 1rem;
+
+        display: flex;
+
+        height: 3.5rem;
+
+        width: 3.5rem;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 1rem;
+
+        background: linear-gradient(135deg, #e8eef5, #f1f5f9);
+
+        color: #1e3a5f;
+
+      }
+
+      .og-lib-empty__title {
+
+        margin: 0 0 0.5rem;
+
+        font-size: 1.1rem;
+
+        font-weight: 800;
+
+        color: #0f172a;
+
+      }
+
+      .og-lib-empty__text {
+
+        margin: 0 auto;
+
+        max-width: 22rem;
+
+        font-size: 0.875rem;
+
+        line-height: 1.55;
+
+        color: #64748b;
+
+      }
+
+      /* Tailwind yok; .hidden ile boş durum / grid gizleme */
+
+      .og-lib-panel.hidden,
+
+      .og-lib-empty.hidden,
+
+      .og-lib-books-grid.hidden,
+
+      .og-lib-grid.hidden,
+
+      .og-lib-urgent.hidden,
+
+      #og-lib-digital-toolbar.hidden {
+
+        display: none !important;
+
+      }
+
+      .og-lib-empty[hidden],
+
+      .og-lib-books-grid[hidden],
+
+      .og-lib-grid[hidden],
+
+      #og-lib-digital-toolbar[hidden] {
+
+        display: none !important;
+
+      }
+
+      .og-lib-toast {
+
+        position: fixed;
+
+        bottom: 1.25rem;
+
+        left: 50%;
+
+        transform: translateX(-50%) translateY(120%);
+
+        z-index: 80;
+
+        min-width: min(22rem, calc(100vw - 2rem));
+
+        padding: 0.75rem 1rem;
+
+        border-radius: 0.75rem;
+
+        background: #fff;
+
+        border: 1px solid #e2e8f0;
+
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
+
+        font-size: 0.9rem;
+
+        font-weight: 600;
+
+        color: #0f172a;
+
+        transition: transform 0.28s ease;
+
+      }
+
+      .og-lib-toast.is-on {
+
+        transform: translateX(-50%) translateY(0);
+
+      }
+
+      .og-lib-toast--ok {
+
+        border-color: rgba(30, 58, 95, 0.35);
+
+        background: rgba(232, 238, 245, 0.95);
+
+      }
+
+      .og-lib-toast--err {
+
+        border-color: rgba(239, 68, 68, 0.4);
+
+        background: #fef2f2;
+
+      }
+
+    </style>
+
+  </head>
+
+  <body class="font-sans text-slate-900 antialiased og-partial-page og-student-embed">
+
+    <main class="main og-partial-main">
+
+      <div class="og-lib-wrap" id="og-lib-root">
+
+        <header class="pt-1">
+
+          <h1 class="og-lib-hero-title">Kütüphanem</h1>
+
+          <p class="og-lib-hero-sub" id="og-lib-sub">
+
+            Koçunuzun atadığı kitap kaynakları ve dijital test arşiviniz tek ekranda.
+
+          </p>
+
+          <div class="og-lib-source-bar" id="og-lib-source-bar" role="tablist" aria-label="Kaynak türü">
+
+            <button type="button" class="og-lib-source-btn og-lib-source-btn--active" data-source="books" role="tab" aria-selected="true">
+
+              Kitap Kaynaklarım
+
+            </button>
+
+            <button type="button" class="og-lib-source-btn" data-source="digital" role="tab" aria-selected="false">
+
+              Dijital Kaynaklarım
+
+            </button>
+
+          </div>
+
+        </header>
+
+
+
+        <section id="og-lib-books-panel" class="og-lib-panel" aria-labelledby="og-lib-books-title">
+
+          <div class="og-lib-panel__head">
+
+            <div>
+
+              <h2 class="og-lib-panel__title" id="og-lib-books-title">Kitap Kaynaklarım</h2>
+
+              <p class="og-lib-panel__sub" id="og-lib-books-hint">Koçunuzun kaynak atamasıyla gelen soru bankaları ve konu anlatımları.</p>
+
+            </div>
+
+            <span class="og-lib-panel__count" id="og-lib-books-count"></span>
+
+          </div>
+
+          <div class="og-lib-toolbar">
+
+            <input
+
+              type="search"
+
+              id="og-lib-books-search"
+
+              class="og-lib-inp"
+
+              placeholder="Kitap veya yayınevi ara…"
+
+              autocomplete="off"
+
+            />
+
+            <select id="og-lib-books-kind" class="og-lib-inp og-lib-subject-select">
+
+              <option value="">Tüm türler</option>
+
+              <option value="soru-bankasi">Soru Bankası</option>
+
+              <option value="konu-anlatim">Konu Anlatımı</option>
+
+              <option value="deneme">Deneme</option>
+
+              <option value="fasikul">Fasikül</option>
+
+            </select>
+
+          </div>
+
+          <div id="og-lib-books-grid" class="og-lib-books-grid" aria-live="polite"></div>
+
+          <div id="og-lib-books-empty" class="og-lib-empty hidden" role="status">
+
+            <div class="og-lib-empty__icon" aria-hidden="true">
+
+              <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+
+              </svg>
+
+            </div>
+
+            <h3 class="og-lib-empty__title">Henüz kitap atanmadı</h3>
+
+            <p class="og-lib-empty__text">Koçunuz Kaynak Atama üzerinden size kitap tanımladığında burada görünür.</p>
+
+          </div>
+
+          <div id="og-lib-books-filter-empty" class="og-lib-empty hidden mt-4" role="status">
+
+            <p class="og-lib-empty__text">Filtreye uyan kitap yok.</p>
+
+          </div>
+
+        </section>
+
+
+
+        <section id="og-lib-digital-panel" class="og-lib-panel hidden" aria-labelledby="og-lib-digital-title">
+
+          <div class="og-lib-panel__head">
+
+            <div>
+
+              <h2 class="og-lib-panel__title" id="og-lib-digital-title">Dijital Kaynaklarım</h2>
+
+              <p class="og-lib-panel__sub" id="og-lib-digital-hint">
+
+                YKS müfredatına göre ders seçin; koçunuzun gönderdiği fasikül ve testler burada listelenir.
+
+              </p>
+
+            </div>
+
+            <span class="og-lib-panel__count" id="og-lib-count"></span>
+
+          </div>
+
+
+
+          <div class="og-lib-toolbar" id="og-lib-digital-toolbar" role="group" aria-label="Müfredat ve ders filtresi">
+
+            <span class="og-lib-toolbar__label">YKS</span>
+
+            <div class="og-lib-sinav-pills" id="og-lib-sinav-pills" role="tablist" aria-label="Sınav türü"></div>
+
+            <select id="og-lib-subject-select" class="og-lib-inp og-lib-subject-select" aria-label="Ders seçimi">
+
+              <option value="">Tüm dersler</option>
+
+            </select>
+
+          </div>
+
+
+
+          <div id="og-lib-urgent-wrap" class="og-lib-urgent hidden" aria-labelledby="og-lib-urgent-title">
+
+            <h3 class="og-lib-urgent__title" id="og-lib-urgent-title">Bu hafta teslim edilecekler</h3>
+
+            <div id="og-lib-urgent-row" class="flex flex-col gap-3 sm:flex-row sm:flex-wrap"></div>
+
+          </div>
+
+
+
+          <div id="og-lib-empty-module" class="og-lib-empty hidden" role="status">
+
+            <div class="og-lib-empty__icon" aria-hidden="true">
+
+              <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M4 4v15.5A2.5 2.5 0 006.5 17H20v-9H6.5A2.5 2.5 0 014 4.5z"/><path d="M6.5 17V5"/>
+
+              </svg>
+
+            </div>
+
+            <h3 class="og-lib-empty__title">Dijital arşiviniz boş</h3>
+
+            <p class="og-lib-empty__text">Koçunuz size test veya fasikül gönderdiğinde seçtiğiniz derse göre burada görünür.</p>
+
+          </div>
+
+
+
+          <div id="og-lib-grid" class="og-lib-grid" aria-live="polite"></div>
+
+
+
+          <div id="og-lib-filter-empty" class="og-lib-empty hidden mt-4">
+
+            <p class="og-lib-empty__text">Bu derste henüz materyal yok. Başka bir ders veya sınav türü seçebilirsiniz.</p>
+
+          </div>
+
+        </section>
+
+      </div>
+
+
+
+      <div id="og-lib-toast" class="og-lib-toast" role="status" aria-live="polite" hidden></div>
+
+    </main>
+
+
+
+    <script src="../js/yks-standalone-shell.js"></script>
+
+    <script src="../js/theme.js" defer></script>
+
+    <script src="../js/og-student-perf.js"></script>
+    <script src="../js/student-catalog.js"></script>
+
+    <script src="../js/library-store.js"></script>
+
+    <script src="../js/yks-mufredat.js"></script>
+    <script src="../js/ogrenci-mufredat-gate.js"></script>
+
+    <script src="../js/fascicle-coach-bridge.js"></script>
+
+    <script>
+
+      window.DP_APPWRITE = window.DP_APPWRITE || {
+
+        endpoint: "",
+
+        projectId: "",
+
+        bucketId: "",
+
+        apiKey: "",
+
+        sessionJwt: "",
+
+        databaseId: "",
+
+        collectionTaramaDeposuId: "",
+
+      };
+
+    </script>
+
+    <script src="../js/dp-appwrite.js"></script>
+
+    <script src="../js/ogrenci-kutuphane.js"></script>
+
+  </body>
+
+</html>
+
+

@@ -1,0 +1,134 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+:root {
+  /* Landing-aligned palette */
+  --bg-base: #f4f7f6;
+  --bg-white: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-subtle: #fafbfc;
+  --bg-muted: #f1f5f9;
+
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --primary: #0f172a;
+  --primary-hover: #1e293b;
+  --primary-light: #f1f5f9;
+
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-light: #fff7ed;
+  --accent-muted: #ffedd5;
+
+  --success: #16a34a;
+  --success-light: #f0fdf4;
+
+  --warning: #ca8a04;
+  --warning-light: #fefce8;
+
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+
+  --text-base: #0f172a;
+  --text-2: #475569;
+  --text-3: #94a3b8;
+
+  --card-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.08);
+  --card-shadow-sm: 0 2px 16px -4px rgba(15, 23, 42, 0.06);
+}
+
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-base);
+  --font-sans: "Inter", "Geist", system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-base);
+  font-family: "Inter", "Geist", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body:has(.dashboard-viewport) {
+  overflow: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Dashboard — %80 ölçek; zoom yerine transform (alt boşluk oluşturmaz) */
+.dashboard-viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.dashboard-shell {
+  --dashboard-scale: 0.8;
+  width: calc(100vw / var(--dashboard-scale));
+  height: calc(100vh / var(--dashboard-scale));
+  height: calc(100dvh / var(--dashboard-scale));
+  transform: scale(var(--dashboard-scale));
+  transform-origin: 0 0;
+  background-color: #ffffff;
+  font-size: 16px;
+}
+
+@media print {
+  .dashboard-viewport {
+    position: static;
+    overflow: visible;
+    width: auto;
+    height: auto;
+  }
+
+  .dashboard-shell {
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+}
+
+/* Koç paneli içerik alanı */
+.coach-panel-main {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.coach-panel-main h1 {
+  font-size: 1.875rem;
+  line-height: 2.125rem;
+}
+
+.coach-panel-main h2 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.coach-panel-main h3 {
+  font-size: 1.0625rem;
+  line-height: 1.5rem;
+}
+
+/* Sidebar — alttan üste açık mavi → beyaz */
+.sidebar-panel {
+  background: linear-gradient(
+    to top,
+    #c5e3ff 0%,
+    #d4ebff 14%,
+    #e2f2ff 32%,
+    #eef7ff 52%,
+    #f5fbff 72%,
+    #fafdff 88%,
+    #ffffff 100%
+  );
+}

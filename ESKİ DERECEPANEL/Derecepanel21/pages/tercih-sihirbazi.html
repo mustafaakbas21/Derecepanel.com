@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tercih Sihirbazı – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <script src="../js/theme-boot.js"></script>
+    <script src="../js/og-student-perf.js"></script>
+    <script src="../js/ogrenci-yks-embed.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { corePlugins: { preflight: false } };
+    </script>
+    <style>
+      /* Ana içerik: tablo vb. — yatay padding burada */
+      .yks-sim {
+        padding: 0 1rem 3rem;
+        max-width: 100%;
+        margin: 0 auto;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      /* Filtre şeridi: main sütununa tam genişlik (ortada dar kart yok) */
+      .main > .page-title {
+        margin-bottom: 0.65rem;
+      }
+      .yks-filter-bleed {
+        width: calc(100% + 20px + 24px);
+        max-width: none;
+        margin-left: -20px;
+        margin-right: -24px;
+        margin-top: 0;
+        margin-bottom: 1.25rem;
+        padding: 1rem 24px 1.15rem 20px;
+        box-sizing: border-box;
+        background: var(--surface-panel);
+        border-bottom: 1px solid var(--header-border);
+      }
+      .yks-sim-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+        padding: 0.35rem;
+        border-radius: 0.85rem;
+        background: var(--surface-muted, #f1f5f9);
+        border: 1px solid var(--header-border, #e2e8f0);
+      }
+      .yks-sim-tab {
+        flex: 1;
+        min-width: 200px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-radius: 0.65rem;
+        background: transparent;
+        color: var(--text-muted, #64748b);
+        transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .yks-sim-tab:hover {
+        color: var(--text-primary, #0f172a);
+        background: rgba(255, 255, 255, 0.55);
+      }
+      .yks-sim-tab[aria-selected="true"] {
+        background: var(--surface-elevated, #fff);
+        color: var(--text-primary, #0f172a);
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      }
+      .yks-sim-panel[hidden] {
+        display: none !important;
+      }
+      .yks-filter-panel {
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+      }
+      .yks-year-seg {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.35rem;
+      }
+      .yks-year-seg__label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-right: 0.35rem;
+      }
+      .yks-year-btn {
+        min-width: 5.5rem;
+        padding: 0.55rem 1.1rem;
+        border: 1px solid var(--header-border);
+        border-radius: 0.65rem;
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: var(--surface);
+        color: var(--text-primary);
+        box-shadow: none;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .yks-year-btn:hover {
+        background: var(--surface-muted);
+        border-color: var(--text-muted);
+      }
+      .yks-year-btn.is-active {
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-fg);
+        border-color: transparent;
+        box-shadow: var(--shadow-soft);
+      }
+      .yks-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem 1.25rem;
+        align-items: end;
+      }
+      @media (min-width: 1024px) {
+        .yks-filter-grid {
+          grid-template-columns: minmax(120px, 0.85fr) minmax(140px, 1fr) minmax(168px, 1.05fr) minmax(130px, 0.85fr) minmax(6.5rem, auto);
+        }
+        .yks-rank-wrap {
+          grid-column: auto;
+        }
+        .yks-filter-actions {
+          min-width: 6.5rem;
+        }
+      }
+      .yks-filter-grid label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+      }
+      .yks-filter-grid input,
+      .yks-filter-grid select {
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.62rem 0.75rem;
+        border-radius: 0.6rem;
+        border: 1px solid var(--header-border);
+        background: var(--surface);
+        color: var(--text-primary);
+      }
+      .yks-filter-grid input:focus,
+      .yks-filter-grid select:focus {
+        outline: none;
+        border-color: color-mix(in srgb, var(--btn-primary-bg) 45%, var(--header-border));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--btn-primary-bg) 18%, transparent);
+      }
+      .yks-rank-wrap {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.28rem;
+        min-width: 0;
+      }
+      .yks-rank-wrap > .yks-rank-cap {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.2;
+      }
+      .yks-rank-row {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: nowrap;
+        min-height: 2.45rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.6rem;
+        border: 1px solid var(--header-border);
+        background: var(--surface);
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .yks-rank-row:focus-within {
+        border-color: color-mix(in srgb, var(--btn-primary-bg) 55%, var(--header-border));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--btn-primary-bg) 20%, transparent);
+      }
+      .yks-rank-inp {
+        flex: 1;
+        min-width: 0;
+        width: 0;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.38rem 0.45rem;
+        border: none;
+        border-radius: 0.45rem;
+        background: color-mix(in srgb, var(--surface-muted) 65%, var(--surface));
+        color: var(--text-primary);
+      }
+      .yks-rank-inp::placeholder {
+        color: var(--text-muted);
+        opacity: 0.9;
+        font-weight: 500;
+        font-size: 0.78rem;
+      }
+      .yks-rank-inp:focus {
+        outline: none;
+        background: var(--surface);
+      }
+      .yks-rank-sep {
+        color: var(--text-muted);
+        opacity: 0.55;
+        font-weight: 500;
+        font-size: 0.95rem;
+        line-height: 1;
+        padding: 0 0.1rem;
+        user-select: none;
+        flex-shrink: 0;
+      }
+      .yks-filter-actions {
+        display: flex;
+        align-items: flex-end;
+        justify-content: stretch;
+      }
+      .yks-btn-filter {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: 0.65rem 1.15rem;
+        border-radius: 0.65rem;
+        border: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-fg);
+        transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      }
+      .yks-btn-filter:hover {
+        filter: brightness(1.06);
+        box-shadow: var(--shadow-soft);
+      }
+      .yks-btn-filter:active {
+        transform: scale(0.98);
+      }
+      .yks-table-wrap {
+        position: relative;
+        --yks-atlas-meta-sticky: 3.5rem;
+        width: 100%;
+        border-radius: 1rem;
+        border: 1px solid var(--header-border);
+        overflow: auto;
+        max-height: min(72vh, 820px);
+        background: var(--surface);
+        box-shadow: var(--shadow-soft);
+      }
+      .yks-table-meta {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.65rem 1rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        line-height: 1.45;
+        font-weight: 500;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--header-border);
+        background: var(--surface-muted);
+        box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--text-primary) 12%, transparent);
+      }
+      .yks-table-meta__summary {
+        flex: 1 1 12rem;
+        min-width: 0;
+      }
+      .yks-table-meta__tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem 0.85rem;
+      }
+      .yks-page-size {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+      }
+      .yks-page-size select {
+        font: inherit;
+        font-size: 0.84rem;
+        font-weight: 600;
+        padding: 0.38rem 0.55rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--header-border);
+        background: var(--surface);
+        color: var(--text-primary);
+        min-width: 4.5rem;
+        cursor: pointer;
+      }
+      .yks-pager {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+      }
+      .yks-pager__btn {
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.4rem 0.65rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--header-border);
+        background: var(--surface);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .yks-pager__btn:hover:not(:disabled) {
+        background: var(--surface-muted);
+        border-color: var(--text-muted);
+      }
+      .yks-pager__btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .yks-pager__info {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding: 0 0.25rem;
+        white-space: nowrap;
+      }
+      table.yks-atlas-table {
+        width: 100%;
+        min-width: 960px;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+      .yks-atlas-table thead th,
+      .yks-atlas-table tbody td {
+        padding: 0.72rem 0.8rem;
+        vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .yks-atlas-table thead th {
+        position: sticky;
+        top: var(--yks-atlas-meta-sticky, 3.5rem);
+        z-index: 4;
+        text-align: left;
+        background: var(--table-header-bg, var(--surface-muted));
+        border-bottom: 2px solid var(--header-border);
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-primary);
+        white-space: nowrap;
+      }
+      .yks-atlas-table tbody td {
+        border-bottom: 1px solid var(--header-border);
+        color: var(--text-primary);
+        line-height: 1.35;
+      }
+      .yks-atlas-table .yks-th-num,
+      .yks-atlas-table .yks-td-num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .yks-atlas-table .yks-th-center,
+      .yks-atlas-table .yks-td-center {
+        text-align: center;
+      }
+      .yks-td-bolum__name {
+        display: block;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .yks-td-uni {
+        font-weight: 500;
+      }
+      .yks-atlas-goal-cell {
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      .yks-atlas-goal-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2rem;
+        padding: 0.42rem 0.65rem;
+        border-radius: 0.55rem;
+        border: 1px solid color-mix(in srgb, var(--btn-primary-bg) 35%, var(--header-border));
+        background: color-mix(in srgb, var(--btn-primary-bg) 12%, var(--surface));
+        color: var(--text-primary);
+        font: inherit;
+        font-size: 0.76rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+      }
+      .yks-atlas-goal-btn:hover {
+        background: color-mix(in srgb, var(--btn-primary-bg) 22%, var(--surface));
+        border-color: var(--btn-primary-bg);
+      }
+      .yks-atlas-goal-btn:active {
+        transform: scale(0.98);
+      }
+      .yks-atlas-goal-btn--active {
+        border-color: var(--btn-primary-bg);
+        background: color-mix(in srgb, var(--btn-primary-bg) 28%, var(--surface));
+        color: var(--btn-primary-bg);
+      }
+      #ts-target-toast {
+        position: fixed;
+        bottom: 1.35rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(140%);
+        z-index: 120;
+        max-width: min(24rem, calc(100vw - 2rem));
+        padding: 0.75rem 1.1rem;
+        border-radius: 0.75rem;
+        background: var(--surface-elevated, #fff);
+        border: 1px solid color-mix(in srgb, var(--btn-primary-bg) 40%, var(--header-border));
+        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.18);
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        transition: transform 0.3s ease;
+      }
+      #ts-target-toast.is-on {
+        transform: translateX(-50%) translateY(0);
+      }
+      .yks-pt-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.28rem 0.65rem;
+        border-radius: 9999px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        border: 1px solid transparent;
+        text-transform: uppercase;
+      }
+      .yks-pt-badge--say {
+        background: #bfdbfe;
+        color: #1e3a8a;
+        border-color: rgba(30, 58, 138, 0.2);
+      }
+      .yks-pt-badge--ea {
+        background: #fed7aa;
+        color: #9a3412;
+        border-color: rgba(154, 52, 18, 0.2);
+      }
+      .yks-pt-badge--soz {
+        background: #bbf7d0;
+        color: #14532d;
+        border-color: rgba(20, 83, 45, 0.2);
+      }
+      .yks-pt-badge--dil {
+        background: #ddd6fe;
+        color: #4c1d95;
+        border-color: rgba(76, 29, 149, 0.2);
+      }
+      .yks-pt-badge--tyt {
+        background: #c7d2fe;
+        color: #312e81;
+        border-color: rgba(49, 46, 129, 0.2);
+      }
+      .yks-pt-badge--def {
+        background: #e2e8f0;
+        color: #1e293b;
+        border-color: rgba(30, 41, 59, 0.15);
+      }
+      [data-theme="dark"] .yks-pt-badge--say {
+        background: rgba(59, 130, 246, 0.2);
+        color: #93c5fd;
+      }
+      [data-theme="dark"] .yks-pt-badge--ea {
+        background: rgba(249, 115, 22, 0.2);
+        color: #fdba74;
+      }
+      [data-theme="dark"] .yks-pt-badge--soz {
+        background: rgba(34, 197, 94, 0.2);
+        color: #86efac;
+      }
+      [data-theme="dark"] .yks-pt-badge--dil {
+        background: rgba(139, 92, 246, 0.22);
+        color: #c4b5fd;
+      }
+      [data-theme="dark"] .yks-pt-badge--tyt {
+        background: rgba(129, 140, 248, 0.2);
+        color: #c7d2fe;
+      }
+      [data-theme="dark"] .yks-pt-badge--def {
+        background: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .yks-atlas-table tbody tr:nth-child(even) {
+        background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface));
+      }
+      .yks-atlas-table tbody tr:hover td {
+        background: color-mix(in srgb, var(--accent-purple) 14%, var(--surface));
+      }
+      .yks-skeleton-host {
+        position: relative;
+        min-height: 320px;
+        border-radius: 0.85rem;
+        overflow: visible;
+      }
+      .yks-skeleton-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.85rem;
+        padding: 2.5rem 1rem 1.5rem;
+        background: color-mix(in srgb, var(--surface) 92%, var(--bg-page) 8%);
+        z-index: 6;
+        backdrop-filter: blur(8px);
+        border-radius: 1rem;
+      }
+      .yks-sk-cell {
+        padding: 0.85rem 1rem !important;
+        border-bottom: 1px solid var(--header-border, #e2e8f0);
+      }
+      .yks-sk-barcell {
+        height: 14px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          var(--surface-muted) 0%,
+          color-mix(in srgb, var(--surface-muted) 70%, var(--header-border)) 50%,
+          var(--surface-muted) 100%
+        );
+        background-size: 200% 100%;
+        animation: yksShimmer 1.15s ease-in-out infinite;
+      }
+      .yks-sk-barcell--short {
+        max-width: 55%;
+      }
+      .yks-sk-barcell--med {
+        max-width: 78%;
+      }
+      /* Puan türü: eş boyutlu segment (global button reset’ini aşmak için button. öneki) */
+      .yks-ts-pt-wrap {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.5rem;
+        width: 100%;
+        max-width: 28rem;
+      }
+      .yks-ts-pt-wrap .yks-ts-pt-all {
+        grid-column: 1 / -1;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 2.35rem;
+        margin: 0.15rem 0 0;
+        padding: 0.4rem 0.75rem;
+        border-radius: 0.65rem;
+        border: 1px dashed #94a3b8;
+        background: color-mix(in srgb, var(--surface-muted, #f1f5f9) 88%, transparent);
+        color: #475569;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+      }
+      .yks-ts-pt-wrap .yks-ts-pt-all:hover {
+        border-color: #6366f1;
+        color: #312e81;
+        background: color-mix(in srgb, #eef2ff 90%, transparent);
+      }
+      [data-theme="dark"] .yks-ts-pt-wrap .yks-ts-pt-all {
+        border-color: rgba(148, 163, 184, 0.45);
+        background: rgba(30, 41, 59, 0.5);
+        color: #cbd5e1;
+      }
+      [data-theme="dark"] .yks-ts-pt-wrap .yks-ts-pt-all:hover {
+        border-color: #818cf8;
+        color: #e0e7ff;
+        background: rgba(49, 46, 129, 0.35);
+      }
+      @media (max-width: 520px) {
+        .yks-ts-pt-wrap {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      button.yks-ts-pt {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 2.65rem;
+        margin: 0;
+        padding: 0.5rem 0.65rem;
+        border-radius: 0.75rem;
+        border: 1px solid #cbd5e1;
+        background-color: #ffffff;
+        background-image: none;
+        color: #334155;
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+      }
+      button.yks-ts-pt:hover {
+        border-color: #94a3b8;
+        background-color: #f1f5f9;
+        color: #0f172a;
+      }
+      button.yks-ts-pt.is-active {
+        background: linear-gradient(135deg, #1e1b4b, #312e81);
+        background-color: #312e81;
+        color: #fff;
+        border-color: #1e1b4b;
+        box-shadow: 0 8px 24px -6px rgba(49, 46, 129, 0.55);
+      }
+      [data-theme="dark"] button.yks-ts-pt {
+        background-color: rgba(30, 41, 59, 0.85);
+        border-color: rgba(148, 163, 184, 0.35);
+        color: #e2e8f0;
+      }
+      [data-theme="dark"] button.yks-ts-pt:hover {
+        background-color: rgba(51, 65, 85, 0.95);
+        border-color: rgba(148, 163, 184, 0.55);
+        color: #f8fafc;
+      }
+      [data-theme="dark"] button.yks-ts-pt.is-active {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        background-color: #6366f1;
+        color: #fff;
+        border-color: #4f46e5;
+        box-shadow: 0 8px 28px -8px rgba(99, 102, 241, 0.45);
+      }
+      .yks-dd-panel {
+        max-height: 15rem;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .yks-dd-list {
+        overflow-y: auto;
+        max-height: 11rem;
+      }
+      .yks-dd-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.84rem;
+        font-weight: 500;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--text-primary, #0f172a);
+      }
+      .yks-dd-item:hover,
+      .yks-dd-item:focus-visible {
+        background: color-mix(in srgb, var(--btn-primary-bg) 12%, var(--surface));
+        outline: none;
+      }
+      .yks-dd-item.is-muted {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+        cursor: default;
+        pointer-events: none;
+        padding-top: 0.65rem;
+      }
+      .yks-dd-flex {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        cursor: pointer;
+      }
+      .yks-rank-joined {
+        display: flex;
+        align-items: stretch;
+        border-radius: 0.85rem;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        overflow: hidden;
+        min-height: 2.85rem;
+        transition: box-shadow 0.2s, border-color 0.2s;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+      }
+      .yks-rank-joined:focus-within {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      }
+      .yks-rank-joined__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        flex-shrink: 0;
+        background: linear-gradient(180deg, #eef2ff, #e0e7ff);
+        color: #3730a3;
+        border-right: 1px solid #e2e8f0;
+      }
+      .yks-rank-joined__side {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0.4rem 0.65rem;
+        background: #f8fafc;
+      }
+      .yks-rank-joined__cap {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #334155 !important;
+      }
+      .yks-rank-joined__inp {
+        width: 100%;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.45rem;
+        background: #fff !important;
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0f172a !important;
+        padding: 0.28rem 0.45rem;
+        margin-top: 0.15rem;
+        box-sizing: border-box;
+      }
+      .yks-rank-joined__inp::placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-weight: 600;
+      }
+      .yks-rank-joined__inp:focus {
+        outline: none;
+        border-color: #818cf8;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+      }
+      .yks-rank-joined__sep {
+        width: 1px;
+        background: #cbd5e1;
+        flex-shrink: 0;
+        align-self: stretch;
+      }
+      [data-theme="dark"] .yks-rank-joined {
+        background: #1e293b;
+        border-color: rgba(148, 163, 184, 0.35);
+      }
+      [data-theme="dark"] .yks-rank-joined__side {
+        background: #0f172a;
+      }
+      [data-theme="dark"] .yks-rank-joined__cap {
+        color: #e2e8f0 !important;
+      }
+      [data-theme="dark"] .yks-rank-joined__inp {
+        background: #1e293b !important;
+        color: #f8fafc !important;
+        border-color: rgba(148, 163, 184, 0.35);
+      }
+      [data-theme="dark"] .yks-rank-joined__inp::placeholder {
+        color: #94a3b8 !important;
+      }
+      [data-theme="dark"] .yks-rank-joined__icon {
+        background: linear-gradient(180deg, #312e81, #1e1b4b);
+        color: #c7d2fe;
+        border-right-color: rgba(148, 163, 184, 0.25);
+      }
+      [data-theme="dark"] .yks-rank-joined__sep {
+        background: rgba(148, 163, 184, 0.35);
+      }
+      .yks-skeleton-spinner {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 3px solid rgba(99, 102, 241, 0.25);
+        border-top-color: #6366f1;
+        animation: yksSpin 0.85s linear infinite;
+      }
+      @keyframes yksSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .yks-skeleton-msg {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-primary, #0f172a);
+        text-align: center;
+        max-width: 22rem;
+        line-height: 1.45;
+      }
+      .yks-skeleton-sub {
+        font-size: 0.8rem;
+        color: var(--text-muted, #64748b);
+      }
+      .yks-skeleton-bars {
+        width: 100%;
+        max-width: 480px;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+      .yks-sk-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          var(--header-border) 0%,
+          var(--surface-muted) 45%,
+          var(--header-border) 85%
+        );
+        background-size: 200% 100%;
+        animation: yksShimmer 1.2s ease-in-out infinite;
+      }
+      @keyframes yksShimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: -100% 0;
+        }
+      }
+      .yks-acc-root {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .yks-acc-block {
+        border-radius: 0.85rem;
+        border: 1px solid var(--header-border, #e2e8f0);
+        overflow: hidden;
+        background: var(--surface-elevated, #fff);
+      }
+      .yks-acc-block__head {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border: none;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(14, 165, 233, 0.06));
+        font: inherit;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        text-align: left;
+        color: var(--text-primary, #0f172a);
+      }
+      .yks-acc-block__head svg {
+        flex-shrink: 0;
+        transition: transform 0.25s ease;
+      }
+      .yks-acc-block.is-open .yks-acc-block__head svg {
+        transform: rotate(180deg);
+      }
+      .yks-acc-block__body {
+        display: none;
+        border-top: 1px solid var(--header-border, #e2e8f0);
+      }
+      .yks-acc-block.is-open .yks-acc-block__body {
+        display: block;
+      }
+      .yks-course {
+        border-bottom: 1px solid var(--header-border, #e2e8f0);
+      }
+      .yks-course:last-child {
+        border-bottom: none;
+      }
+      .yks-course__head {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: none;
+        background: var(--surface, #fff);
+        font: inherit;
+        cursor: pointer;
+        text-align: left;
+      }
+      .yks-course__head-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+      .yks-course__title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-primary, #0f172a);
+      }
+      .yks-course__chev {
+        flex-shrink: 0;
+        opacity: 0.5;
+        transition: transform 0.2s ease;
+      }
+      .yks-course.is-open .yks-course__chev {
+        transform: rotate(180deg);
+      }
+      .yks-progress {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--surface-muted, #e2e8f0);
+        overflow: hidden;
+      }
+      .yks-progress__fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #22c55e, #4ade80);
+        width: 0%;
+        transition: width 0.35s ease;
+      }
+      .yks-progress__label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-muted, #64748b);
+      }
+      .yks-course__body {
+        display: none;
+        padding: 0 0.5rem 0.65rem 1.25rem;
+      }
+      .yks-course.is-open .yks-course__body {
+        display: block;
+      }
+      .yks-topic-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.35rem 0;
+        font-size: 0.84rem;
+        line-height: 1.4;
+      }
+      .yks-topic-row input {
+        margin-top: 0.2rem;
+        width: 1rem;
+        height: 1rem;
+        accent-color: #6366f1;
+        cursor: pointer;
+      }
+      .yks-topic-row label {
+        cursor: pointer;
+        flex: 1;
+        color: var(--text-primary, #1e293b);
+      }
+      .yks-muf-note {
+        font-size: 0.78rem;
+        color: var(--text-muted, #64748b);
+        margin: 0 0 1rem;
+      }
+      .atlas-error-banner {
+        margin-bottom: 1rem;
+        padding: 1rem 1.1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+        color: #991b1b;
+      }
+      .atlas-error-banner__title {
+        display: block;
+        font-size: 0.95rem;
+      }
+      .atlas-error-banner__detail {
+        margin: 0.35rem 0 0;
+        font-size: 0.875rem;
+        color: #7f1d1d;
+      }
+      [data-theme="dark"] .atlas-error-banner {
+        background: rgba(127, 29, 29, 0.25);
+        border-color: #b91c1c;
+        color: #fecaca;
+      }
+      [data-theme="dark"] .atlas-error-banner__detail {
+        color: #fecaca;
+      }
+      .yks-burs-text {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        color: var(--text-muted, #64748b);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      [data-theme="dark"] .yks-burs-text {
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body class="og-partial-page">
+    <main class="main og-partial-main">
+                <header class="dp-topbar-sheet flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap w-full p-3 mb-6 bg-slate-50/50 border border-slate-200 rounded-2xl shadow-sm">
+
+          <div class="flex items-center gap-4 flex-1 max-w-2xl">
+            <button onclick="window.history.back()" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input type="text" id="fm-global-search" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-700 placeholder:text-slate-400" placeholder="Öğrenci, deneme, koç veya konu ara...">
+
+              <div id="fm-search-results" class="absolute w-full bg-white shadow-2xl border border-slate-100 rounded-2xl mt-2 z-50 hidden max-h-[400px] overflow-y-auto p-2" role="listbox" aria-label="Arama sonuçları"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-4">
+
+            <button type="button" id="dp-header-notify" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+
+            <button type="button" id="dp-header-theme" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+        <div id="ts-target-toast" class="ts-target-toast" hidden role="status" aria-live="polite"></div>
+        <h1 class="page-title">Tercih Sihirbazı</h1>
+        <p class="text-sm text-slate-600 -mt-2 mb-3 max-w-3xl" style="padding: 0 1.75rem">
+          Stratejik analiz merkezi: YÖK Atlas lisans ve önlisans birleşik verisi; açılışta güncel yıl ve SAY/EA/SÖZ/DİL programları otomatik listelenir (TYT kapalı — istenirse seçilir).
+        </p>
+        <div class="yks-filter-bleed">
+          <div class="mx-auto max-w-[1680px] px-4 sm:px-5">
+            <section
+              id="atlas-filters"
+              class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
+              style="background: var(--surface-elevated, #fff); border-color: var(--header-border, #f1f5f9)"
+              aria-labelledby="atlas-filters-heading"
+            >
+              <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 id="atlas-filters-heading" class="text-lg font-bold tracking-tight text-slate-900">Analiz paneli</h2>
+                  <p class="mt-0.5 text-xs font-medium text-slate-500">Filtreleri daraltın; tabloda sayfa başına 50–100 satır önerilir.</p>
+                </div>
+                <div class="yks-year-seg shrink-0" role="group" aria-label="Atlas yılı">
+                  <span class="yks-year-seg__label">Yıl</span>
+                  <button type="button" class="yks-year-btn is-active" data-year="2025" aria-pressed="true">2025</button>
+                  <button type="button" class="yks-year-btn" data-year="2024" aria-pressed="false">2024</button>
+                  <button type="button" class="yks-year-btn" data-year="2023" aria-pressed="false">2023</button>
+                </div>
+              </div>
+
+              <input type="hidden" id="flt-puan" name="flt-puan" value="SAY,EA,SÖZ,DİL" />
+              <input type="hidden" id="flt-kurum" value="" />
+              <input type="hidden" id="flt-ogrenim" value="" />
+
+              <div class="mb-6" role="group" aria-label="Puan türü (çoklu seçim)">
+                <span class="mb-2 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Puan türü</span>
+                <div id="flt-puan-seg" class="yks-ts-pt-wrap">
+                  <button type="button" class="yks-ts-pt is-active" data-pt="SAY" aria-pressed="true">SAY</button>
+                  <button type="button" class="yks-ts-pt is-active" data-pt="EA" aria-pressed="true">EA</button>
+                  <button type="button" class="yks-ts-pt is-active" data-pt="SÖZ" aria-pressed="true">SÖZ</button>
+                  <button type="button" class="yks-ts-pt is-active" data-pt="DİL" aria-pressed="true">DİL</button>
+                  <button type="button" class="yks-ts-pt" data-pt="TYT" aria-pressed="false">TYT</button>
+                  <button type="button" class="yks-ts-pt-all" id="flt-puan-all" aria-label="Tüm puan türlerini seç veya kaldır">
+                    Hepsini seç
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-6">
+                <div class="relative min-w-0">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Üniversite türü</span>
+                  <button
+                    type="button"
+                    id="flt-kurum-trigger"
+                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:border-indigo-200"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="flt-kurum-panel"
+                  >
+                    <span id="flt-kurum-label" class="truncate">Tümü</span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" /></svg>
+                  </button>
+                  <div
+                    id="flt-kurum-panel"
+                    class="yks-dd-panel absolute z-40 mt-1 hidden w-full rounded-xl border border-slate-200 bg-white shadow-xl"
+                    role="listbox"
+                    hidden
+                  >
+                    <input
+                      type="text"
+                      id="flt-kurum-q"
+                      class="w-full border-0 border-b border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                      placeholder="Ara…"
+                      autocomplete="off"
+                    />
+                    <div id="flt-kurum-list" class="yks-dd-list py-1"></div>
+                  </div>
+                </div>
+                <div class="relative min-w-0">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Öğrenim türü</span>
+                  <button
+                    type="button"
+                    id="flt-ogrenim-trigger"
+                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:border-indigo-200"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="flt-ogrenim-panel"
+                  >
+                    <span id="flt-ogrenim-label" class="truncate">Tümü</span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" /></svg>
+                  </button>
+                  <div
+                    id="flt-ogrenim-panel"
+                    class="yks-dd-panel absolute z-40 mt-1 hidden w-full rounded-xl border border-slate-200 bg-white shadow-xl"
+                    role="listbox"
+                    hidden
+                  >
+                    <input
+                      type="text"
+                      id="flt-ogrenim-q"
+                      class="w-full border-0 border-b border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                      placeholder="Ara…"
+                      autocomplete="off"
+                    />
+                    <div id="flt-ogrenim-list" class="yks-dd-list py-1"></div>
+                  </div>
+                </div>
+                <div class="relative min-w-0 lg:col-span-2">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Şehir (çoklu seçim)</span>
+                  <button
+                    type="button"
+                    id="flt-sehir-trigger"
+                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:border-indigo-200"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                    aria-controls="flt-sehir-panel"
+                  >
+                    <span id="flt-sehir-label" class="truncate">Tüm şehirler</span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" /></svg>
+                  </button>
+                  <div
+                    id="flt-sehir-panel"
+                    class="yks-dd-panel absolute z-40 mt-1 hidden w-full min-w-[280px] rounded-xl border border-slate-200 bg-white shadow-xl sm:min-w-[320px]"
+                    hidden
+                  >
+                    <input
+                      type="text"
+                      id="flt-sehir-q"
+                      class="w-full border-0 border-b border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                      placeholder="İl veya bölge ara…"
+                      autocomplete="off"
+                    />
+                    <div id="flt-sehir-list" class="yks-dd-list max-h-[14rem] py-1"></div>
+                    <div class="flex gap-2 border-t border-slate-100 px-2 py-2">
+                      <button type="button" id="flt-sehir-clear" class="flex-1 rounded-lg border border-slate-200 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">Temizle</button>
+                      <button type="button" id="flt-sehir-done" class="flex-1 rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Uygula</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="relative min-w-0 lg:col-span-2">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Üniversite (çoklu seçim)</span>
+                  <button
+                    type="button"
+                    id="flt-uni-trigger"
+                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:border-indigo-200"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                    aria-controls="flt-uni-panel"
+                  >
+                    <span id="flt-uni-label" class="truncate">Tüm üniversiteler</span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" /></svg>
+                  </button>
+                  <div
+                    id="flt-uni-panel"
+                    class="yks-dd-panel absolute z-40 mt-1 hidden w-full min-w-[280px] rounded-xl border border-slate-200 bg-white shadow-xl sm:min-w-[340px]"
+                    hidden
+                  >
+                    <input
+                      type="text"
+                      id="flt-uni-q"
+                      class="w-full border-0 border-b border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                      placeholder="Üniversite adı ara…"
+                      autocomplete="off"
+                    />
+                    <div id="flt-uni-list" class="yks-dd-list max-h-72 py-1"></div>
+                    <div class="flex gap-2 border-t border-slate-100 px-2 py-2">
+                      <button type="button" id="flt-uni-clear" class="flex-1 rounded-lg border border-slate-200 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">Temizle</button>
+                      <button type="button" id="flt-uni-done" class="flex-1 rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Uygula</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 grid grid-cols-1 items-end gap-4 lg:grid-cols-12">
+                <div class="lg:col-span-3 min-w-0">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Sıralama aralığı (başarı sırası)</span>
+                  <div class="yks-rank-joined" role="group" aria-label="Başarı sırası min ve maks">
+                    <div class="yks-rank-joined__icon" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9h4v10H6zM14 5h4v14h-4z" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="yks-rank-joined__side">
+                      <span class="yks-rank-joined__cap">Min</span>
+                      <input type="number" id="flt-bs-min" class="yks-rank-joined__inp" min="0" step="1" placeholder="—" inputmode="numeric" aria-label="Minimum başarı sırası" />
+                    </div>
+                    <div class="yks-rank-joined__sep" aria-hidden="true"></div>
+                    <div class="yks-rank-joined__side">
+                      <span class="yks-rank-joined__cap">Maks</span>
+                      <input type="number" id="flt-bs-max" class="yks-rank-joined__inp" min="0" step="1" placeholder="—" inputmode="numeric" aria-label="Maksimum başarı sırası" />
+                    </div>
+                  </div>
+                </div>
+                <div class="relative min-w-0 lg:col-span-4">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Bölüm (çoklu seçim)</span>
+                  <button
+                    type="button"
+                    id="flt-bolum-trigger"
+                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:border-indigo-200"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                    aria-controls="flt-bolum-panel"
+                  >
+                    <span id="flt-bolum-label" class="truncate">Tüm bölümler</span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" /></svg>
+                  </button>
+                  <div
+                    id="flt-bolum-panel"
+                    class="yks-dd-panel absolute z-40 mt-1 hidden w-full min-w-[280px] rounded-xl border border-slate-200 bg-white shadow-xl sm:min-w-[340px]"
+                    hidden
+                  >
+                    <input
+                      type="text"
+                      id="flt-bolum-q"
+                      class="w-full border-0 border-b border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                      placeholder="Bölüm adı ara…"
+                      autocomplete="off"
+                    />
+                    <div id="flt-bolum-list" class="yks-dd-list max-h-72 py-1"></div>
+                    <div class="flex gap-2 border-t border-slate-100 px-2 py-2">
+                      <button type="button" id="flt-bolum-clear" class="flex-1 rounded-lg border border-slate-200 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">Temizle</button>
+                      <button type="button" id="flt-bolum-done" class="flex-1 rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Uygula</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="relative min-w-0 lg:col-span-2">
+                  <span class="mb-1.5 block text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">Burs türü (çoklu seçim)</span>
+                  <button
+                    type="button"
+                    id="flt-burs-trigger"
+                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:border-indigo-200"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                    aria-controls="flt-burs-panel"
+                  >
+                    <span id="flt-burs-label" class="truncate">Burs Türü (Tümü)</span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" /></svg>
+                  </button>
+                  <div
+                    id="flt-burs-panel"
+                    class="yks-dd-panel absolute z-50 mt-1 hidden w-full min-w-[240px] rounded-xl border border-slate-200 bg-white shadow-xl"
+                    hidden
+                  >
+                    <div id="flt-burs-list" class="yks-dd-list max-h-56 py-1" role="group" aria-label="Burs türü seçenekleri"></div>
+                    <div class="flex gap-2 border-t border-slate-100 px-2 py-2">
+                      <button type="button" id="flt-burs-clear" class="flex-1 rounded-lg border border-slate-200 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">Temizle</button>
+                      <button type="button" id="flt-burs-done" class="flex-1 rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Uygula</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 lg:col-span-3 lg:justify-end">
+                  <button
+                    type="button"
+                    id="btn-atlas-filter"
+                    class="inline-flex min-h-[2.75rem] flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-indigo-700 lg:flex-none"
+                  >
+                    <span aria-hidden="true">🔍</span>
+                    Filtrele
+                  </button>
+                  <button
+                    type="button"
+                    id="btn-atlas-reset"
+                    class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-lg font-bold text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                    title="Filtreleri sıfırla"
+                    aria-label="Filtreleri sıfırla"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="yks-sim">
+          <div id="atlas-error" class="atlas-error-banner" role="alert" hidden style="display: none">
+            <strong class="atlas-error-banner__title">Veriler yüklenemedi</strong>
+            <p id="atlas-error-text" class="atlas-error-banner__detail"></p>
+          </div>
+
+          <div class="yks-skeleton-host" id="wizard-host">
+            <div id="atlas-content">
+              <div class="yks-table-wrap">
+                <div class="yks-skeleton-overlay" id="atlas-loader" style="display: flex" aria-hidden="false">
+                  <div class="yks-skeleton-spinner" aria-hidden="true"></div>
+                  <div>
+                    <p class="yks-skeleton-msg" id="atlas-loader-title">YÖK Atlas yükleniyor…</p>
+                    <p class="yks-skeleton-sub" id="atlas-loader-sub">Lisans ve önlisans verileri birleştiriliyor.</p>
+                  </div>
+                  <div class="yks-skeleton-bars" aria-hidden="true">
+                    <div class="yks-sk-bar" style="width: 100%"></div>
+                    <div class="yks-sk-bar" style="width: 92%"></div>
+                    <div class="yks-sk-bar" style="width: 78%"></div>
+                    <div class="yks-sk-bar" style="width: 88%"></div>
+                  </div>
+                </div>
+                <div class="yks-table-meta">
+                  <span id="atlas-count" class="yks-table-meta__summary">Veriler yükleniyor…</span>
+                  <div class="yks-table-meta__tools">
+                    <label class="yks-page-size" for="atlas-page-size">
+                      Sayfa başına
+                      <select id="atlas-page-size" aria-label="Sayfa başına satır sayısı">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                      </select>
+                    </label>
+                    <div class="yks-pager" role="navigation" aria-label="Sayfa">
+                      <button type="button" class="yks-pager__btn" id="atlas-prev" disabled>Önceki</button>
+                      <span class="yks-pager__info" id="atlas-page-indicator">—</span>
+                      <button type="button" class="yks-pager__btn" id="atlas-next" disabled>Sonraki</button>
+                    </div>
+                  </div>
+                </div>
+                <table class="yks-atlas-table" aria-describedby="atlas-count">
+                  <colgroup>
+                    <col style="width: 17%" />
+                    <col style="width: 17%" />
+                    <col style="width: 11%" />
+                    <col style="width: 8%" />
+                    <col style="width: 7%" />
+                    <col style="width: 8%" />
+                    <col style="width: 11%" />
+                    <col style="width: 12%" />
+                    <col style="width: 9%" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>Üniversite</th>
+                      <th>Bölüm</th>
+                      <th>Burs türü</th>
+                      <th>Şehir</th>
+                      <th class="yks-th-center">Puan türü</th>
+                      <th class="yks-th-num">Kontenjan</th>
+                      <th class="yks-th-num" id="th-taban-puan">Taban puan</th>
+                      <th class="yks-th-num" id="th-basari-sira">Başarı sırası</th>
+                      <th class="yks-th-center">Hedef</th>
+                    </tr>
+                  </thead>
+                  <tbody id="atlas-tbody">
+                    <tr class="atlas-sk-row" aria-hidden="true">
+                      <td class="yks-sk-cell" colspan="9"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                    </tr>
+                    <tr class="atlas-sk-row" aria-hidden="true">
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3.5rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 4rem"></div></td>
+                    </tr>
+                    <tr class="atlas-sk-row" aria-hidden="true">
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3.5rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 4rem"></div></td>
+                    </tr>
+                    <tr class="atlas-sk-row" aria-hidden="true">
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3.5rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 4rem"></div></td>
+                    </tr>
+                    <tr class="atlas-sk-row" aria-hidden="true">
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3.5rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 4rem"></div></td>
+                    </tr>
+                    <tr class="atlas-sk-row" aria-hidden="true">
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--med"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3.5rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 3rem"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell yks-sk-barcell--short"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell"></div></td>
+                      <td class="yks-sk-cell"><div class="yks-sk-barcell" style="max-width: 4rem"></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+    <!-- Ortak shell: theme.js (tema), app.js (menü / davranış) -->
+    <script src="../js/yks-standalone-shell.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script src="../js/student-catalog.js"></script>
+    <script src="../js/ogrenci-sim-bridge.js"></script>
+    <script src="../js/tercih-sihirbazi.js" defer></script>
+    </body>
+</html>

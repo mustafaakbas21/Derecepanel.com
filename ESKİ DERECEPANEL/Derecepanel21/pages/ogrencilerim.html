@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Öğrencilerim – Derecepanel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <script src="../js/theme-boot.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        corePlugins: { preflight: false },
+        darkMode: ["selector", '[data-theme="dark"]'],
+      };
+    </script>
+    <style>
+      .students-header__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-import,
+      .btn-pdf {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 0.65rem;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface-elevated, #fff);
+        color: var(--text-primary, #0f172a);
+        transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      }
+      .btn-import:hover,
+      .btn-pdf:hover {
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+      }
+      .btn-import {
+        border-color: #c7d2fe;
+        background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+        color: #3730a3;
+      }
+      .btn-pdf {
+        border-color: #fecaca;
+        background: linear-gradient(135deg, #fef2f2, #fff7ed);
+        color: #9a3412;
+      }
+      .btn-bulk-select {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 0.65rem;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface-elevated, #fff);
+        color: var(--text-primary, #0f172a);
+        transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      }
+      .btn-bulk-select:hover:not(:disabled) {
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+        border-color: #cbd5e1;
+      }
+      .btn-bulk-select--danger {
+        border-color: #fb7185;
+        background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+        color: #9f1239;
+      }
+      .btn-bulk-select--danger:hover:not(:disabled) {
+        box-shadow: 0 4px 16px rgba(190, 18, 60, 0.18);
+        border-color: #f43f5e;
+      }
+      .btn-bulk-select:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .btn-bulk-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.65rem;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        background: #f1f5f9;
+        color: #64748b;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      }
+      .btn-bulk-cancel:hover {
+        background: #e2e8f0;
+        color: #475569;
+      }
+      #students-table:not(.students-table--bulk-mode) col.data-table__col--check,
+      #students-table:not(.students-table--bulk-mode) .data-table__th--check,
+      #students-table:not(.students-table--bulk-mode) .data-table__td--check {
+        display: none !important;
+        width: 0 !important;
+        max-width: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+      }
+      #students-table .data-table__th--check,
+      #students-table .data-table__td--check {
+        width: 2.75rem;
+        text-align: center;
+        vertical-align: middle;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      #students-table .data-table__td--check input {
+        width: 1.1rem;
+        height: 1.1rem;
+        cursor: pointer;
+        accent-color: #be123c;
+      }
+      .modal--student-wizard {
+        max-width: min(56rem, 96vw);
+        width: 96vw;
+      }
+      #modal-student-form .modal-form--student .form-field input:not([type="hidden"]),
+      #modal-student-form .modal-form--student .form-field select,
+      #modal-student-form .modal-form--student .form-field textarea {
+        padding: 0.65rem 1rem;
+        font-size: 1rem;
+        line-height: 1.45;
+      }
+      #modal-student-form .modal-form--student .form-field__label {
+        font-size: 0.9rem;
+      }
+      .wiz-steps {
+        display: flex;
+        gap: 0.25rem;
+        list-style: none;
+        margin: 0 0 1.25rem;
+        padding: 0;
+        border-bottom: 1px solid var(--header-border, #e2e8f0);
+      }
+      .wiz-steps__btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0.65rem 0.35rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted, #64748b);
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -1px;
+        transition: color 0.2s ease, border-color 0.2s ease;
+      }
+      .wiz-steps__btn.is-active {
+        color: #4f46e5;
+        border-bottom-color: #4f46e5;
+      }
+      .wiz-steps__btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .wiz-panel {
+        display: none;
+        opacity: 0;
+        animation: wizFade 0.35s ease forwards;
+      }
+      .wiz-panel.is-active {
+        display: block;
+        opacity: 1;
+      }
+      @keyframes wizFade {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .wiz-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--header-border, #e2e8f0);
+      }
+      .wiz-nav .btn-sm--primary[hidden],
+      .wiz-nav .btn-sm--ghost[hidden] {
+        display: none !important;
+      }
+      .panel-auth-row {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        border-radius: 0.65rem;
+        border: 1px solid var(--header-border, #e2e8f0);
+        background: var(--surface-elevated, #fff);
+        overflow: hidden;
+        min-height: 2.85rem;
+      }
+      .panel-auth-row:focus-within {
+        border-color: #a5b4fc;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+      }
+      .panel-auth-row__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.75rem;
+        color: #64748b;
+        flex-shrink: 0;
+        border-right: 1px solid var(--header-border, #e2e8f0);
+        background: rgba(248, 250, 252, 0.9);
+      }
+      .panel-auth-row input {
+        flex: 1;
+        min-width: 0;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0.65rem 0.85rem !important;
+      }
+      .panel-auth-row input:focus {
+        outline: none;
+      }
+      .panel-auth-row__toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.75rem;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+        flex-shrink: 0;
+        border-left: 1px solid var(--header-border, #e2e8f0);
+        transition: color 0.15s ease, background 0.15s ease;
+      }
+      .panel-auth-row__toggle:hover {
+        color: #4f46e5;
+        background: rgba(238, 242, 255, 0.6);
+      }
+      .panel-auth-row__toggle .panel-auth-eye--hide {
+        display: none;
+      }
+      .panel-auth-row__toggle[aria-pressed="true"] .panel-auth-eye--show {
+        display: none;
+      }
+      .panel-auth-row__toggle[aria-pressed="true"] .panel-auth-eye--hide {
+        display: block;
+      }
+      .import-modal__body {
+        padding: 0 1.25rem 1.25rem;
+      }
+      .import-dropzone {
+        display: block;
+        width: 100%;
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.75rem;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        background: #fff;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+      }
+      .import-dropzone:hover {
+        background: #f8fafc;
+      }
+      .import-dropzone.is-drag {
+        border-color: #6366f1;
+        background: #eef2ff;
+      }
+      .import-dropzone__title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .import-dropzone__sub {
+        margin: 0.5rem 0 0;
+        font-size: 0.8125rem;
+        color: #64748b;
+        line-height: 1.45;
+      }
+      .import-dropzone__file {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .og-toast-host {
+        position: fixed;
+        top: max(0.75rem, env(safe-area-inset-top, 0px));
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        transform: translateX(-50%);
+        z-index: 5000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        pointer-events: none;
+        width: min(22rem, calc(100vw - 1.5rem));
+        box-sizing: border-box;
+      }
+      .og-toast {
+        pointer-events: auto;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+        background: #0f172a;
+        color: #fff;
+        max-width: 22rem;
+        text-align: center;
+        animation: ogToastIn 0.3s ease;
+      }
+      .og-toast--ok {
+        background: linear-gradient(135deg, #059669, #047857);
+      }
+      @keyframes ogToastIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Öğrenci detay modalı (#detayModal) — Tailwind renklerini tema değişkenleriyle hizala */
+      #detayModal {
+        font-family: var(--font);
+      }
+      #detayModalBackdrop {
+        background: var(--modal-backdrop) !important;
+      }
+      #detayModal > div {
+        background: var(--surface) !important;
+        border-color: color-mix(in srgb, var(--header-border) 92%, transparent) !important;
+        box-shadow: 0 24px 80px -12px color-mix(in srgb, var(--text-primary) 25%, transparent) !important;
+        ring-color: color-mix(in srgb, var(--text-primary) 6%, transparent) !important;
+      }
+      #detayModal > div > header {
+        border-bottom-color: color-mix(in srgb, var(--header-border) 85%, transparent) !important;
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--surface-muted) 75%, var(--surface)) 0%,
+            var(--surface) 65%
+          )
+          !important;
+      }
+      #detayModal #detayAvatar {
+        background: color-mix(in srgb, var(--nav-active-left) 16%, var(--surface)) !important;
+        color: var(--nav-active-left) !important;
+      }
+      #detayModal h2,
+      #detayModal p[id^="detay"],
+      #detayModal p.text-sm,
+      #detayModal p.break-all {
+        color: var(--text-primary) !important;
+      }
+      #detayModal h3,
+      #detayModal p.text-xs {
+        color: var(--text-muted) !important;
+      }
+      #detayModal section {
+        background: var(--surface-panel) !important;
+        border-color: color-mix(in srgb, var(--header-border) 85%, transparent) !important;
+      }
+      #detayModal [data-detay-copy-target] {
+        border-color: color-mix(in srgb, var(--header-border) 90%, transparent) !important;
+        background: color-mix(in srgb, var(--surface) 92%, var(--surface-panel)) !important;
+        color: var(--text-muted) !important;
+      }
+      #detayModal [data-detay-copy-target]:hover {
+        border-color: color-mix(in srgb, var(--nav-active-left) 45%, var(--header-border)) !important;
+        color: var(--nav-active-left) !important;
+      }
+      #detayModal #detayModalClose:hover {
+        background: color-mix(in srgb, var(--header-border) 45%, transparent) !important;
+        color: var(--text-primary) !important;
+      }
+      #detayModal > div > footer {
+        border-top-color: color-mix(in srgb, var(--header-border) 85%, transparent) !important;
+        background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface)) !important;
+      }
+      #detayModal #detayModalFooterClose {
+        background: var(--btn-primary-bg) !important;
+        color: var(--btn-primary-fg) !important;
+      }
+      #detayModal #detayModalFooterClose:hover {
+        background: var(--btn-primary-hover) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="panel-shell" class="app">
+      <aside class="sidebar" aria-label="Ana menü">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span class="sidebar__title">Derecepanel</span>
+        </div>
+
+        <nav class="sidebar__nav">
+          <a href="../koc-paneli.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+            Dashboard
+          </a>
+          <a href="ogrencilerim.html" class="nav-item nav-item--active">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            Öğrencilerim
+          </a>
+                    <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-gorusme-sub-coach" id="nav-gorusme-btn-coach">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Görüşme Odası
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-gorusme-sub-coach" role="group" aria-label="Görüşme Odası alt menü">
+              <a href="gorusme-odasi.html" class="nav-sub">Yeni Görüşme</a>
+              <a href="gorusme-arsivi.html" class="nav-sub">Görüşme Arşivi</a>
+            </div>
+          </div>
+
+          <a href="koclar.html" class="nav-item">
+            <svg
+              class="nav-item__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path
+                d="M12 14l6.16 3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01-.665-6.479L12 14z"
+              />
+            </svg>
+            Koçlar
+          </a>
+          <a href="randevular.html" class="nav-item">
+            <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Randevular
+          </a>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-yks-sub" id="nav-yks-btn">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 14v7M9 18h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              YKS Simülasyon
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-yks-sub" role="group" aria-label="YKS Simülasyon alt menü">
+              <a href="tercih-sihirbazi.html" class="nav-sub">Tercih Sihirbazı</a>
+              <a href="yks-konulari.html" class="nav-sub">YKS Konuları</a>
+              <a href="net-sihirbazi.html" class="nav-sub">Net Sihirbazı</a>
+              <a href="puan-hesaplama.html" class="nav-sub">Puan Hesaplama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-den-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Denemeler
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-den-sub" role="group" aria-label="Denemeler alt menü">
+              <a href="basit-deneme-sonuclari.html" class="nav-sub">Sonuç Merkezi</a>
+              <a href="analiz-merkezi.html" class="nav-sub nav-sub--analiz-beta"><span class="nav-analiz-beta"><span class="nav-analiz-beta__row1">Analiz ve Raporlama</span><span class="nav-analiz-beta__row2"><span class="nav-analiz-beta__suffix">Merkezi</span><span class="nav-analiz-beta__pill">BETA</span></span></span></a>
+              <a href="denemeler-global-takvim.html" class="nav-sub">Global Deneme Takvimi</a>
+              <a href="kurum-deneme-takvimi.html" class="nav-sub">Kurum Deneme Takvimi</a>
+              <a href="deneme-sonuclari-yukleme.html" class="nav-sub">Deneme Sonuçları Yükleme</a>
+              <a href="optik-okuyucu.html" class="nav-sub">Optik Okuyucu</a>
+              <a href="okutulan-denemeler.html" class="nav-sub">Okutulan Denemeler</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-wp-sub-main">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Haftalık Program
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-wp-sub-main" role="group" aria-label="Haftalık Program alt menü">
+              <a href="haftalik-program-olusturucu.html" class="nav-sub">Haftalık Program Oluşturucu</a>
+              <a href="kayitli-haftalik-programlar.html" class="nav-sub">Kayıtlı Haftalık Programlar</a>
+              <a href="haftalik-program.html" class="nav-sub">Öğrenciye program gönder</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-mr-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+              MR
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-mr-sub" role="group" aria-label="MR alt menü">
+              <a href="konu-mr.html" class="nav-sub">Konu MR</a>
+              <a href="soru-mr.html" class="nav-sub">Soru MR</a>
+              <a href="deneme-mr.html" class="nav-sub">Deneme MR</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-kitap-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Kitap Kütüphanesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-kitap-sub" role="group" aria-label="Kitap Kütüphanesi alt menü">
+              <a href="kitaplar.html" class="nav-sub">Kitap Listesi &amp; Kayıt</a>
+              <a href="kaynak-atama.html" class="nav-sub">Kaynak Atama</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tm-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Test Maker
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="nav-group__sub" id="nav-tm-sub" role="group" aria-label="Test Maker alt menü">
+              <a href="test-olusturucu.html" class="nav-sub">Test Oluşturucu</a>
+              <a href="otomatik-soru-kirpici.html" class="nav-sub">Otomatik Soru Kırpıcı</a>
+              <a href="soru-havuzu.html" class="nav-sub">Soru Havuzu</a>
+            </div>
+          </div>
+          
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-hr-sub" id="nav-hr-trigger">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 2H6a2 2 0 0 1-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+                <path d="M14 2v4h4" />
+                <path d="M12 11v6" />
+                <path d="M9 14h6" />
+              </svg>
+              Hata Reçetesi
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" id="nav-hr-sub" role="group" aria-label="Hata Reçetesi alt menü">
+              <a href="recete-yaz.html" class="nav-sub">Reçete Yaz</a>
+              <a href="recete-deposu.html" class="nav-sub">Reçete Deposu</a>
+              <a href="hatali-soru-havuzu.html" class="nav-sub">Hatalı Soru Havuzu</a>
+            </div>
+          </div>
+          <div class="nav-group" data-nav-group>
+            <button type="button" class="nav-item nav-group__trigger" aria-expanded="false" aria-controls="nav-tf-sub">
+              <svg class="nav-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </svg>
+              Taramalar ve Fasiküller
+              <svg class="nav-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="nav-group__sub" role="group" aria-label="Taramalar ve Fasiküller alt menü">
+              <a href="tarama-analiz.html" class="nav-sub"><span>Tarama Analiz ve Raporlama</span></a>
+              <a href="tarama-olusturucu.html" class="nav-sub"><span>Tarama Oluşturma</span></a>
+              <a href="tarama-deposu.html" class="nav-sub"><span>Tarama Deposu</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Oluşturma</span><span class="nav-sub__badge">Yakında</span></a>
+              <a href="#" class="nav-sub nav-sub--disabled" aria-disabled="true" onclick="event.preventDefault()"><span>Fasikül Deposu</span><span class="nav-sub__badge">Yakında</span></a>
+            </div>
+          </div>
+
+        </nav>
+
+        <div class="theme-switcher" role="group" aria-label="Görünüm teması">
+          <span class="theme-switcher__label">Tema</span>
+          <div class="theme-switcher__swatches">
+            <button type="button" class="theme-swatch theme-swatch--dark" data-theme="dark" aria-pressed="false" aria-label="Koyu tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--light" data-theme="light" aria-pressed="false" aria-label="Açık tema"></button>
+            <button type="button" class="theme-swatch theme-swatch--blue" data-theme="blue" aria-pressed="false" aria-label="Okyanus teması"></button>
+            <button type="button" class="theme-swatch theme-swatch--orange" data-theme="orange" aria-pressed="false" aria-label="Gün batımı teması"></button>
+          </div>
+        </div>
+
+        <div class="sidebar__logout">
+          <button type="button" class="btn-logout">
+            Çıkış
+            <span class="btn-logout__arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+                <header class="dp-topbar-sheet flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap w-full p-3 mb-6 bg-slate-50/50 border border-slate-200 rounded-2xl shadow-sm">
+
+          <div class="flex items-center gap-4 flex-1 max-w-2xl">
+            <button onclick="window.history.back()" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input type="text" id="fm-global-search" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-700 placeholder:text-slate-400" placeholder="Öğrenci, deneme, koç veya konu ara...">
+
+              <div id="fm-search-results" class="absolute w-full bg-white shadow-2xl border border-slate-100 rounded-2xl mt-2 z-50 hidden max-h-[400px] overflow-y-auto p-2" role="listbox" aria-label="Arama sonuçları"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-4">
+
+            <button type="button" id="dp-header-notify" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Bildirimler">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+
+            <button type="button" id="dp-header-theme" class="w-10 h-10 shrink-0 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-600" aria-label="Tema değiştir">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <div class="header-profile-wrap shrink-0" data-header-profile>
+              <button type="button" class="header-profile__trigger dp-topbar-profile-trigger" id="headerProfileTrigger" aria-expanded="false" aria-haspopup="menu" aria-controls="headerProfileMenu">
+                <span id="headerAvatarContainer" title="Profil" aria-hidden="true">?</span>
+              </button>
+              <div id="headerProfileMenu" class="header-profile__menu" hidden role="menu">
+                <div class="header-profile__menu-inner">
+                  <div class="header-profile__hero" role="none">
+                    <span class="header-profile__hero-avatar" id="headerProfileMenuAvatar" aria-hidden="true">?</span>
+                    <div class="header-profile__hero-text">
+                      <p class="header-profile__name" id="headerProfileName"></p>
+                      <p class="header-profile__meta" id="headerProfileMeta"></p>
+                    </div>
+                  </div>
+                  <div class="header-profile__list">
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="detay">
+                      <span class="header-profile__row-label">Detay</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="header-profile__row" role="menuitem" data-profile-open="duzenle">
+                      <span class="header-profile__row-label">Düzenle</span>
+                      <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div class="header-profile__sep" role="separator"></div>
+                  <button type="button" class="header-profile__row header-profile__row--logout btn-logout" role="menuitem">
+                    <span class="header-profile__row-label">Çıkış yap</span>
+                    <svg class="header-profile__row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+
+        <div class="students-layout">
+          <div class="students-layout__main">
+            <div class="students-header">
+              <h1>Öğrencilerim</h1>
+              <div class="students-header__actions">
+                <select class="select-inline" id="page-size" aria-label="Sayfa başına kayıt">
+                  <option value="10">10 / sayfa</option>
+                  <option value="18">18 / sayfa</option>
+                  <option value="25">25 / sayfa</option>
+                </select>
+                <button type="button" class="btn-import" id="btn-bulk-import-students" aria-haspopup="dialog">
+                  <span aria-hidden="true">📥</span> Toplu İçe Aktar
+                </button>
+                <button type="button" class="btn-bulk-select" id="btn-student-bulk-primary" aria-pressed="false">
+                  <span aria-hidden="true">☑</span> Çoklu Seçim Yap
+                </button>
+                <button type="button" class="btn-bulk-cancel" id="btn-student-bulk-cancel" hidden>Vazgeç</button>
+                <button type="button" class="btn-pdf" id="btn-export-students" aria-label="PDF olarak indir">
+                  <span aria-hidden="true">🖨️</span> PDF Olarak İndir
+                </button>
+                <button type="button" class="btn-add" id="btn-add-student">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Öğrenci ekle
+                </button>
+              </div>
+            </div>
+
+            <div class="table-card">
+              <div class="table-filters">
+                <div class="student-tabs" role="tablist" aria-label="Alan filtresi">
+                  <button type="button" class="student-tab student-tab--active" data-alan-filter="all" role="tab" aria-selected="true">
+                    Tümü (<span data-tab-count="all">0</span>)
+                  </button>
+                  <button type="button" class="student-tab" data-alan-filter="tyt" role="tab" aria-selected="false">
+                    TYT (<span data-tab-count="tyt">0</span>)
+                  </button>
+                  <button type="button" class="student-tab" data-alan-filter="sayisal" role="tab" aria-selected="false">
+                    Sayısal (<span data-tab-count="sayisal">0</span>)
+                  </button>
+                  <button type="button" class="student-tab" data-alan-filter="esit" role="tab" aria-selected="false">
+                    Eşit ağırlık (<span data-tab-count="esit">0</span>)
+                  </button>
+                  <button type="button" class="student-tab" data-alan-filter="sozel" role="tab" aria-selected="false">
+                    Sözel (<span data-tab-count="sozel">0</span>)
+                  </button>
+                  <button type="button" class="student-tab" data-alan-filter="dil" role="tab" aria-selected="false">
+                    Dil (<span data-tab-count="dil">0</span>)
+                  </button>
+                </div>
+
+                <div class="table-meta-bar">
+                  <div class="table-meta-bar__left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 3H2l8 9v7l4 2v-9l8-9z" />
+                    </svg>
+                    <span class="table-meta-bar__label">Kadro filtresi</span>
+                    <select class="select-inline select-inline--meta" id="kadro-filter" aria-label="Sınıf / kadro">
+                      <option value="all">Tüm sınıflar</option>
+                      <option value="mezun">Mezun</option>
+                      <option value="12">12. sınıf</option>
+                      <option value="11">11. sınıf</option>
+                      <option value="10">10. sınıf</option>
+                      <option value="9">9. sınıf</option>
+                    </select>
+                  </div>
+                  <div class="table-meta-bar__right">
+                    <span class="status-summary" id="status-summary">Durum: tüm kayıtlar</span>
+                    <select class="select-inline select-inline--meta" id="status-filter" aria-label="Durum filtresi">
+                      <option value="all">Tümü</option>
+                      <option value="aktif">Aktif</option>
+                      <option value="donduruldu">Kayıt donduruldu</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                id="students-filter-empty"
+                class="dp-filter-empty"
+                role="status"
+                hidden
+              >
+                Filtre veya arama kriterlerinize uyan kayıt bulunamadı. Aramayı temizleyin veya «Tümü» sekmesine dönün.
+              </div>
+
+              <div id="students-pristine-empty" class="dp-empty-slate" hidden aria-live="polite">
+                <span class="dp-empty-slate__icon" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </span>
+                <h2 class="dp-empty-slate__title">Henüz kayıtlı öğrenci yok</h2>
+                <p class="dp-empty-slate__lead">
+                  Kurumunuzun öğrenci listeniz burada görünecek. Tek kayıt için <strong>Öğrenci ekle</strong>, çoklu kayıt için
+                  <strong>Toplu İçe Aktar</strong> ile başlayabilirsiniz.
+                </p>
+              </div>
+
+              <div class="table-scroll">
+                <table class="data-table" id="students-table">
+                  <colgroup>
+                    <col class="data-table__col data-table__col--check" />
+                    <col class="data-table__col data-table__col--student" />
+                    <col class="data-table__col data-table__col--veli" />
+                    <col class="data-table__col data-table__col--alan" />
+                    <col class="data-table__col data-table__col--sinif" />
+                    <col class="data-table__col data-table__col--kayit" />
+                    <col class="data-table__col data-table__col--durum" />
+                    <col class="data-table__col data-table__col--islemler" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="data-table__th--check" scope="col">
+                        <input type="checkbox" id="students-select-all" class="js-students-select-all" aria-label="Görünen satırların tümünü seç" title="Görünen satırların tümünü seç" />
+                      </th>
+                      <th>Öğrenci</th>
+                      <th>Veli</th>
+                      <th>Alan</th>
+                      <th>Sınıf</th>
+                      <th>Kayıt</th>
+                      <th>Durum</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody id="students-tbody">
+                    <!-- Kayıtlar kullanıcı ekledikçe dolar; başlangıçta boş. -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pagination">
+                <div class="pagination__btns">
+                  <button type="button" id="page-prev">Önceki</button>
+                  <button type="button" id="page-next">Sonraki</button>
+                </div>
+                <span id="page-label">Sayfa 1 / 1</span>
+              </div>
+            </div>
+          </div>
+
+          <aside class="students-layout__side" aria-label="Takvim">
+            <div class="card card--calendar">
+              <h3>Takvim</h3>
+              <div class="calendar-head">
+                <button type="button" id="dash-cal-prev" class="btn-icon" style="width: 32px; height: 32px" aria-label="Önceki ay">‹</button>
+                <span id="dash-cal-label" aria-live="polite">—</span>
+                <button type="button" id="dash-cal-next" class="btn-icon" style="width: 32px; height: 32px" aria-label="Sonraki ay">›</button>
+              </div>
+              <div id="dash-cal-grid" class="calendar-grid" role="grid" aria-label="Takvim günleri"></div>
+              <button type="button" class="btn-manage" id="dash-cal-manage">Takvimi yönet</button>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-overlay" id="modal-student-view" role="dialog" aria-modal="true" aria-label="Öğrenci detayı">
+      <div class="modal modal--detail">
+        <div id="modal-student-view-body" class="student-detail-sheet" tabindex="-1"></div>
+        <div class="modal__actions modal__actions--split">
+          <button type="button" class="btn-sm btn-sm--ghost" data-close-student-view>Kapat</button>
+          <button type="button" class="btn-sm btn-sm--primary" id="btn-student-view-edit">Düzenle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Elit öğrenci detay (salt okunur) — Göz ikonundan -->
+    <div
+      id="detayModal"
+      class="fixed inset-0 z-[220] hidden items-center justify-center p-4 sm:p-6 font-sans"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="detayModalTitle"
+      aria-hidden="true"
+    >
+      <button
+        type="button"
+        class="absolute inset-0 bg-slate-900/55 backdrop-blur-sm transition-opacity dark:bg-black/60"
+        id="detayModalBackdrop"
+        aria-label="Kapat"
+      ></button>
+      <div
+        class="relative z-10 flex max-h-[min(92vh,880px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_80px_-12px_rgba(15,23,42,0.25)] ring-1 ring-slate-900/[0.04] dark:border-slate-700/80 dark:bg-slate-900 dark:ring-white/[0.06]"
+      >
+        <header
+          class="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 bg-gradient-to-br from-slate-50/90 to-white px-6 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900"
+        >
+          <div class="flex min-w-0 flex-1 items-center gap-4">
+            <div
+              id="detayAvatar"
+              class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-xl font-bold tracking-tight text-indigo-700 shadow-inner shadow-indigo-900/5 dark:bg-indigo-950/60 dark:text-indigo-200"
+              aria-hidden="true"
+            >
+              —
+            </div>
+            <div class="min-w-0">
+              <h2
+                id="detayModalTitle"
+                class="truncate text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50"
+                tabindex="-1"
+              >
+                —
+              </h2>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span
+                  id="detayStatusBadge"
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                ></span>
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="detayModalClose"
+            class="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            aria-label="Kapat"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+          <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <!-- Kişisel -->
+            <section class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+              <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Kişisel bilgiler</h3>
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">TC Kimlik</p>
+                  <p id="detayTc" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Doğum tarihi</p>
+                  <p id="detayDogum" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div class="sm:col-span-2">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Telefon</p>
+                  <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <p id="detayPhone" class="text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                    <button
+                      type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-indigo-500"
+                      data-detay-copy-target="detayPhone"
+                      aria-label="Telefonu kopyala"
+                      title="Kopyala"
+                    >
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">E-posta</p>
+                  <p id="detayEmail" class="mt-1 break-all text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cinsiyet</p>
+                  <p id="detayGender" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Akademik -->
+            <section class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+              <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Akademik bilgiler</h3>
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Sınıf / şube</p>
+                  <p id="detaySinif" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Alan</p>
+                  <p id="detayAlan" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hedef üniversite</p>
+                  <p id="detayHedefUni" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hedef bölüm</p>
+                  <p id="detayHedefBolum" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Veli -->
+            <section class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+              <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Veli bilgileri</h3>
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Veli ad soyad</p>
+                  <p id="detayVeliAd" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Veli telefon</p>
+                  <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <p id="detayVeliPhone" class="text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                    <button
+                      type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-indigo-500"
+                      data-detay-copy-target="detayVeliPhone"
+                      aria-label="Veli telefonunu kopyala"
+                      title="Kopyala"
+                    >
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Yakınlık derecesi</p>
+                  <p id="detayVeliYakin" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Sistem -->
+            <section class="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+              <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Sistem &amp; hesap</h3>
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Öğrenci no</p>
+                  <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <p id="detayOgrNo" class="text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                    <button
+                      type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-indigo-500"
+                      data-detay-copy-target="detayOgrNo"
+                      aria-label="Öğrenci numarasını kopyala"
+                      title="Kopyala"
+                    >
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Kayıt tarihi</p>
+                  <p id="detayKayit" class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Panel kullanıcı adı</p>
+                  <p id="detayKullanici" class="mt-1 break-all text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Panel şifresi</p>
+                  <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <p id="detaySifre" class="text-sm font-semibold text-slate-900 dark:text-slate-100">—</p>
+                    <button
+                      type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-indigo-500"
+                      data-detay-copy-target="detaySifre"
+                      aria-label="Panel şifresini kopyala"
+                      title="Kopyala"
+                    >
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <footer class="flex shrink-0 justify-end border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/80">
+          <button
+            type="button"
+            id="detayModalFooterClose"
+            class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+          >
+            Kapat
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-student-form" role="dialog" aria-modal="true" aria-labelledby="modal-student-form-title">
+      <div class="modal modal--form modal--student modal--student-wizard">
+        <div class="modal-student__head">
+          <span class="modal-student__eyebrow">Kayıt yönetimi</span>
+          <h3 id="modal-student-form-title">Öğrenci ekle</h3>
+          <p class="modal-lead" id="modal-student-form-lead">
+            Dört adımda kayıt. Veriler tarayıcıda yerel olarak saklanır.
+          </p>
+        </div>
+        <form id="form-student" class="modal-form modal-form--structured modal-form--student">
+          <input type="hidden" name="status" id="form-student-status" value="aktif" />
+          <ol class="wiz-steps" role="tablist" aria-label="Kayıt adımları">
+            <li style="flex: 1">
+              <button type="button" class="wiz-steps__btn is-active" data-wiz-step-indicator="1" id="wiz-tab-1">1 · Kişisel</button>
+            </li>
+            <li style="flex: 1">
+              <button type="button" class="wiz-steps__btn" data-wiz-step-indicator="2" id="wiz-tab-2" disabled>2 · Akademik</button>
+            </li>
+            <li style="flex: 1">
+              <button type="button" class="wiz-steps__btn" data-wiz-step-indicator="3" id="wiz-tab-3" disabled>3 · Veli</button>
+            </li>
+            <li style="flex: 1">
+              <button type="button" class="wiz-steps__btn" data-wiz-step-indicator="4" id="wiz-tab-4" disabled>4 · PANEL HESABI</button>
+            </li>
+          </ol>
+
+          <div class="wiz-panel is-active" data-wiz-panel="1" id="wiz-panel-1">
+            <fieldset class="form-section form-section--panel">
+              <legend>Kişisel bilgiler</legend>
+              <div class="form-grid form-grid--identity">
+                <label class="form-field">
+                  <span class="form-field__label">T.C. kimlik no</span>
+                  <input type="text" name="tcNo" inputmode="numeric" maxlength="11" pattern="[0-9]{0,11}" placeholder="11 hane (isteğe bağlı)" autocomplete="off" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Ad soyad <span class="req" aria-hidden="true">*</span></span>
+                  <input type="text" name="name" required autocomplete="name" placeholder="Ad ve soyad" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Cinsiyet</span>
+                  <select name="gender">
+                    <option value="">Seçin</option>
+                    <option value="kadin">Kadın</option>
+                    <option value="erkek">Erkek</option>
+                    <option value="belirtmekistemiyorum">Belirtmek istemiyorum</option>
+                  </select>
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Doğum tarihi</span>
+                  <input type="date" name="birthDate" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">E-posta</span>
+                  <input type="email" name="email" autocomplete="email" placeholder="ogrenci@e-posta.com" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Telefon</span>
+                  <input type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">İl</span>
+                  <input type="text" name="city" placeholder="Örn. Ankara" autocomplete="address-level1" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">İlçe</span>
+                  <input type="text" name="ilce" placeholder="İlçe" autocomplete="address-level2" />
+                </label>
+                <label class="form-field form-field--full">
+                  <span class="form-field__label">Öğrenci / kayıt no</span>
+                  <input type="text" name="studentCode" placeholder="Boş bırakılırsa otomatik atanır" autocomplete="off" />
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="wiz-panel" data-wiz-panel="2" id="wiz-panel-2">
+            <fieldset class="form-section form-section--panel">
+              <legend>Akademik &amp; paket</legend>
+              <div class="form-grid form-grid--edu-top">
+                <label class="form-field form-field--full">
+                  <span class="form-field__label">Sınıf / şube</span>
+                  <select name="sinifBranch" id="form-student-sinif" aria-label="Sınıf veya şube">
+                    <option value="">Seçiniz...</option>
+                    <option value="9. Sınıf">9. Sınıf</option>
+                    <option value="10. Sınıf">10. Sınıf</option>
+                    <option value="11. Sınıf">11. Sınıf</option>
+                    <option value="12. Sınıf">12. Sınıf</option>
+                    <option value="Mezun">Mezun</option>
+                  </select>
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Sınav alanı</span>
+                  <select name="alan">
+                    <option value="tyt">TYT</option>
+                    <option value="sayisal">Sayısal</option>
+                    <option value="esit">Eşit ağırlık</option>
+                    <option value="sozel">Sözel</option>
+                    <option value="dil">Dil</option>
+                  </select>
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Danışman öğretmen</span>
+                  <input type="text" name="counselorName" placeholder="Ad soyad" autocomplete="off" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Kayıt paketi</span>
+                  <input type="text" name="kayitPaketi" placeholder="Örn. VIP TYT+AYT" autocomplete="off" />
+                </label>
+                <label class="form-field form-field--full form-field--block">
+                  <span class="form-field__label">Program türü (sistem)</span>
+                  <select name="programType">
+                    <option value="tyt-prep">TYT hazırlık</option>
+                    <option value="tyt-ayt">TYT + AYT (tam program)</option>
+                    <option value="deneme">Deneme ve eksik kapatma ağırlıklı</option>
+                    <option value="ozel">Özel ders / birebir</option>
+                    <option value="digeregitim">Diğer</option>
+                  </select>
+                </label>
+                <div class="form-field form-field--full form-field--block">
+                  <span class="form-field__label">Hedef üniversite ve bölüm</span>
+                  <div class="form-grid form-grid--2" style="margin-top: 0.35rem">
+                    <label class="form-field" style="margin: 0">
+                      <span class="form-field__label">Hedef üniversite</span>
+                      <select id="hedefUniversite" aria-label="Hedef üniversite">
+                        <option value="">Üniversite Seçin...</option>
+                      </select>
+                    </label>
+                    <label class="form-field" style="margin: 0">
+                      <span class="form-field__label">Hedef bölüm</span>
+                      <select id="hedefBolum" disabled aria-label="Hedef bölüm">
+                        <option value="" disabled selected>Önce Üniversite Seçin...</option>
+                      </select>
+                    </label>
+                  </div>
+                  <input type="hidden" name="goal" id="form-student-goal" value="" />
+                </div>
+                <label class="form-field">
+                  <span class="form-field__label">Burs oranı (%)</span>
+                  <input type="number" name="bursPercent" min="0" max="100" step="1" placeholder="0" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Kayıt tarihi</span>
+                  <input type="date" name="kayit" />
+                </label>
+              </div>
+              <label class="form-field form-field--full form-field--block" style="margin-top: 0.75rem">
+                <span class="form-field__label">Açık adres (isteğe bağlı)</span>
+                <textarea name="address" rows="2" placeholder="Mahalle, cadde…"></textarea>
+              </label>
+              <div class="form-field form-field--full form-status-edit-only" id="form-status-edit-only" hidden>
+                <span class="form-status-edit-only__label">Kayıt durumu</span>
+                <div class="form-status-segment" role="group" aria-label="Kayıt durumu">
+                  <button type="button" class="form-status-segment__btn" id="btn-form-status-aktif" data-form-status="aktif" aria-pressed="true">Aktif</button>
+                  <button type="button" class="form-status-segment__btn" id="btn-form-status-dondur" data-form-status="donduruldu" aria-pressed="false">Kayıt donduruldu</button>
+                </div>
+                <p class="form-status-segment__hint">Seçim tabloda ve detayda anında güncellenir.</p>
+              </div>
+              <label class="form-field form-field--full" style="margin-top: 0.75rem">
+                <span class="form-field__label">Öğrenci notları</span>
+                <textarea name="notes" rows="2" placeholder="Öğrenme stili, özel durum…"></textarea>
+              </label>
+              <label class="form-field form-field--full">
+                <span class="form-field__label">Danışman / koordinatör notu</span>
+                <textarea name="counselorNote" rows="2" placeholder="Kurum içi takip"></textarea>
+              </label>
+            </fieldset>
+          </div>
+
+          <div class="wiz-panel" data-wiz-panel="3" id="wiz-panel-3">
+            <fieldset class="form-section form-section--panel">
+              <legend>Veli &amp; acil durum</legend>
+              <div class="form-grid form-grid--2">
+                <label class="form-field">
+                  <span class="form-field__label">Veli adı soyad</span>
+                  <input type="text" name="parent" autocomplete="name" placeholder="Veli" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Yakınlık derecesi</span>
+                  <select name="parentRelation">
+                    <option value="anne">Anne</option>
+                    <option value="baba">Baba</option>
+                    <option value="vasi">Vasi / veli vekili</option>
+                    <option value="diger">Diğer</option>
+                  </select>
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Veli telefon</span>
+                  <input type="tel" name="parentPhone" inputmode="tel" autocomplete="tel" placeholder="05xx…" />
+                </label>
+                <label class="form-field">
+                  <span class="form-field__label">Veli e-posta</span>
+                  <input type="email" name="parentEmail" autocomplete="email" placeholder="veli@…" />
+                </label>
+              </div>
+              <label class="form-field form-field--full" style="margin-top: 0.75rem">
+                <span class="form-field__label">Acil durum notu</span>
+                <textarea name="emergencyNotes" rows="3" placeholder="Sağlık, ulaşım, hassasiyetler…"></textarea>
+              </label>
+              <input type="hidden" name="emergencyName" value="" />
+              <input type="hidden" name="emergencyPhone" value="" />
+            </fieldset>
+          </div>
+
+          <div class="wiz-panel" data-wiz-panel="4" id="step-4">
+            <fieldset class="form-section form-section--panel">
+              <legend>Panel hesabı</legend>
+              <p class="modal-lead" style="margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.45">
+                Öğrencinin panele girişi için kullanıcı adı ve şifre belirleyin. İsterseniz otomatik öneriyi kullanın veya değiştirin.
+              </p>
+              <div class="form-grid form-grid--2">
+                <label class="form-field form-field--full">
+                  <span class="form-field__label">Kullanıcı adı</span>
+                  <div class="panel-auth-row">
+                    <span class="panel-auth-row__icon" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      id="kullaniciAdi"
+                      name="kullaniciAdi"
+                      autocomplete="username"
+                      placeholder="Örn. mustafaakbas"
+                      spellcheck="false"
+                    />
+                  </div>
+                </label>
+                <label class="form-field form-field--full">
+                  <span class="form-field__label">Şifre</span>
+                  <div class="panel-auth-row">
+                    <span class="panel-auth-row__icon" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                    </span>
+                    <input type="password" id="panelSifre" name="panelSifre" autocomplete="new-password" placeholder="6 karakter" />
+                    <button
+                      type="button"
+                      class="panel-auth-row__toggle"
+                      id="toggle-panel-sifre"
+                      aria-label="Şifreyi göster veya gizle"
+                      aria-pressed="false"
+                    >
+                      <svg class="panel-auth-eye--show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      <svg class="panel-auth-eye--hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a19.77 19.77 0 015.06-5.94M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 8 11 8a19.77 19.77 0 01-3.17 4.29M1 1l22 22" />
+                        <path d="M14.12 14.12a3 3 0 11-4.24-4.24" />
+                      </svg>
+                    </button>
+                  </div>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="wiz-nav">
+            <button type="button" class="btn-sm btn-sm--ghost" id="wiz-btn-back" data-wiz-back>Geri</button>
+            <div style="display: flex; gap: 0.5rem; margin-left: auto">
+              <button type="button" class="btn-sm btn-sm--ghost" data-close-student-form>Vazgeç</button>
+              <button type="button" class="btn-sm btn-sm--primary" id="wiz-btn-next" data-wiz-next>İleri</button>
+              <button type="submit" class="btn-sm btn-sm--primary" id="form-student-submit" hidden>Kaydı tamamla</button>
+            </div>
+          </div>
+        </form>
+        <div class="modal-student__footer" style="border-top: none; padding-top: 0">
+          <p class="modal-student__footnote" style="margin: 0">
+            <span class="req">*</span> Zorunlu: ad soyad. KVKK kapsamında yetkili erişim.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-import-students" role="dialog" aria-modal="true" aria-labelledby="modal-import-title">
+      <div class="modal modal--form" style="max-width: 36rem; width: 92vw">
+        <div class="modal-student__head">
+          <span class="modal-student__eyebrow">Toplu kayıt</span>
+          <h3 id="modal-import-title">Toplu içe aktar</h3>
+          <p class="modal-lead">Örnek Excel (.xlsx) şablonunu indirip doldurun; ardından dosyayı buraya sürükleyin veya seçin.</p>
+        </div>
+        <div class="import-modal__body">
+          <button type="button" class="btn-sm btn-sm--primary" id="btn-download-excel-template" style="width: 100%; justify-content: center; margin-bottom: 1rem">
+            📄 Örnek Excel Şablonu İndir
+          </button>
+          <label class="import-dropzone" id="import-drop-zone" for="import-file-input">
+            <input
+              type="file"
+              id="import-file-input"
+              class="import-dropzone__file"
+              accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,.csv,text/csv"
+            />
+            <p class="import-dropzone__title">Excel (.xlsx) dosyanızı sürükleyip bırakın</p>
+            <p class="import-dropzone__sub">
+              İlk çalışma sayfası okunur. Başlıklar: Ad, Soyad, TC, Sinif, Alan, Telefon, VeliTelefon, Hedef — CSV dosyaları da desteklenir.
+            </p>
+          </label>
+        </div>
+        <div class="modal__actions" style="padding: 0 1.25rem 1.25rem">
+          <button type="button" class="btn-sm btn-sm--ghost" id="btn-close-import">Kapat</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="og-toast-host" class="og-toast-host" aria-live="polite"></div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="../js/theme.js" defer></script>
+    <script src="../js/student-catalog.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/global-search.js" defer></script>
+    <script src="../js/panel-header.js" defer></script>
+    <script src="../js/ogrencilerim.js" defer></script>
+  </body>
+</html>
