@@ -7,15 +7,15 @@ import type {
   YokAtlasProgram,
 } from "@/lib/universities/types";
 
-export const YOK_ATLAS_LISANS_PATH = "data/yok-atlas-lisans.json";
-export const YOK_ATLAS_ONLISANS_PATH = "data/yok-atlas-onlisans.json";
+export const YOK_ATLAS_LISANS_PATH = "yok-atlas-lisans.json";
+export const YOK_ATLAS_ONLISANS_PATH = "yok-atlas-onlisans.json";
 
 const cache: Partial<Record<UniversityDegreeLevel, YokAtlasProgram[]>> = {};
 const namesCache: Partial<Record<UniversityDegreeLevel, UniversityListItem[]>> = {};
 const departmentsCache = new Map<string, string[]>();
 
 function dataPath(file: string) {
-  return path.join(process.cwd(), file);
+  return path.join(/*turbopackIgnore: true*/ process.cwd(), "data", file);
 }
 
 export async function loadAtlasPrograms(

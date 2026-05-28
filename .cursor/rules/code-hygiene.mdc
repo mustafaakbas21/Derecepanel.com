@@ -1,0 +1,21 @@
+# Kod Hijyeni Kuralları (zorunlu)
+
+## Dosya oluşturma politikası
+
+- Yeni dosya oluşturmadan ÖNCE mevcut dosyaya ekleme yapılıp yapılamayacağını kontrol et
+- Barrel/index.ts dosyası oluşturma — doğrudan import kullan
+- Tek satırlık alias veya re-export dosyası oluşturma
+- Kullanılmayan Shadcn UI bileşeni scaffold etme
+- Bir özellik için 3'ten fazla yeni dosya gerekiyorsa, önce mevcut dosyalara entegre et
+
+## Import kuralları
+
+- Müfredat: SADECE `@/lib/mufredat` (eski `@/lib/yks-mufredat` yolu yok)
+- Toast: SADECE `sonner` paketi (custom toast provider oluşturma)
+- Üniversite: SADECE `@/lib/universities/atlas-server` (barrel yok)
+
+## Yasaklar
+
+- `public/` altına placeholder veya boilerplate SVG ekleme
+- `.next/`, `tsconfig.tsbuildinfo`, `next-env.d.ts` dosyalarını commit etme
+- `ESKİ DERECEPANEL/` klasörüne dokunma veya oradan veri kopyalama

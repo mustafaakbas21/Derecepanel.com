@@ -16,7 +16,7 @@ import { formatKayitDate } from "@/lib/students/storage";
 import type { StudentRecord } from "@/lib/students/types";
 import { cn } from "@/lib/utils";
 
-import { useToast } from "./use-toast";
+import { toast } from "sonner";
 
 type Props = {
   student: StudentRecord | null;
@@ -26,7 +26,6 @@ type Props = {
 };
 
 function CopyBtn({ value, label }: { value: string; label: string }) {
-  const { toast } = useToast();
   if (!value) return null;
   return (
     <button
@@ -34,9 +33,9 @@ function CopyBtn({ value, label }: { value: string; label: string }) {
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(value);
-          toast(`${label} kopyalandı`);
+          toast.success(`${label} kopyalandı`);
         } catch {
-          toast("Kopyalama başarısız", "error");
+          toast.error("Kopyalama başarısız");
         }
       }}
       className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600 hover:bg-slate-50"
