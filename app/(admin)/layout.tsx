@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+
+/** Kurucu paneli — arama motorlarında indekslenmesin */
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
+};
+
+export default function AdminGroupLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return children;
+}

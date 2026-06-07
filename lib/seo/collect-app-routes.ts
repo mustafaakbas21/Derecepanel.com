@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { isNoIndexPath } from "@/lib/seo/noindex-paths";
+
 const EXCLUDED_DIRS = new Set(["api"]);
 
 function isDynamicSegment(name: string): boolean {
@@ -48,7 +50,9 @@ export function collectAppRoutes(appDir = path.join(process.cwd(), "app")): stri
   }
 
   walk(appDir, []);
-  return [...new Set(routes)].sort((a, b) => a.localeCompare(b, "tr"));
+  return [...new Set(routes)]
+    .filter((pathname) => !isNoIndexPath(pathname))
+    .sort((a, b) => a.localeCompare(b, "tr"));
 }
 
 export function sitemapPriority(pathname: string): number {
@@ -56,7 +60,6 @@ export function sitemapPriority(pathname: string): number {
   if (pathname === "/giris" || pathname === "/gizlilik" || pathname === "/sartlar") {
     return 0.85;
   }
-  if (pathname.startsWith("/admin")) return 0.55;
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/ogrenci")) {
     return 0.65;
   }
