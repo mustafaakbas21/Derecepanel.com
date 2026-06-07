@@ -46,7 +46,7 @@ function truncateMessageContent(
       };
     }
     return part;
-  });
+  }) as ModelMessage["content"];
 }
 
 function stripIntentBlock(system: string): string {

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { catalogIdForUser } from "@/lib/appointments/catalog";
 import type { CurrentUser } from "@/lib/appointments/types";
 import {
   STUDENT_PERSONAL_WEEKLY_CHANGE,
@@ -61,7 +60,7 @@ export function useStudentPersonalWeeklyProgram(weekMondayISO?: string) {
   const coachName = useMemo(() => getCoachDisplayName(user), [user]);
   const scopeKey = useMemo(() => {
     if (!user) return "";
-    const ids = matchIdsForUser(user, catalogIdForUser(user));
+    const ids = matchIdsForUser(user);
     return ids[0] ?? user.id ?? user.ogrenciId ?? "";
   }, [user]);
 

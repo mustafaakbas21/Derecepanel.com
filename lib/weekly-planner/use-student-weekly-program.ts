@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { catalogIdForUser } from "@/lib/appointments/catalog";
 import type { CurrentUser } from "@/lib/appointments/types";
 import {
   WEEKLY_PROGRAM_INBOX_CHANGE,
@@ -65,7 +64,7 @@ export function useStudentWeeklyProgram(weekMondayISO?: string) {
   const coachName = useMemo(() => getCoachDisplayName(user), [user]);
   const scopeKey = useMemo(() => {
     if (!user) return "";
-    const ids = matchIdsForUser(user, catalogIdForUser(user));
+    const ids = matchIdsForUser(user);
     return ids[0] ?? user.id ?? user.ogrenciId ?? "";
   }, [user]);
 
@@ -156,7 +155,7 @@ export function useStudentWeeklyProgramHistory() {
   const coachName = useMemo(() => getCoachDisplayName(user), [user]);
   const scopeKey = useMemo(() => {
     if (!user) return "";
-    const ids = matchIdsForUser(user, catalogIdForUser(user));
+    const ids = matchIdsForUser(user);
     return ids[0] ?? user.id ?? user.ogrenciId ?? "";
   }, [user]);
 

@@ -3,6 +3,7 @@ import {
   PH_CARDS,
   PUAN_HESAPLAMA_MODEL_LABEL,
   type PhCardId,
+  type PhRow,
   type YksPuanTuru,
 } from "@/lib/yks-sim/puan-hesaplama-config";
 import {
@@ -260,8 +261,12 @@ export function tytScoreFromRows(rows: Record<string, RowInput>) {
   return { has, score, nets };
 }
 
-export function allRowDefs() {
-  return Object.values(PH_CARDS).flatMap((c) => c.rows);
+export function allRowDefs(): PhRow[] {
+  const out: PhRow[] = [];
+  for (const card of Object.values(PH_CARDS)) {
+    for (const row of card.rows) out.push(row);
+  }
+  return out;
 }
 
 export function rowIdsForTur(tur: YksPuanTuru): string[] {

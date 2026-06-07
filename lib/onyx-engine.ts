@@ -155,6 +155,10 @@ export type OnyxEngineSkillId =
   | "DATA_SCIENTIST"
   | "ERROR_PATTERN_ANALYST"
   | "ACADEMIC_SOLVER"
+  | "TEACHER_OPENING"
+  | "CORE_RULE_BOARD"
+  | "MINI_EXAMPLE"
+  | "SOURCE_READER"
   | "CORE_FORMULA_EXTRACTOR"
   | "OCR_GEOMETRIC_SCANNER"
   | "SOCRATIC_STEP_BY_STEP"
@@ -322,6 +326,38 @@ Yanlışları tek tip "eksik" sayma. Dikkat / Kavram yanılgısı / Süre yönet
 Vision veya matematiksel soru metni geldiğinde ONYX_VISION_ACADEMIC_PROTOCOL formatına uy.
 Çıktı sırası: Temel formül kutusu → (varsa) şekil/grafik analizi → Adım adım çözüm → ⚠️ ÖSYM Tuzağı.
 Gizli etiket: [KONU_TAKIP: dersId::konuId] (gerçek müfredat id).`,
+  },
+  TEACHER_OPENING: {
+    id: "TEACHER_OPENING",
+    label: "Hoca Açılışı",
+    description: "Tahtaya geçerken ölçülen beceriyi netleştirme",
+    actions: ["soru-fotografi", "soru-metin"],
+    systemPrompt: `[SKILL: Teacher_Opening]
+Çözüme geçmeden önce öğrenciye bu sorunun neyi ölçtüğünü kısa ve net anlat.`,
+  },
+  CORE_RULE_BOARD: {
+    id: "CORE_RULE_BOARD",
+    label: "Temel Kural Tahtası",
+    description: "Formül, kavram kuralı veya dilbilgisi kuralı",
+    actions: ["soru-fotografi", "soru-metin"],
+    systemPrompt: `[SKILL: Core_Rule_Board]
+Çözümün başında sorunun dayandığı temel kuralı veya formülü tahta notu gibi ver.`,
+  },
+  MINI_EXAMPLE: {
+    id: "MINI_EXAMPLE",
+    label: "Mini Örnek",
+    description: "Kısa tahta örneği ile kavramı somutlaştırma",
+    actions: ["soru-fotografi", "soru-metin"],
+    systemPrompt: `[SKILL: Mini_Example]
+Ana çözümden önce 2-4 satırlık mini örnekle kavramı somutlaştır.`,
+  },
+  SOURCE_READER: {
+    id: "SOURCE_READER",
+    label: "Kaynak Okuyucu",
+    description: "Paragraf, harita veya alıntı metin analizi",
+    actions: ["soru-fotografi", "soru-metin"],
+    systemPrompt: `[SKILL: Source_Reader]
+Paragraf, tarih metni, harita veya İngilizce cümle varsa kaynak alıntısını analiz et.`,
   },
   CORE_FORMULA_EXTRACTOR: {
     id: "CORE_FORMULA_EXTRACTOR",

@@ -2,7 +2,10 @@ import path from "node:path";
 
 import type { NextConfig } from "next";
 
-const isAdminPortal = process.env.ADMIN_PORTAL === "1";
+/** Yalnızca yerel `dev:admin` için ayrı cache; Vercel üretim build'i her zaman `.next` kullanır. */
+const isAdminDev =
+  process.env.ADMIN_PORTAL === "1" &&
+  process.env.NODE_ENV === "development";
 
 const withBundleAnalyzer =
   process.env.ANALYZE === "true"
@@ -12,7 +15,7 @@ const withBundleAnalyzer =
 
 const nextConfig: NextConfig = {
   /** `npm run dev:admin` — ana dev ile paralel çalışır (ayrı lock) */
-  distDir: isAdminPortal ? ".next-admin" : ".next",
+  distDir: isAdminDev ? ".next-admin" : ".next",
   turbopack: {
     root: path.resolve(process.cwd()),
   },

@@ -32,6 +32,7 @@ export type CompleteSolveVisionResult = {
   model: string;
   structured: OnyxSolveStructured;
   rawModelOutput: string;
+  usedFallback?: boolean;
 };
 
 function resolveVisionProvider(): "openai" | "groq" {
@@ -126,6 +127,7 @@ export async function completeSolveVision(
 
   let raw: string;
   let model: string;
+  let usedFallback = false;
 
   try {
     const out = await runProvider(provider);
@@ -147,6 +149,7 @@ export async function completeSolveVision(
     const out = await runProvider(fallback);
     raw = out.raw;
     model = out.model;
+    usedFallback = true;
   }
 
   const parsed = parseSolveJsonFromText(raw, role);
@@ -166,5 +169,6 @@ export async function completeSolveVision(
     model,
     structured,
     rawModelOutput: raw,
+    usedFallback,
   };
 }

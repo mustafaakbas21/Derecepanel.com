@@ -62,7 +62,7 @@ export function useStudentDashboardStats() {
         source: "personal" as const,
       };
     }
-    return { done: 0, total: 0, source: null as const };
+    return { done: 0, total: 0, source: null };
   }, [coachProgram.program, coachProgram.progress, personalProgram.program, personalProgram.progress]);
 
   const homeworkHydrated = coachProgram.hydrated && personalProgram.hydrated;

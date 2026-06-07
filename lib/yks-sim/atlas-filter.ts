@@ -165,7 +165,7 @@ function collectFiltered(
 
     if (params.search?.trim()) {
       const q = params.search.trim().toLocaleLowerCase("tr-TR");
-      const haystack = row._search ?? enrichAtlasSearchRow(row)._search;
+      const haystack = row._search ?? enrichAtlasSearchRow(row)._search ?? "";
       if (!haystack.includes(q)) continue;
     }
 
@@ -261,7 +261,7 @@ export function filterAtlasPrograms(
   let list = programs.map(enrichAtlasSearchRow);
 
   if (search) {
-    list = list.filter((p) => p._search.includes(search));
+    list = list.filter((p) => (p._search ?? "").includes(search));
   }
   if (puan && puan !== "TÜMÜ" && puan !== "TUMU") {
     list = list.filter((p) =>

@@ -1,4 +1,3 @@
-import { catalogIdForUser } from "@/lib/appointments/catalog";
 import { getCurrentUser } from "@/lib/appointments/current-user";
 import { getCoachDisplayName, matchIdsForUser } from "@/lib/appointments/student-scope";
 import type { CurrentUser } from "@/lib/appointments/types";
@@ -16,7 +15,7 @@ export function listStudentWeeklyInboxForUser(
   user: CurrentUser | null
 ): StudentWeeklyInboxItem[] {
   if (!user) return [];
-  const ids = matchIdsForUser(user, catalogIdForUser(user));
+  const ids = matchIdsForUser(user);
   const seen = new Set<string>();
   const items: StudentWeeklyInboxItem[] = [];
 
@@ -57,7 +56,7 @@ export function listStudentPersonalProgramsForUser(
   user: CurrentUser | null
 ): StudentPersonalWeeklyProgram[] {
   if (!user) return [];
-  const ids = matchIdsForUser(user, catalogIdForUser(user));
+  const ids = matchIdsForUser(user);
   const seen = new Set<string>();
   const items: StudentPersonalWeeklyProgram[] = [];
 
@@ -79,7 +78,7 @@ export function getPersonalProgramForWeek(
   weekMondayISO: string
 ): StudentPersonalWeeklyProgram | null {
   if (!user) return null;
-  const ids = matchIdsForUser(user, catalogIdForUser(user));
+  const ids = matchIdsForUser(user);
   for (const id of ids) {
     const hit = findStudentPersonalForWeek(id, weekMondayISO);
     if (hit) return hit;

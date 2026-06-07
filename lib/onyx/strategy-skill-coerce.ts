@@ -137,10 +137,9 @@ export function preprocessStrategySkillEnvelope(raw: unknown): unknown {
   const bransAnalizi = normalizeBransAnalizi(
     data.bransAnalizi ?? data.brans_analizi
   );
-  const oncelikliKonular = Array.isArray(
-    data.oncelikliKonular ?? data.oncelikli_konular
-  )
-    ? (data.oncelikliKonular ?? data.oncelikli_konular as unknown[])
+  const oncelikliKonularRaw = data.oncelikliKonular ?? data.oncelikli_konular;
+  const oncelikliKonular = Array.isArray(oncelikliKonularRaw)
+    ? oncelikliKonularRaw
         .map((k) => String(k).trim())
         .filter(Boolean)
         .slice(0, 8)

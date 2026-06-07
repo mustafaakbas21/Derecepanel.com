@@ -45,7 +45,7 @@ export function consumeTransferDersKonu(): TransferDersKonu | null {
   }
 }
 
-function normalizeAnswerLetter(raw: string | undefined): AnswerLetter | null {
+function normalizeAnswerLetter(raw: string | null | undefined): AnswerLetter | null {
   const u = String(raw ?? "")
     .toUpperCase()
     .replace(/[^A-E]/g, "")

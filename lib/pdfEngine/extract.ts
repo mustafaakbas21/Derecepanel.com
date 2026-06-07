@@ -23,10 +23,14 @@ export async function extractPdfPages(buffer: Buffer): Promise<PageText[]> {
 }
 
 async function extractFullTextPdfParse(buffer: Buffer): Promise<string> {
-  const mod = await import("pdf-parse");
-  const pdfParse = mod.default ?? mod;
-  const data = await pdfParse(buffer);
-  return String(data?.text || "");
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: buffer });
+  try {
+    const result = await parser.getText();
+    return String(result.text || "");
+  } finally {
+    await parser.destroy();
+  }
 }
 
 function estimatePageCount(buffer: Buffer, text: string): number {

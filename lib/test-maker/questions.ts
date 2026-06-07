@@ -1,4 +1,8 @@
-import type { CropAnswerChoice, QuestionAnswer } from "@/lib/test-maker/types";
+import type {
+  CropAnswerChoice,
+  QuestionAnswer,
+  TMQuestion,
+} from "@/lib/test-maker/types";
 
 export function createQuestion(
   opts?: Partial<TMQuestion> & {

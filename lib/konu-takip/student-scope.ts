@@ -16,8 +16,7 @@ export function findStudentRecordForUser(user: CurrentUser | null): StudentRecor
     const list: StudentRecord[] = raw ? (JSON.parse(raw) as StudentRecord[]) : [];
     if (!Array.isArray(list)) return null;
 
-    const catalogId = catalogIdForUser(user);
-    const matchIds = new Set(matchIdsForUser(user, catalogId));
+    const matchIds = new Set(matchIdsForUser(user));
 
     for (const record of list) {
       if (!record) continue;
