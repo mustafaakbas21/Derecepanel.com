@@ -26,7 +26,6 @@ const nextConfig: NextConfig = {
       "@radix-ui/react-checkbox",
       "@radix-ui/react-tabs",
       "@radix-ui/react-avatar",
-      "@tremor/react",
     ],
   },
 };
