@@ -18,8 +18,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://derecepanel.com",
+  ),
   title: "DerecePanel — YKS Koç Paneli",
   description: "YKS koçluk ve öğrenci yönetim paneli",
+  applicationName: "DerecePanel",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/icon.svg"],
+  },
 };
 
 export default function RootLayout({
