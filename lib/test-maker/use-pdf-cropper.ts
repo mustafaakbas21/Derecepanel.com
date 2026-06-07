@@ -19,8 +19,13 @@ import {
   extractPdfRegionToDataUrl,
   type PdfRenderMeta,
 } from "@/lib/test-maker/pdf-crop";
+import {
+  marqueeRectFromPoints,
+  syncHostToCanvas,
+} from "@/lib/test-maker/pdf-crop-coords";
 import { createPoolUuid } from "@/lib/test-maker/question-pool";
 import type { AnswerLetter } from "@/lib/test-maker/types";
+import { appToast } from "@/lib/notify";
 import { tmToast } from "@/lib/test-maker/notify";
 
 export type GalleryCropItem = {
@@ -34,6 +39,7 @@ export type GalleryCropItem = {
   answer: AnswerLetter | null;
   auto?: boolean;
   col?: string;
+  sourcePdf?: string;
 };
 
 export type TagState = { ders: string; konu: string; kavram: string };
@@ -61,6 +67,7 @@ export function usePdfCropper() {
   const pdfCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasHostRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
   const marqueeRef = useRef<HTMLDivElement | null>(null);
   const renderMetaRef = useRef<PdfRenderMeta>({
     pageIndex: 1,
@@ -70,7 +77,7 @@ export function usePdfCropper() {
 
   const cropDrawRef = useRef(false);
   const cropStartRef = useRef({ x: 0, y: 0 });
-  const marqueeStyleRef = useRef(marqueeStyle);
+  const marqueeStyleRef = useRef({ left: 0, top: 0, width: 0, height: 0 });
   const panDragRef = useRef({
     active: false,
     x: 0,
@@ -81,25 +88,39 @@ export function usePdfCropper() {
 
   const totalPages = pdfDoc?.numPages ?? 0;
 
-  /** Ekran koordinatı → PDF canvas üzerinde CSS piksel (kırpma kutusu ile aynı uzay) */
-  const pageXY = useCallback((e: { clientX: number; clientY: number }) => {
-    const canvas = pdfCanvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const r = canvas.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-    return {
-      x: Math.max(0, Math.min(x, r.width)),
-      y: Math.max(0, Math.min(y, r.height)),
-    };
-  }, []);
+  const applyMarqueeDom = useCallback(
+    (m: { left: number; top: number; width: number; height: number }, visible: boolean) => {
+      marqueeStyleRef.current = m;
+      const mq = marqueeRef.current;
+      if (!mq) return;
+      if (!visible) {
+        mq.style.display = "none";
+        return;
+      }
+      mq.style.display = "block";
+      mq.style.left = `${m.left}px`;
+      mq.style.top = `${m.top}px`;
+      mq.style.width = `${m.width}px`;
+      mq.style.height = `${m.height}px`;
+    },
+    []
+  );
+
+  const syncMarqueeState = useCallback(
+    (m: { left: number; top: number; width: number; height: number }) => {
+      marqueeStyleRef.current = m;
+      setMarqueeStyle(m);
+    },
+    []
+  );
 
   const marqueeToScreenRect = useCallback(
     (
-      canvas: HTMLCanvasElement,
+      _canvas: HTMLCanvasElement,
       m: { left: number; top: number; width: number; height: number }
     ) => {
-      const r = canvas.getBoundingClientRect();
+      const host = canvasHostRef.current;
+      const r = host ? host.getBoundingClientRect() : _canvas.getBoundingClientRect();
       return new DOMRect(r.left + m.left, r.top + m.top, m.width, m.height);
     },
     []
@@ -108,8 +129,10 @@ export function usePdfCropper() {
   const hideMarquee = useCallback(() => {
     cropDrawRef.current = false;
     setMarqueeVisible(false);
-    setMarqueeStyle({ left: 0, top: 0, width: 0, height: 0 });
-  }, []);
+    const empty = { left: 0, top: 0, width: 0, height: 0 };
+    applyMarqueeDom(empty, false);
+    syncMarqueeState(empty);
+  }, [applyMarqueeDom, syncMarqueeState]);
 
   const loadPdf = useCallback(async (file: File) => {
     try {
@@ -140,24 +163,23 @@ export function usePdfCropper() {
     const canvas = pdfCanvasRef.current;
     const wrap = wrapRef.current;
     if (!pdfDoc || !canvas || !wrap) return;
-    const maxW = Math.max(320, wrap.clientWidth - 48);
+    const maxW = Math.max(280, wrap.clientWidth - 24);
     const result = await renderPdfPageToCanvas(pdfDoc, canvas, {
       pageIndex,
       zoom,
       maxWidth: maxW,
     });
+    if (result.cancelled) return;
     renderMetaRef.current = {
       pageIndex,
       renderFinalScale: result.renderFinalScale,
       renderDpr: result.dpr,
     };
+    const host = canvasHostRef.current;
+    if (host) syncHostToCanvas(host, canvas);
     hideMarquee();
     setStatusText(`Sayfa ${pageIndex} / ${pdfDoc.numPages}`);
   }, [pdfDoc, pageIndex, zoom, hideMarquee]);
-
-  useEffect(() => {
-    marqueeStyleRef.current = marqueeStyle;
-  }, [marqueeStyle]);
 
   useEffect(() => {
     void renderMainCanvas();
@@ -210,12 +232,13 @@ export function usePdfCropper() {
         kavram: tag.kavram,
         page: pageIndex,
         answer: null,
+        sourcePdf: fileName ?? undefined,
       };
       setGallery((g) => [...g, item]);
-      tmToast.success(`Soru galeriye eklendi (#${gallery.length + 1})`);
+      appToast.cropAddedToGallery(gallery.length + 1);
       setStatusText(`${gallery.length + 1} soru galeride`);
     },
-    [gallery.length, hideMarquee, marqueeToScreenRect, marqueeVisible, pageIndex, pdfDoc]
+    [gallery.length, fileName, hideMarquee, marqueeToScreenRect, marqueeVisible, pageIndex, pdfDoc]
   );
 
   const runAutoScan = useCallback(
@@ -229,49 +252,97 @@ export function usePdfCropper() {
       setScanning(true);
       let found = 0;
       const total = pdfDoc.numPages;
+      setScanProgress({ page: 0, total, found: 0 });
+      setStatusText(`PDF taranıyor… (0 / ${total} sayfa)`);
+
       try {
         for (let p = 1; p <= total; p++) {
           if (scanAbortRef.current) break;
           setScanProgress({ page: p, total, found });
-          const { canvas, cropScale } = await renderPdfPageOffscreen(pdfDoc, p, zoom);
+          setStatusText(`Sayfa ${p} / ${total} analiz ediliyor…`);
+
+          let canvas: HTMLCanvasElement;
+          let cropScale: number;
+          try {
+            const rendered = await renderPdfPageOffscreen(pdfDoc, p, {
+              displayZoom: zoom,
+              forAutoScan: true,
+            });
+            canvas = rendered.canvas;
+            cropScale = rendered.cropScale;
+          } catch (e) {
+            console.warn("[autoScan] render", p, e);
+            continue;
+          }
+
           const pageW = canvas.width;
           const pageH = canvas.height;
-          const ctx = canvas.getContext("2d")!;
+          const ctx = canvas.getContext("2d");
+          if (!ctx || pageW < 1 || pageH < 1) {
+            canvas.width = 0;
+            canvas.height = 0;
+            continue;
+          }
+
+          const pageItems: GalleryCropItem[] = [];
           const columns = getPixelScanColumns(pageW, cropScale, columnMode);
+
           for (const col of columns) {
             if (scanAbortRef.current) break;
-            const boxes = findQuestionBoxesByPixels(ctx, col, pageH, cropScale);
-            for (let i = 0; i < boxes.length; i++) {
+            let boxes: { y1: number; y2: number }[] = [];
+            try {
+              boxes = findQuestionBoxesByPixels(ctx, col, pageH, cropScale);
+            } catch (e) {
+              console.warn("[autoScan] pixels", p, col.label, e);
+              continue;
+            }
+
+            for (const box of boxes) {
               if (scanAbortRef.current) break;
-              const { y1, y2 } = boxes[i];
+              const { y1, y2 } = box;
               if (y2 - y1 < Math.round(60 * cropScale)) continue;
               const dataUrl = cropRegionFromCanvas(canvas, col, y1, y2);
               found++;
-              setGallery((g) => [
-                ...g,
-                {
-                  id: createPoolUuid(),
-                  dataUrl,
-                  ders: tag.ders,
-                  konu: tag.konu,
-                  kavram: tag.kavram,
-                  page: p,
-                  qNumber: String(found),
-                  answer: null,
-                  auto: true,
-                  col: col.label,
-                },
-              ]);
+              pageItems.push({
+                id: createPoolUuid(),
+                dataUrl,
+                ders: tag.ders,
+                konu: tag.konu,
+                kavram: tag.kavram,
+                page: p,
+                qNumber: String(found),
+                answer: null,
+                auto: true,
+                col: col.label,
+                sourcePdf: fileName ?? undefined,
+              });
             }
           }
+
+          if (pageItems.length) {
+            setGallery((g) => [...g, ...pageItems]);
+          }
+
           canvas.width = 0;
           canvas.height = 0;
+          setScanProgress({ page: p, total, found });
+          await new Promise((r) => setTimeout(r, 8));
         }
-        tmToast.success(`${found} soru galeriye eklendi`);
-        setStatusText(`${found} soru otomatik tarandı`);
+
+        appToast.autoScanDone(found, scanAbortRef.current);
+        setStatusText(
+          scanAbortRef.current
+            ? found > 0
+              ? `${found} soru — tarama durduruldu`
+              : "Tarama durduruldu"
+            : found === 0
+              ? "Soru bulunamadı — manuel kırp deneyin"
+              : `${found} soru otomatik tarandı`
+        );
       } catch (e) {
         console.error(e);
-        tmToast.error("Tarama hatası");
+        tmToast.error("Tarama hatası", "PDF çok büyük veya desteklenmeyen format olabilir");
+        setStatusText("Tarama hatası");
       } finally {
         setScanning(false);
         setScanProgress({ page: 0, total: 0, found: 0 });
@@ -306,64 +377,63 @@ export function usePdfCropper() {
         return;
       }
 
-      if (toolMode !== "crop" || e.button !== 0) return;
-      const host = canvasHostRef.current;
-      if (!host) return;
-      e.preventDefault();
-      e.stopPropagation();
-      cropDrawRef.current = true;
-      const p = pageXY(e);
-      cropStartRef.current = { x: p.x, y: p.y };
-      setMarqueeVisible(true);
-      setMarqueeStyle({ left: p.x, top: p.y, width: 0, height: 0 });
-      setStatusText("Alan seçiliyor…");
-      host.setPointerCapture(e.pointerId);
     },
-    [pageXY, pdfDoc, scanning, toolMode]
+    [pdfDoc, scanning, toolMode]
   );
 
   const onWrapPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       const wrap = wrapRef.current;
-      if (!wrap) return;
-
-      if (panDragRef.current.active && toolMode === "pan") {
-        wrap.scrollLeft =
-          panDragRef.current.scrollLeft - (e.clientX - panDragRef.current.x);
-        wrap.scrollTop =
-          panDragRef.current.scrollTop - (e.clientY - panDragRef.current.y);
-        return;
-      }
-
-      if (!cropDrawRef.current || toolMode !== "crop") return;
-      const p = pageXY(e);
-      const x = Math.min(cropStartRef.current.x, p.x);
-      const y = Math.min(cropStartRef.current.y, p.y);
-      const w = Math.abs(p.x - cropStartRef.current.x);
-      const h = Math.abs(p.y - cropStartRef.current.y);
-      setMarqueeStyle({ left: x, top: y, width: w, height: h });
+      if (!wrap || !panDragRef.current.active || toolMode !== "pan") return;
+      wrap.scrollLeft =
+        panDragRef.current.scrollLeft - (e.clientX - panDragRef.current.x);
+      wrap.scrollTop =
+        panDragRef.current.scrollTop - (e.clientY - panDragRef.current.y);
     },
-    [pageXY, toolMode]
+    [toolMode]
   );
 
-  const onWrapPointerUp = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const wrap = wrapRef.current;
-      const host = canvasHostRef.current;
-      if (wrap?.hasPointerCapture(e.pointerId)) {
-        wrap.releasePointerCapture(e.pointerId);
-      }
-      if (host?.hasPointerCapture(e.pointerId)) {
-        host.releasePointerCapture(e.pointerId);
-      }
-      wrap?.classList.remove("is-panning");
+  useEffect(() => {
+    if (toolMode !== "crop") return;
+    const overlay = overlayRef.current;
+    if (!overlay) return;
 
-      if (panDragRef.current.active) {
-        panDragRef.current.active = false;
-        setStatusText("Hazır — alan seçin veya gezinin");
-        return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!pdfDoc || scanning || e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      cropDrawRef.current = true;
+      cropStartRef.current = { x: e.offsetX, y: e.offsetY };
+      applyMarqueeDom(
+        { left: e.offsetX, top: e.offsetY, width: 0, height: 0 },
+        true
+      );
+      setMarqueeVisible(true);
+      setStatusText("Alan seçiliyor…");
+      try {
+        overlay.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
       }
+    };
 
+    const onPointerMove = (e: PointerEvent) => {
+      if (!cropDrawRef.current) return;
+      const rect = marqueeRectFromPoints(cropStartRef.current, {
+        x: e.offsetX,
+        y: e.offsetY,
+      });
+      applyMarqueeDom(rect, true);
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      try {
+        if (overlay.hasPointerCapture(e.pointerId)) {
+          overlay.releasePointerCapture(e.pointerId);
+        }
+      } catch {
+        /* ignore */
+      }
       if (!cropDrawRef.current) return;
       cropDrawRef.current = false;
       const { width, height } = marqueeStyleRef.current;
@@ -372,11 +442,46 @@ export function usePdfCropper() {
         setStatusText("Seçim iptal — tekrar deneyin");
         return;
       }
+      syncMarqueeState(marqueeStyleRef.current);
       setStatusText(
         `${Math.round(width)}×${Math.round(height)} px — «Seçili alanı kırp»`
       );
+    };
+
+    overlay.addEventListener("pointerdown", onPointerDown);
+    overlay.addEventListener("pointermove", onPointerMove);
+    overlay.addEventListener("pointerup", onPointerUp);
+    overlay.addEventListener("pointercancel", onPointerUp);
+
+    return () => {
+      overlay.removeEventListener("pointerdown", onPointerDown);
+      overlay.removeEventListener("pointermove", onPointerMove);
+      overlay.removeEventListener("pointerup", onPointerUp);
+      overlay.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [
+    toolMode,
+    pdfDoc,
+    scanning,
+    applyMarqueeDom,
+    hideMarquee,
+    syncMarqueeState,
+  ]);
+
+  const onWrapPointerUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const wrap = wrapRef.current;
+      if (wrap?.hasPointerCapture(e.pointerId)) {
+        wrap.releasePointerCapture(e.pointerId);
+      }
+      wrap?.classList.remove("is-panning");
+
+      if (panDragRef.current.active) {
+        panDragRef.current.active = false;
+        setStatusText("Hazır — alan seçin veya gezinin");
+      }
     },
-    [hideMarquee]
+    []
   );
 
   useEffect(() => {
@@ -408,6 +513,7 @@ export function usePdfCropper() {
     pdfCanvasRef,
     wrapRef,
     canvasHostRef,
+    overlayRef,
     marqueeRef,
     marqueeVisible,
     marqueeStyle,

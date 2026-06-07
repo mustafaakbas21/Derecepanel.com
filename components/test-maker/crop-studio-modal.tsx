@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 
 import type { UsePdfDocumentReturn } from "@/lib/test-maker/use-pdf-document";
-import { renderPdfPageToCanvas } from "@/lib/test-maker/pdf-document";
+import { cancelPdfCanvasRender, renderPdfPageToCanvas } from "@/lib/test-maker/pdf-document";
 import { extractPdfRegionToDataUrlExt } from "@/lib/test-maker/pdf-crop";
 import { tmToast } from "@/lib/test-maker/notify";
 
@@ -41,13 +41,14 @@ export function CropStudioModal({ open, onClose, pdf, onCrop }: CropStudioModalP
   useEffect(() => {
     if (!open || !pdf.pdfDoc || !canvasRef.current || !bodyRef.current) return;
     let cancelled = false;
+    const canvas = canvasRef.current;
     (async () => {
-      const result = await renderPdfPageToCanvas(pdf.pdfDoc!, canvasRef.current!, {
+      const result = await renderPdfPageToCanvas(pdf.pdfDoc!, canvas, {
         pageIndex: studioPage,
         zoom: studioZoom,
-        maxWidth: Math.max(400, bodyRef.current!.clientWidth - 48),
+        maxWidth: Math.max(480, bodyRef.current!.clientWidth - 64),
       });
-      if (!cancelled && result) {
+      if (!cancelled && result && !result.cancelled) {
         studioMetaRef.current = {
           renderFinalScale: result.renderFinalScale,
           renderDpr: result.dpr,
@@ -57,6 +58,7 @@ export function CropStudioModal({ open, onClose, pdf, onCrop }: CropStudioModalP
     })();
     return () => {
       cancelled = true;
+      cancelPdfCanvasRender(canvas);
     };
   }, [open, pdf.pdfDoc, studioPage, studioZoom]);
 
@@ -142,7 +144,7 @@ export function CropStudioModal({ open, onClose, pdf, onCrop }: CropStudioModalP
       />
       <div
         id="tm-crop-studio-dialog"
-        className="relative z-10 mx-auto flex h-full max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative z-10 mx-auto flex h-full max-h-[92dvh] w-full max-w-[min(96vw,1400px)] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
       >
         <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
           <h2 id="tm-crop-studio-title" className="text-sm font-semibold text-slate-900">

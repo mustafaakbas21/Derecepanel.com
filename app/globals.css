@@ -1,5 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
+@config "../tailwind.config.mjs";
+@import "../styles/print-a4-global.css";
+@import "../components/onyx/onyx.css";
 
 :root {
   /* Landing-aligned palette */
@@ -51,8 +54,27 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html {
+  scroll-behavior: auto;
+}
+
+html.dp-nav-scrolling {
+  scroll-behavior: auto;
+  overscroll-behavior-y: none;
+}
+
+html.dp-nav-scrolling body {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body:has(.dashboard-viewport) {
-  overflow: hidden;
+  overflow: clip;
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -68,8 +90,26 @@ body:has(.dashboard-viewport) {
 .dashboard-viewport {
   position: fixed;
   inset: 0;
-  overflow: hidden;
+  /* clip (hidden değil): programatik scroll'u da engeller; navigasyonda
+     focus/scrollIntoView'in tüm shell'i (sidebar dâhil) kaydırmasını önler */
+  overflow: clip;
   background-color: #ffffff;
+}
+
+/* Sonner — dashboard transform üstünde, tek tip toast (lib/notify + AppToaster) */
+[data-sonner-toaster] {
+  z-index: 99999 !important;
+  pointer-events: none;
+  --width: 380px;
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+[data-sonner-toast] {
+  pointer-events: auto;
+}
+
+[data-sonner-toast][data-styled="true"] {
+  padding: 0.75rem 1rem;
 }
 
 .dashboard-shell {
@@ -79,24 +119,13 @@ body:has(.dashboard-viewport) {
   height: calc(100dvh / var(--dashboard-scale));
   transform: scale(var(--dashboard-scale));
   transform-origin: 0 0;
+  /* clip: shell'in kendisi de programatik kaydırılamaz; tek scroll alanı <main> */
+  overflow: clip;
   background-color: #ffffff;
   font-size: 16px;
 }
 
-@media print {
-  .dashboard-viewport {
-    position: static;
-    overflow: visible;
-    width: auto;
-    height: auto;
-  }
-
-  .dashboard-shell {
-    width: 100% !important;
-    height: auto !important;
-    transform: none !important;
-  }
-}
+/* Yazdırma: styles/print-a4-global.css */
 
 /* Koç paneli içerik alanı */
 .coach-panel-main {
@@ -131,4 +160,134 @@ body:has(.dashboard-viewport) {
     #fafdff 88%,
     #ffffff 100%
   );
+}
+
+/* —— Giriş sonrası panele geçiş (#dpLoginExit) —— */
+html.dp-login-exit-lock,
+html.dp-login-exit-lock body {
+  overflow: hidden !important;
+}
+
+.dp-login-exit {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.55s;
+}
+
+.dp-login-exit.is-active {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
+}
+
+.dp-login-exit__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    165deg,
+    rgba(244, 247, 246, 0.92) 0%,
+    rgba(241, 245, 249, 0.94) 50%,
+    rgba(255, 247, 237, 0.9) 100%
+  );
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.dp-login-exit__panel {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 22rem;
+  transform: translateY(14px) scale(0.97);
+  opacity: 0;
+  filter: blur(6px);
+  transition:
+    transform 0.62s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s ease,
+    filter 0.55s ease;
+}
+
+.dp-login-exit.is-active .dp-login-exit__panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  filter: blur(0);
+  transition-delay: 0.06s, 0.06s, 0.08s;
+}
+
+.dp-login-exit__brand {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.dp-login-exit__msg {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+.dp-login-exit__track {
+  width: min(220px, 70vw);
+  height: 3px;
+  margin: 1.15rem auto 0;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.dp-login-exit__bar {
+  height: 100%;
+  width: 38%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0f172a, #f97316, #0f172a);
+  background-size: 200% 100%;
+  animation: dp-login-exit-bar 1.05s ease-in-out infinite;
+}
+
+@keyframes dp-login-exit-bar {
+  0% {
+    transform: translateX(-105%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-login-exit {
+    transition-duration: 0.15s;
+  }
+  .dp-login-exit.is-active {
+    transition-duration: 0.12s;
+  }
+  .dp-login-exit__panel {
+    transition: opacity 0.15s ease, transform none, filter none;
+    transform: none;
+    filter: none;
+  }
+  .dp-login-exit.is-active .dp-login-exit__panel {
+    transition-delay: 0s;
+  }
+  .dp-login-exit__bar {
+    animation: none;
+    width: 100%;
+    transform: none;
+  }
 }

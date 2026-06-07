@@ -1,0 +1,220 @@
+/* Koç sidebar — koyu lacivert aktif vurgu (slate-900) */
+
+:root {
+  --coach-sidebar-navy: #0f172a;
+  --coach-sidebar-navy-hover: #1e293b;
+  --coach-sidebar-text: #0f172a;
+  --coach-sidebar-text-muted: #334155;
+  --coach-sidebar-icon: #64748b;
+  --coach-sidebar-rail: #94a3b8;
+}
+
+.coach-nav-group {
+  margin-top: 0.25rem;
+}
+
+.coach-nav-group__trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--coach-sidebar-text);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.coach-nav-group__trigger:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--coach-sidebar-text);
+}
+
+/* Modüldeyken — üst menü ile aynı lacivert */
+.coach-nav-group__trigger--section-active {
+  background: var(--coach-sidebar-navy);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+}
+
+.coach-nav-group__trigger--section-active:hover {
+  background: var(--coach-sidebar-navy-hover);
+  color: #fff;
+}
+
+.coach-nav-group__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--coach-sidebar-icon);
+}
+
+.coach-nav-group__trigger--section-active .coach-nav-group__icon,
+.coach-nav-group__trigger--section-active .coach-nav-group__chevron {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.coach-nav-group__chevron {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--coach-sidebar-icon);
+  transition: transform 0.22s ease;
+}
+
+.coach-nav-group__chevron--open {
+  transform: rotate(180deg);
+}
+
+.coach-nav-group__sub-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+
+.coach-nav-group--open .coach-nav-group__sub-wrap {
+  grid-template-rows: 1fr;
+}
+
+.coach-nav-group:not(.coach-nav-group--open) .coach-nav-group__sub-wrap {
+  visibility: hidden;
+}
+
+.coach-nav-group--open .coach-nav-group__sub-wrap {
+  visibility: visible;
+}
+
+.coach-nav-group__sub-wrap[hidden] {
+  display: none;
+}
+
+.coach-nav-group__sub {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.coach-nav-group--open .coach-nav-group__sub {
+  position: relative;
+  margin-left: 0.65rem;
+  margin-top: 0.25rem;
+  padding-left: 0.85rem;
+  padding-bottom: 0.35rem;
+}
+
+.coach-nav-group--open .coach-nav-group__sub::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--coach-sidebar-navy) 0%,
+    #64748b 55%,
+    #e2e8f0 100%
+  );
+}
+
+.coach-nav-sub-link {
+  display: block;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--coach-sidebar-text-muted);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.coach-nav-sub-link:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--coach-sidebar-text);
+}
+
+.coach-nav-sub-link--active {
+  background: var(--coach-sidebar-navy);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+.coach-nav-sub-link--active:hover {
+  background: var(--coach-sidebar-navy-hover);
+  color: #fff;
+}
+
+.coach-nav-top-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--coach-sidebar-text);
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+
+.coach-nav-top-link:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--coach-sidebar-text);
+}
+
+.coach-nav-top-link--active {
+  background: var(--coach-sidebar-navy);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+}
+
+.coach-nav-top-link--active:hover {
+  background: var(--coach-sidebar-navy-hover);
+  color: #fff;
+}
+
+.coach-nav-top-link__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--coach-sidebar-icon);
+}
+
+.coach-nav-top-link--active .coach-nav-top-link__icon {
+  color: #fff;
+}
+
+/* Üst menü BETA rozeti (Pazarlama Asistanı vb.) */
+.coach-nav-beta-pill {
+  flex-shrink: 0;
+  align-self: center;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+
+.coach-nav-top-link--active .coach-nav-beta-pill {
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

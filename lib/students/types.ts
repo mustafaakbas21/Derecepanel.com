@@ -19,6 +19,8 @@ export interface StudentRecord {
   ilce?: string;
   studentCode: string;
   sinifBranch: string;
+  /** Kurumsal sınıf modülü — `institution_classes_v1` kaydı */
+  institutionClassId?: string;
   alan: StudyField;
   counselorName?: string;
   kayitPaketi?: string;

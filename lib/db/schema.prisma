@@ -1,0 +1,71 @@
+// DerecePanel — Yapay Zeka Destekli Öğrenme Ekosistemi
+// `npx prisma generate` · `npx prisma db push` (DATABASE_URL gerekli)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Vektörel hafıza — öğrencinin çözdürdüğü / zorlandığı sorular
+model QuestionMemory {
+  id              String   @id @default(uuid())
+  studentId       String
+  topic           String
+  questionImage   String?
+  solutionText    String
+  difficultyScore Int
+  timestamp       DateTime @default(now())
+
+  @@index([studentId, timestamp(sort: Desc)])
+  @@map("question_memory")
+}
+
+/// Onyx soru çözüm arşivi (müfredat eşlemesi ile)
+model OnyxQuestionSolve {
+  id                      String   @id @default(uuid())
+  studentId               String
+  cozum                   String
+  konuBasligi             String
+  zorlukSeviyesi          Int
+  hataKodu                String
+  subjectId               String?
+  topicId                 String?
+  curriculumMarked        Boolean  @default(false)
+  curriculumSkippedReason String?
+  model                   String
+  source                  String   @default("vision")
+  createdAt               DateTime @default(now())
+
+  @@index([studentId, createdAt(sort: Desc)])
+}
+
+/// Kalıcı bellek — öğrenci/koç Onyx sohbet oturumu (OnyxEngine her tur yazar)
+model ChatSession {
+  id        String    @id @default(cuid())
+  studentId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("chat_sessions")
+}
+
+/// Onyx / kullanıcı mesajları (`role`: user | onyx)
+model Message {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  /// JSON — görsel ek, müfredat rozeti vb. (`OnyxChatMessageMetadata`)
+  metadata  String?
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}

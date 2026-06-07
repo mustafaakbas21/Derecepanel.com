@@ -1,9 +1,13 @@
 "use client";
 
-import type { StudentImportResult } from "@/lib/students/import/use-student-import";
+export type ImportResultSummary = {
+  imported: number;
+  skipped: number;
+  errors: { row: number; reason: string }[];
+};
 
 type ImportResultPanelProps = {
-  result: StudentImportResult;
+  result: ImportResultSummary;
 };
 
 export function ImportResultPanel({ result }: ImportResultPanelProps) {

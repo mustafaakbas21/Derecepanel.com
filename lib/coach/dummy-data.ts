@@ -9,8 +9,8 @@ export const navItems = {
   menu: [
     { label: "Ana Sayfa", href: "/dashboard", icon: "home" as const, active: false },
     { label: "Öğrenciler", href: "/dashboard/ogrencilerim", icon: "users" as const, active: false },
+    { label: "Sınıflarım", href: "/dashboard/siniflar", icon: "classes" as const, active: false },
     { label: "Randevular", href: "/dashboard/randevular", icon: "calendar" as const, active: false },
-    { label: "Denemeler", href: "#", icon: "transactions" as const, active: false },
   ],
 };
 

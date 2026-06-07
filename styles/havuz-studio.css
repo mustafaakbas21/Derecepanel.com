@@ -1,0 +1,289 @@
+/* Soru Havuzu v2 — filtre sol, kart grid sağ */
+
+.havuz-studio {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.havuz-studio__body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+/* Test Oluşturucu — havuz modal (Dialog grid yerine flex) */
+#tm-havuz-modal {
+  display: flex !important;
+  flex-direction: column;
+}
+
+#tm-havuz-modal .havuz-studio__body--modal {
+  flex: 1 1 auto;
+  min-height: min(60vh, 560px);
+}
+
+.havuz-filters {
+  display: flex;
+  width: 17.5rem;
+  flex-shrink: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid #e2e8f0;
+  background: #fafbfc;
+}
+
+.havuz-filters__head {
+  flex-shrink: 0;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.1rem;
+}
+
+.havuz-filters__head h2 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.havuz-filters__head p {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.havuz-filters__scroll {
+  flex: 1 1 0;
+  overflow-y: auto;
+  padding: 1rem 1.1rem;
+}
+
+.havuz-field {
+  display: block;
+  margin-bottom: 0.85rem;
+}
+
+.havuz-field__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.havuz-field__input {
+  width: 100%;
+  border-radius: 0.625rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8125rem;
+  color: #0f172a;
+}
+
+.havuz-field__input:focus {
+  border-color: #94a3b8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.havuz-field__input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.havuz-pool {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.havuz-pool__toolbar {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 0.75rem 1.25rem;
+}
+
+.havuz-pool__scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.25rem;
+}
+
+.havuz-pool__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  align-content: start;
+}
+
+.havuz-pool__empty {
+  display: flex;
+  min-height: 280px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Kart — havuz görünümü */
+.havuz-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 0.15s ease;
+}
+
+.havuz-card:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+}
+
+.havuz-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.6875rem;
+}
+
+.havuz-card__tag {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #64748b;
+}
+
+.havuz-card__img-wrap {
+  position: relative;
+  min-height: 120px;
+  background: #f8fafc;
+  padding: 0.5rem;
+}
+
+.havuz-card__img {
+  display: block;
+  margin: 0 auto;
+  max-height: 220px;
+  width: 100%;
+  object-fit: contain;
+}
+
+.havuz-card__delete {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.35rem;
+  color: #64748b;
+  opacity: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.havuz-card:hover .havuz-card__delete {
+  opacity: 1;
+}
+
+.havuz-card__delete:hover {
+  color: #dc2626;
+}
+
+.havuz-card__answers {
+  padding: 0.75rem;
+}
+
+.havuz-card__answers-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+.havuz-card__letters {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.havuz-card__letter {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.havuz-card__letter:hover {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.havuz-card__letter--active {
+  border-color: #34d399;
+  background: #d1fae5;
+  color: #065f46;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+}
+
+.havuz-badge {
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  font-weight: 700;
+}
+
+.havuz-badge--page {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.havuz-badge--num {
+  background: #0f172a;
+  color: #fff;
+}
+
+.havuz-badge--auto {
+  background: #ecfdf5;
+  color: #047857;
+}

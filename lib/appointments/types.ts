@@ -60,4 +60,5 @@ export interface CurrentUser {
   studentCode?: string;
   code?: string;
   kullaniciAdi?: string;
+  coachId?: string;
 }

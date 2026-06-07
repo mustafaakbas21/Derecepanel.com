@@ -1,0 +1,936 @@
+/* Onyx AI — glassmorphism komuta merkezi (slate-900 / amber) */
+
+.onyx-page {
+  --onyx-glass: rgba(255, 255, 255, 0.72);
+  --onyx-glass-strong: rgba(255, 255, 255, 0.88);
+  --onyx-border: rgba(255, 255, 255, 0.65);
+  --onyx-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.12);
+  --onyx-radius: 1.75rem;
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 8%, rgba(251, 191, 36, 0.18), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(186, 230, 253, 0.35), transparent 50%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(226, 232, 240, 0.5), transparent 55%),
+    linear-gradient(165deg, #f0f9ff 0%, #f8fafc 42%, #eef2ff 100%);
+}
+
+.onyx-page::before,
+.onyx-page::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  z-index: 0;
+}
+
+.onyx-page::before {
+  width: 280px;
+  height: 280px;
+  top: -80px;
+  right: -40px;
+  background: rgba(251, 191, 36, 0.22);
+}
+
+.onyx-page::after {
+  width: 220px;
+  height: 220px;
+  bottom: 10%;
+  left: -60px;
+  background: rgba(125, 211, 252, 0.25);
+}
+
+/* Tam ekran Onyx — koç main alanını flex sütun yap (100vh calc scale ile bozulmasın) */
+.coach-panel-main:has(.onyx-page-host),
+.coach-panel-main.onyx-main-host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden !important;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.onyx-page-host {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.onyx-shell {
+  flex: 1 1 0%;
+  min-height: 0;
+  background: transparent;
+}
+
+.onyx-shell .onyx-chat-scroll {
+  background: transparent;
+}
+
+/* Referans: merkez odaklı canvas + kayan paneller */
+.onyx-saas-layout {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.onyx-saas-layout > main {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.onyx-main-canvas {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(255, 255, 255, 0.95), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 80% 100%, rgba(241, 245, 249, 0.6), transparent 50%),
+    linear-gradient(180deg, #f5f5f7 0%, #fafafa 45%, #ffffff 100%);
+}
+
+.onyx-saas-layout--immersive .onyx-main-canvas {
+  background:
+    radial-gradient(ellipse 100% 70% at 50% 0%, #ffffff 0%, transparent 62%),
+    linear-gradient(180deg, #f3f4f6 0%, #fafafa 50%, #ffffff 100%);
+}
+
+/* Üst araç çubuğu — referans görsel 2 */
+.onyx-toolbar {
+  border: none;
+  background: transparent;
+}
+
+.onyx-toolbar-btn {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.onyx-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+}
+
+.onyx-toolbar-btn--outline {
+  width: auto;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.onyx-toolbar-btn--outline:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+
+.onyx-toolbar-btn--active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+/* Kayan yan paneller */
+.onyx-sidebar-drawer {
+  position: absolute;
+  top: 0;
+  z-index: 40;
+  height: 100%;
+  width: 17.5rem;
+  max-width: min(17.5rem, 88vw);
+  overflow: hidden;
+  border: none;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  box-shadow: none;
+  transition:
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.28s ease;
+  pointer-events: none;
+}
+
+.onyx-sidebar-drawer--left {
+  left: 0;
+  transform: translateX(-100%);
+  border-right: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.onyx-sidebar-drawer--right {
+  right: 0;
+  width: 20rem;
+  max-width: min(20rem, 92vw);
+  transform: translateX(100%);
+  border-left: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.onyx-sidebar-drawer--open {
+  transform: translateX(0);
+  box-shadow: 0 12px 48px rgba(15, 23, 42, 0.12);
+  pointer-events: auto;
+}
+
+.onyx-sidebar-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  background: rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.onyx-sidebar-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.onyx-chat-stage {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.onyx-chat-composer {
+  flex-shrink: 0;
+}
+
+@keyframes onyx-empty-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.onyx-empty-state-in {
+  animation: onyx-empty-in 500ms ease-out;
+}
+
+.onyx-welcome-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  width: 3rem;
+  border-radius: 999px;
+  background: #fffbeb;
+  box-shadow: 0 2px 12px rgba(251, 191, 36, 0.15);
+}
+
+.onyx-welcome-card:focus-within {
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+.onyx-chat-composer--welcome {
+  border: none;
+  background: transparent;
+  padding-bottom: 1.25rem;
+}
+
+.onyx-composer-dock {
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.onyx-composer-dock--float {
+  padding: 0 0.25rem;
+}
+
+/* Gemini tarzı yetenek seçici */
+.onyx-skill-picker__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: min(9.5rem, 34vw);
+  height: 2rem;
+  padding: 0 0.5rem 0 0.375rem;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #475569;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+@media (min-width: 640px) {
+  .onyx-skill-picker__trigger {
+    max-width: 11rem;
+    height: 2.25rem;
+    padding: 0 0.625rem 0 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+.onyx-skill-picker__trigger:hover:not(:disabled) {
+  background: rgba(241, 245, 249, 0.95);
+  color: #0f172a;
+}
+
+.onyx-skill-picker__trigger--open {
+  background: rgba(241, 245, 249, 0.95);
+  color: #0f172a;
+}
+
+.onyx-skill-picker__trigger--active {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.onyx-skill-picker__trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.onyx-skill-picker__trigger-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.onyx-skill-picker__trigger-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.onyx-skill-picker__trigger-chevron {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: transform 180ms ease;
+}
+
+.onyx-skill-picker__trigger-chevron--open {
+  transform: rotate(180deg);
+}
+
+.onyx-skill-picker__panel {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  width: min(calc(100vw - 2rem), 22rem);
+  max-height: min(70vh, 26rem);
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: #fff;
+  box-shadow:
+    0 12px 40px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+  animation: onyx-skill-picker-in 180ms ease-out;
+}
+
+@keyframes onyx-skill-picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.onyx-skill-picker__search-wrap {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0.625rem 0.625rem 0.5rem;
+  border-bottom: 1px solid rgba(241, 245, 249, 0.95);
+}
+
+.onyx-skill-picker__search-icon {
+  position: absolute;
+  left: 1.125rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.onyx-skill-picker__search {
+  width: 100%;
+  height: 2.25rem;
+  padding: 0 2rem 0 2.25rem;
+  border-radius: 0.625rem;
+  border: 0;
+  background: #f8fafc;
+  font-size: 0.8125rem;
+  color: #0f172a;
+}
+
+.onyx-skill-picker__search::placeholder {
+  color: #94a3b8;
+}
+
+.onyx-skill-picker__search:focus {
+  outline: none;
+  background: #f1f5f9;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.25);
+}
+
+.onyx-skill-picker__search-clear {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 999px;
+  color: #94a3b8;
+}
+
+.onyx-skill-picker__search-clear:hover {
+  color: #475569;
+  background: rgba(226, 232, 240, 0.75);
+}
+
+.onyx-skill-picker__scroll {
+  overflow-y: auto;
+  padding: 0.375rem 0.375rem 0.5rem;
+  scrollbar-width: thin;
+}
+
+.onyx-skill-picker__section + .onyx-skill-picker__section {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(241, 245, 249, 0.95);
+}
+
+.onyx-skill-picker__section-label {
+  margin: 0;
+  padding: 0.375rem 0.625rem 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.onyx-skill-picker__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.onyx-skill-picker__option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  text-align: left;
+  transition: background 120ms ease;
+}
+
+.onyx-skill-picker__option:hover {
+  background: #f8fafc;
+}
+
+.onyx-skill-picker__option--selected {
+  background: #f1f5f9;
+}
+
+.onyx-skill-picker__option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background: #f1f5f9;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.onyx-skill-picker__option-body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.onyx-skill-picker__option-title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.onyx-skill-picker__option-desc {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.onyx-skill-picker__option-check {
+  flex-shrink: 0;
+  color: #0f172a;
+}
+
+.onyx-skill-picker__empty {
+  margin: 0;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+}
+
+.onyx-composer-form {
+  box-sizing: border-box;
+  border-radius: 1.25rem;
+}
+
+.onyx-composer-form--single {
+  border-radius: 999px;
+}
+
+.onyx-composer-form--expanded {
+  border-radius: 1.25rem;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+
+.onyx-composer-form__leading {
+  align-self: flex-end;
+}
+
+.onyx-composer-form__picker {
+  display: flex;
+  align-items: flex-end;
+}
+
+.onyx-composer-form__textarea {
+  box-sizing: border-box;
+  display: block;
+  overflow-y: auto;
+}
+
+.onyx-composer-form textarea {
+  scrollbar-width: none;
+}
+
+.onyx-composer-form textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.onyx-history-item:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}
+
+
+/* Eski sabit sağ panel kaldırıldı — drawer kullanılıyor */
+
+.onyx-command {
+  position: relative;
+  z-index: 1;
+}
+
+.onyx-stage {
+  position: relative;
+}
+
+/* Üst bar */
+.onyx-top-bar {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  background: var(--onyx-glass-strong);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+}
+
+@media (min-width: 640px) {
+  .onyx-top-bar {
+    padding: 1rem 1.5rem;
+  }
+}
+
+.onyx-mode-switch button {
+  white-space: nowrap;
+}
+
+.onyx-student-trigger {
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  background: #fff !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+/* Hero */
+.onyx-hero {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.25rem 0.5rem;
+  text-align: center;
+}
+
+.onyx-hero__title {
+  max-width: 28rem;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.onyx-hero__title span {
+  display: block;
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.onyx-hero__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  height: 3rem;
+  width: 3rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 0 24px rgba(251, 191, 36, 0.35),
+    0 8px 24px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(8px);
+  animation: onyx-icon-glow 3s ease-in-out infinite;
+}
+
+@keyframes onyx-icon-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(251, 191, 36, 0.25),
+      0 8px 20px rgba(15, 23, 42, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 32px rgba(251, 191, 36, 0.45),
+      0 8px 28px rgba(15, 23, 42, 0.1);
+  }
+}
+
+/* Sohbet — ChatGPT tarzı tam yükseklik thread */
+.onyx-chat-thread {
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+.onyx-chat-thread > .mx-auto {
+  min-height: 100%;
+}
+
+.custom-scrollbar,
+.onyx-chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar,
+.onyx-chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.onyx-chat-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.onyx-chat-scroll.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+.onyx-bubble-user {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+}
+
+.onyx-bubble-onyx {
+  background: var(--onyx-glass-strong);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-left: 3px solid #0f172a;
+  box-shadow: var(--onyx-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.onyx-avatar {
+  background: linear-gradient(145deg, #0f172a, #334155);
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+}
+
+.onyx-status-live {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.onyx-live-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(167, 243, 208, 0.9);
+  background: rgba(236, 253, 245, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+/* Kompozör */
+.onyx-composer-wrap {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .onyx-composer-wrap {
+    padding: 0.75rem 1.5rem 1.25rem;
+  }
+}
+
+.onyx-glass-composer {
+  position: relative;
+  border: 1px solid var(--onyx-border);
+  border-radius: var(--onyx-radius);
+  background: var(--onyx-glass-strong);
+  box-shadow: var(--onyx-shadow);
+  backdrop-filter: blur(24px) saturate(1.15);
+  -webkit-backdrop-filter: blur(24px) saturate(1.15);
+}
+
+.onyx-composer-input {
+  display: block;
+  width: 100%;
+  min-height: 5.5rem;
+  max-height: 200px;
+  resize: none;
+  border: 0;
+  background: transparent;
+  padding: 1.1rem 1.25rem 3.25rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #0f172a;
+}
+
+.onyx-composer-input::placeholder {
+  color: #64748b;
+}
+
+.onyx-composer-input:focus {
+  outline: none;
+}
+
+.onyx-composer-footer {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.onyx-composer-footer > * {
+  pointer-events: auto;
+}
+
+.onyx-file-btn {
+  border: 0;
+  background: transparent;
+  padding: 0.25rem 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  transition: color 0.15s ease;
+}
+
+.onyx-file-btn:hover:not(:disabled) {
+  color: #0f172a;
+}
+
+.onyx-file-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.onyx-quick-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 0 0.25rem;
+}
+
+.onyx-quick-pill {
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.55);
+  padding: 0.45rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;
+  backdrop-filter: blur(10px);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.onyx-quick-pill:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+.onyx-quick-pill:disabled {
+  opacity: 0.45;
+}
+
+.onyx-typing-dot {
+  animation: onyx-typing 1.2s ease-in-out infinite;
+}
+
+.onyx-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.onyx-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes onyx-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes onyx-status-progress {
+  0% {
+    transform: translateX(-100%) scaleX(0.5);
+  }
+  50% {
+    transform: translateX(0%) scaleX(0.5);
+  }
+  100% {
+    transform: translateX(100%) scaleX(0.5);
+  }
+}
+
+.onyx-status-progress-bar {
+  animation: onyx-status-progress 1.5s ease-in-out infinite;
+}
+
+.onyx-markdown.prose pre {
+  border-radius: 0.75rem;
+}
+
+.onyx-markdown.prose h3 {
+  margin-top: 1.25em;
+  letter-spacing: -0.02em;
+}
+
+.onyx-markdown--dark,
+.onyx-markdown--dark .katex,
+.onyx-markdown--dark .katex .mord,
+.onyx-markdown--dark .katex .mrel,
+.onyx-markdown--dark .katex .mbin,
+.onyx-markdown--dark .katex .mop {
+  color: #fff;
+}
+
+.onyx-markdown--dark .katex .mfrac > span {
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+.onyx-markdown--emerald .katex,
+.onyx-markdown--orange .katex {
+  color: inherit;
+}
+
+.onyx-katex-inline .katex {
+  font-size: 1.05em;
+}
+
+.onyx-katex-block .katex-display {
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.onyx-markdown .katex {
+  font-size: 1.05em;
+}
+
+.onyx-markdown .katex-display {
+  padding: 0.75rem 0;
+}
+
+.onyx-markdown .prose-table,
+.onyx-markdown table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.onyx-markdown tbody tr:nth-child(even) {
+  background: rgba(248, 250, 252, 0.85);
+}

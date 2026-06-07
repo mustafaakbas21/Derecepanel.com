@@ -3,10 +3,11 @@ import { stableStudentIdFromRecord } from "@/lib/appointments/utils";
 import { CATALOG_KEY } from "@/lib/students/constants";
 import type { StudentRecord } from "@/lib/students/types";
 
+import { panelGetItem, panelRemoveItem, panelSetItem } from "@/lib/panel-store";
 export function catalogIdForUser(u: CurrentUser | null): string {
   if (!u || typeof window === "undefined") return "";
   try {
-    const raw = localStorage.getItem(CATALOG_KEY);
+    const raw = panelGetItem(CATALOG_KEY);
     const list: StudentRecord[] = raw ? (JSON.parse(raw) as StudentRecord[]) : [];
     const uname = String(u.name || "").trim();
     const code = String(u.studentCode || u.code || "").trim();

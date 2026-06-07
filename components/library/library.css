@@ -1,0 +1,43 @@
+/* Kitap kütüphanesi — panel içi kaydırma */
+
+.lib-scroll-pane {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.lib-scroll-pane::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.lib-scroll-pane::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.lib-book-picker-card {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.lib-book-picker-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.lib-book-picker-card[data-selected="true"] {
+  border-color: #0f172a;
+  background: #f8fafc;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.lib-student-row {
+  cursor: pointer;
+}
+
+.lib-student-row:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: -2px;
+}

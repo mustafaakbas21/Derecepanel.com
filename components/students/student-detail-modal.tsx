@@ -16,7 +16,7 @@ import { formatKayitDate } from "@/lib/students/storage";
 import type { StudentRecord } from "@/lib/students/types";
 import { cn } from "@/lib/utils";
 
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 
 type Props = {
   student: StudentRecord | null;
@@ -179,7 +179,7 @@ export function StudentDetailModal({ student, open, onOpenChange, onEdit }: Prop
             Kapat
           </Button>
           <Button
-            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+            variant="primary"
             onClick={() => {
               onOpenChange(false);
               onEdit(student);

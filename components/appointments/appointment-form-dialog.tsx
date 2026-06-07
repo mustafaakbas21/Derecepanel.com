@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageCircle } from "lucide-react";
 
+import { toast } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -79,11 +80,11 @@ export function AppointmentFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.studentId) {
-      window.alert("Lütfen öğrenci seçin.");
+      toast.error("Lütfen öğrenci seçin");
       return;
     }
     if (!form.tarih || !form.saat) {
-      window.alert("Tarih ve saat gerekli.");
+      toast.error("Tarih ve saat gerekli");
       return;
     }
     const ok = onSave(form, editing?.id ?? null);
@@ -92,7 +93,7 @@ export function AppointmentFormDialog({
 
   const previewWa = () => {
     if (!studentName || !form.tarih || !form.saat) {
-      window.alert("Lütfen öğrenci, tarih ve saat seçin.");
+      toast.error("Lütfen öğrenci, tarih ve saat seçin");
       return;
     }
     window.open(formPreviewWhatsAppUrl(studentName, form.tarih, form.saat), "_blank");
@@ -272,7 +273,7 @@ export function AppointmentFormDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               İptal
             </Button>
-            <Button type="submit" className="bg-slate-900 text-white hover:bg-slate-800">
+            <Button type="submit" variant="primary">
               Kaydet
             </Button>
           </DialogFooter>

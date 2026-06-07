@@ -1,0 +1,120 @@
+/**
+ * A4 yazdırma — kenar boşlukları (tüm modüller)
+ * @page margin tek başına Chrome/Edge'de güvenilir değil; padding ile desteklenir.
+ * Test Oluşturucu: #tm-a4-page tam sayfa (kenar yok)
+ * Sonuç Merkezi: body.bds-print-active + .bds-karne-print-host
+ */
+:root {
+  --print-margin-top: 11mm;
+  --print-margin-bottom: 11mm;
+  --print-margin-x: 10mm;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body:not(.print-safe-area) {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-safe-area {
+    margin: 0 !important;
+    background: #fff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .dashboard-viewport {
+    position: static !important;
+    overflow: visible !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .dashboard-shell {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body:not(.bds-print-active) .coach-chrome {
+    display: none !important;
+  }
+
+  /* Genel sayfa yazdırma (Analiz, Tarama, vb.) */
+  body:not(.bds-print-active) .coach-panel-main {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    background: #fff !important;
+    padding: var(--print-margin-top) var(--print-margin-x) var(--print-margin-bottom) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Test Oluşturucu — tam sayfa kağıt, kenar boşluğu yok */
+  body:has(#tm-a4-page) .coach-panel-main {
+    padding: 0 !important;
+  }
+
+  body.print-safe-area {
+    padding: var(--print-margin-top) var(--print-margin-x) var(--print-margin-bottom) !important;
+    box-sizing: border-box !important;
+    width: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  #am-scope {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .tr-print-root,
+  .tr-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-sonner-toaster],
+  .no-print,
+  .no-print-am,
+  .tr-no-print {
+    display: none !important;
+  }
+
+  body:not(.bds-print-active) .coach-panel-main > :empty {
+    display: none !important;
+  }
+}

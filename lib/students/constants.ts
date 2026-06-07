@@ -90,6 +90,13 @@ export function createStudentCode() {
   return `ÖĞ-${Date.now().toString(36).toUpperCase().slice(-8)}`;
 }
 
+/** Optik satırından otomatik öğrenci kodu */
+export function createStudentCodeFromNo(no: string) {
+  const n = String(no || "").trim().replace(/\s+/g, "");
+  if (n) return n;
+  return createStudentCode();
+}
+
 export function buildGoal(university: string, department: string) {
   const u = university.trim();
   const d = department.trim();

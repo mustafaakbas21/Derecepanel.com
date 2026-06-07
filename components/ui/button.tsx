@@ -9,14 +9,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        /** Koç paneli / dashboard ana aksiyon — koyu lacivert (slate-900) */
+        primary:
+          "bg-slate-900 text-white shadow-md shadow-slate-900/20 hover:bg-slate-800 focus-visible:ring-slate-400/50",
         default:
           "bg-[#5c4a3a] text-white shadow-md shadow-[#5c4a3a]/20 hover:bg-[#3e2c1f]",
         accent:
           "bg-[#b8956a] text-[#2d2520] shadow-sm hover:bg-[#c9a67a]",
         outline:
-          "border border-[#e8ded2] bg-white text-[#5c4a3a] hover:bg-[#f5f1ed]",
-        ghost: "text-[#5c4a3a] hover:bg-[#f5f1ed]",
-        secondary: "bg-[#ebe4da] text-[#2d2520] hover:bg-[#e8ded2]",
+          "border border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+        ghost: "text-slate-700 hover:bg-slate-100",
+        secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200/80",
+        destructive:
+          "bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-400/50",
       },
       size: {
         default: "h-12 px-5 py-2.5 text-[15px]",

@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 
+import {
+  APPWRITE_BUCKET_DENEME_DEPOSU,
+  APPWRITE_ENDPOINT,
+  APPWRITE_PROJECT_ID,
+} from "@/lib/appwrite/config";
+
 function appwriteConfig() {
-  const endpoint = process.env.APPWRITE_ENDPOINT?.replace(/\/+$/, "");
-  const projectId = process.env.APPWRITE_PROJECT_ID;
-  const bucketId = process.env.APPWRITE_BUCKET_ID;
-  const apiKey = process.env.APPWRITE_API_KEY;
+  const endpoint = APPWRITE_ENDPOINT;
+  const projectId = APPWRITE_PROJECT_ID;
+  const bucketId = process.env.APPWRITE_BUCKET_ID?.trim() || APPWRITE_BUCKET_DENEME_DEPOSU;
+  const apiKey = process.env.APPWRITE_API_KEY?.trim();
   return { endpoint, projectId, bucketId, apiKey };
 }
 
@@ -21,7 +27,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Appwrite yapılandırılmadı. APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_BUCKET_ID, APPWRITE_API_KEY env değişkenlerini tanımlayın.",
+          "Appwrite yapılandırılmadı. NEXT_PUBLIC_APPWRITE_* ve APPWRITE_API_KEY env değişkenlerini tanımlayın.",
       },
       { status: 503 }
     );

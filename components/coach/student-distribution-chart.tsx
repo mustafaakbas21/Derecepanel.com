@@ -102,7 +102,7 @@ export function StudentDistributionChart() {
       </div>
 
       {!hydrated ? (
-        <div className="h-[260px] animate-pulse rounded-xl bg-slate-100" />
+        <div className="h-[260px] rounded-xl bg-slate-50" aria-hidden />
       ) : total === 0 ? (
         <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-6 text-center">
           <p className="font-semibold text-slate-900">Henüz öğrenci kaydı yok</p>

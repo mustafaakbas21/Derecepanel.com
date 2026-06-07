@@ -1,149 +1,284 @@
 "use client";
 
-import Link from "next/link";
+import { GuardedCoachLink } from "@/components/coach/guarded-coach-link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CalendarDays,
-  ChevronDown,
+  CalendarRange,
+  ClipboardList,
   FileText,
+  GraduationCap,
   Home,
-  ListTodo,
+  Layers,
+  Library,
+  ListChecks,
   LogOut,
+  Pill,
+  Sparkles,
   Users,
 } from "lucide-react";
 
+import { NavAnalizBetaLink } from "@/components/analiz-merkezi/NavAnalizBetaLink";
+import { NavPazarlamaBetaLink } from "@/components/pazarlama/NavPazarlamaBetaLink";
+import "@/components/analiz-merkezi/nav-analiz-beta.css";
+import { CoachNavGroup } from "@/components/coach/coach-nav-group";
 import { navItems } from "@/lib/coach/dummy-data";
+import { denemelerNavGroup, DENEMELER_ROUTES } from "@/lib/coach/denemeler-nav-config";
+import { hataRecetesiNavGroup } from "@/lib/coach/hata-recetesi-nav-config";
+import { HATA_RECETESI_ROUTES } from "@/lib/hata-recetesi/constants";
+import {
+  haftalikProgramNavGroup,
+  HAFTALIK_PROGRAM_ROUTES,
+} from "@/lib/coach/haftalik-program-nav-config";
+import { konuTakipNavGroup, KONU_TAKIP_ROUTES } from "@/lib/coach/konu-takip-nav-config";
+import { kutuphaneNavGroup, KUTUPHANE_ROUTES } from "@/lib/coach/kutuphane-nav-config";
 import { testMakerNavGroup } from "@/lib/coach/nav-config";
+import { taramalarNavGroup, TARAMALAR_ROUTES } from "@/lib/coach/taramalar-nav-config";
+import {
+  coachNavGroupFromPath,
+  type CoachNavGroupId,
+} from "@/lib/coach/sidebar-accordion";
+import {
+  isCoachSubLinkActive,
+  isCoachTopLinkActive,
+} from "@/lib/coach/sidebar-nav-active";
+import { ONYX_ROUTE } from "@/lib/coach/onyx-nav-config";
+import { PAZARLAMA_ROUTE } from "@/lib/coach/pazarlama-nav-config";
+import { yksSimNavGroup, YKS_SIM_ROUTES } from "@/lib/coach/yks-sim-nav-config";
 import { TEST_MAKER_ROUTES } from "@/lib/test-maker/constants";
+import { coachTryNavigate } from "@/lib/coach/guarded-nav";
 import { cn } from "@/lib/utils";
+
+import "@/styles/coach-sidebar.css";
 
 const iconMap = {
   home: Home,
   users: Users,
+  classes: GraduationCap,
   calendar: CalendarDays,
-  transactions: ListTodo,
 } as const;
 
-function isNavActive(pathname: string, href: string) {
-  if (href === "#") return false;
-  if (href === "/dashboard") return pathname === "/dashboard";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+type SubNavItem = { label: string; href: string; beta?: boolean };
 
-function isTestMakerPath(pathname: string) {
-  return (
-    pathname === TEST_MAKER_ROUTES.root ||
-    pathname.startsWith(`${TEST_MAKER_ROUTES.root}/`)
-  );
+function collectSubHrefs(children: readonly SubNavItem[]): string[] {
+  return children.map((c) => c.href);
 }
 
 export function CoachSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const tmActive = isTestMakerPath(pathname);
-  const [tmOpen, setTmOpen] = useState(tmActive);
+  const sectionActive = coachNavGroupFromPath(pathname);
+
+  const [openGroup, setOpenGroup] = useState<CoachNavGroupId | null>(() =>
+    coachNavGroupFromPath(pathname)
+  );
 
   useEffect(() => {
-    if (tmActive) setTmOpen(true);
-  }, [tmActive]);
+    // Rota değişince: grup sayfasındaysak o grubu aç, değilsek (ör. Ana Sayfa) hepsini kapat
+    setOpenGroup(coachNavGroupFromPath(pathname));
+  }, [pathname]);
+
+  const toggleGroup = useCallback((id: string) => {
+    setOpenGroup((prev) => (prev === id ? null : (id as CoachNavGroupId)));
+  }, []);
 
   const handleLogout = () => {
+    if (!coachTryNavigate("/", pathname)) return;
     router.push("/");
   };
 
+  const renderSubLinks = (
+    children: readonly SubNavItem[],
+    opts?: { moduleRoot?: string; defaultChildHref?: string }
+  ) => {
+    const siblingHrefs = collectSubHrefs(children);
+    return children.map((sub) => {
+      const active = isCoachSubLinkActive(pathname, sub.href, {
+        siblingHrefs,
+        moduleRoot: opts?.moduleRoot,
+        defaultChildHref: opts?.defaultChildHref,
+      });
+      if (sub.beta) {
+        return <NavAnalizBetaLink key={sub.href} active={active} />;
+      }
+      return (
+        <GuardedCoachLink
+          key={sub.href}
+          href={sub.href}
+          className={cn("coach-nav-sub-link", active && "coach-nav-sub-link--active")}
+          aria-current={active ? "page" : undefined}
+        >
+          {sub.label}
+        </GuardedCoachLink>
+      );
+    });
+  };
+
   return (
-    <aside className="sidebar-panel flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-5 pt-5">
+    <aside className="sidebar-panel flex min-h-0 flex-1 flex-col overflow-clip px-4 pb-5 pt-5">
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
         {navItems.menu.map((item) => {
           const Icon = iconMap[item.icon];
-          const active = isNavActive(pathname, item.href);
+          const active = isCoachTopLinkActive(pathname, item.href);
           return (
-            <Link
+            <GuardedCoachLink
               key={item.label}
               href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium transition-all duration-200",
-                active
-                  ? "bg-slate-900 text-white shadow-md shadow-slate-900/12"
-                  : "text-slate-600 hover:bg-white/90 hover:text-slate-900"
-              )}
+              className={cn("coach-nav-top-link", active && "coach-nav-top-link--active")}
             >
               <Icon
-                className={cn(
-                  "h-[1.125rem] w-[1.125rem] shrink-0",
-                  active ? "text-white" : "text-slate-400"
-                )}
+                className="coach-nav-top-link__icon"
                 strokeWidth={active ? 2.25 : 2}
               />
               <span>{item.label}</span>
-            </Link>
+            </GuardedCoachLink>
           );
         })}
 
-        <div
-          className={cn("nav-group mt-1", tmOpen && "nav-group--open")}
-          data-nav-group
+        <NavPazarlamaBetaLink active={pathname === PAZARLAMA_ROUTE || pathname.startsWith(`${PAZARLAMA_ROUTE}/`)} />
+
+        <GuardedCoachLink
+          href={ONYX_ROUTE}
+          className={cn(
+            "coach-nav-top-link",
+            isCoachTopLinkActive(pathname, ONYX_ROUTE) && "coach-nav-top-link--active"
+          )}
         >
-          <button
-            type="button"
-            className={cn(
-              "nav-item nav-group__trigger flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-[15px] font-medium transition-all",
-              tmActive
-                ? "bg-slate-900 text-white shadow-md shadow-slate-900/12"
-                : "text-slate-600 hover:bg-white/90 hover:text-slate-900"
-            )}
-            aria-expanded={tmOpen}
-            aria-controls="nav-tm-sub"
-            onClick={() => setTmOpen((o) => !o)}
-          >
-            <FileText
-              className={cn(
-                "h-[1.125rem] w-[1.125rem] shrink-0",
-                tmActive ? "text-white" : "text-slate-400"
-              )}
-              strokeWidth={tmActive ? 2.25 : 2}
-            />
-            <span className="flex-1">{testMakerNavGroup.label}</span>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 shrink-0 transition-transform duration-200",
-                tmOpen && "rotate-180",
-                tmActive ? "text-white/80" : "text-slate-400"
-              )}
-            />
-          </button>
-          <div
-            id="nav-tm-sub"
-            className={cn(
-              "nav-group__sub ml-3 mt-0.5 flex flex-col gap-0.5 border-l-2 border-slate-200/90 pl-3",
-              !tmOpen && "hidden"
-            )}
-            role="group"
-            aria-label="Test Maker alt menü"
-          >
-            {testMakerNavGroup.children.map((sub) => {
-              const subActive =
-                pathname === sub.href ||
-                (sub.href === TEST_MAKER_ROUTES.olusturucu &&
-                  pathname === TEST_MAKER_ROUTES.root);
-              return (
-                <Link
-                  key={sub.href}
-                  href={sub.href}
-                  className={cn(
-                    "rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
-                    subActive
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-500 hover:bg-white/80 hover:text-slate-800"
-                  )}
-                >
-                  {sub.label}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+          <Sparkles
+            className="coach-nav-top-link__icon text-amber-600"
+            strokeWidth={pathname === ONYX_ROUTE || pathname.startsWith(`${ONYX_ROUTE}/`) ? 2.25 : 2}
+          />
+          <span>Onyx AI</span>
+        </GuardedCoachLink>
+
+        <CoachNavGroup
+          id="kutup"
+          label={kutuphaneNavGroup.label}
+          icon={Library}
+          open={openGroup === "kutup"}
+          sectionActive={sectionActive === "kutup"}
+          onToggle={toggleGroup}
+          subId="nav-kutup-sub"
+          subLabel="Kitap Kütüphanesi alt menü"
+        >
+          {renderSubLinks(kutuphaneNavGroup.children, {
+            moduleRoot: KUTUPHANE_ROUTES.root,
+            defaultChildHref: KUTUPHANE_ROUTES.kitaplar,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="kt"
+          label={konuTakipNavGroup.label}
+          icon={ListChecks}
+          open={openGroup === "kt"}
+          sectionActive={sectionActive === "kt"}
+          onToggle={toggleGroup}
+          subId="nav-kt-sub"
+          subLabel="Konu Takip Merkezi alt menü"
+        >
+          {renderSubLinks(konuTakipNavGroup.children, {
+            moduleRoot: KONU_TAKIP_ROUTES.root,
+            defaultChildHref: KONU_TAKIP_ROUTES.takip,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="wp"
+          label={haftalikProgramNavGroup.label}
+          icon={CalendarRange}
+          open={openGroup === "wp"}
+          sectionActive={sectionActive === "wp"}
+          onToggle={toggleGroup}
+          subId="nav-wp-sub"
+          subLabel="Haftalık Program alt menü"
+        >
+          {renderSubLinks(haftalikProgramNavGroup.children, {
+            moduleRoot: HAFTALIK_PROGRAM_ROUTES.root,
+            defaultChildHref: HAFTALIK_PROGRAM_ROUTES.olusturucu,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="dn"
+          label={denemelerNavGroup.label}
+          icon={ClipboardList}
+          open={openGroup === "dn"}
+          sectionActive={sectionActive === "dn"}
+          onToggle={toggleGroup}
+          subId="nav-dn-sub"
+          subLabel="Denemeler alt menü"
+        >
+          {renderSubLinks(denemelerNavGroup.children, {
+            moduleRoot: DENEMELER_ROUTES.root,
+            defaultChildHref: DENEMELER_ROUTES.kurumsal,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="yks"
+          label={yksSimNavGroup.label}
+          icon={GraduationCap}
+          open={openGroup === "yks"}
+          sectionActive={sectionActive === "yks"}
+          onToggle={toggleGroup}
+          subId="nav-yks-sub"
+          subLabel="YKS Simülasyon alt menü"
+        >
+          {renderSubLinks(yksSimNavGroup.children, {
+            moduleRoot: YKS_SIM_ROUTES.root,
+            defaultChildHref: YKS_SIM_ROUTES.tercih,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="tm"
+          label={testMakerNavGroup.label}
+          icon={FileText}
+          open={openGroup === "tm"}
+          sectionActive={sectionActive === "tm"}
+          onToggle={toggleGroup}
+          subId="nav-tm-sub"
+          subLabel="Test Maker alt menü"
+        >
+          {renderSubLinks(testMakerNavGroup.children, {
+            moduleRoot: TEST_MAKER_ROUTES.root,
+            defaultChildHref: TEST_MAKER_ROUTES.olusturucu,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="hr"
+          label={hataRecetesiNavGroup.label}
+          icon={Pill}
+          open={openGroup === "hr"}
+          sectionActive={sectionActive === "hr"}
+          onToggle={toggleGroup}
+          subId="nav-hr-sub"
+          subLabel="Hata Reçetesi alt menü"
+        >
+          {renderSubLinks(hataRecetesiNavGroup.children, {
+            moduleRoot: HATA_RECETESI_ROUTES.root,
+            defaultChildHref: HATA_RECETESI_ROUTES.havuz,
+          })}
+        </CoachNavGroup>
+
+        <CoachNavGroup
+          id="tr"
+          label={taramalarNavGroup.label}
+          icon={Layers}
+          open={openGroup === "tr"}
+          sectionActive={sectionActive === "tr"}
+          onToggle={toggleGroup}
+          subId="nav-tr-sub"
+          subLabel="Taramalar ve Fasiküller alt menü"
+        >
+          {renderSubLinks(taramalarNavGroup.children, {
+            moduleRoot: TARAMALAR_ROUTES.root,
+            defaultChildHref: TARAMALAR_ROUTES.analiz,
+          })}
+        </CoachNavGroup>
       </nav>
 
       <div className="mt-4 shrink-0 space-y-3 border-t border-slate-200/70 pt-4">
@@ -170,7 +305,7 @@ export function CoachSidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="group flex w-full items-center gap-3 rounded-xl border border-slate-200/80 bg-white/60 px-3.5 py-3 text-[15px] font-medium text-slate-600 transition-all hover:border-red-200/80 hover:bg-white hover:text-red-600"
+          className="group flex w-full items-center gap-3 rounded-xl border border-slate-200/80 bg-white/60 px-3.5 py-3 text-[15px] font-semibold text-slate-800 transition-all hover:border-red-200/80 hover:bg-white hover:text-red-600"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors group-hover:bg-red-50 group-hover:text-red-600">
             <LogOut className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />

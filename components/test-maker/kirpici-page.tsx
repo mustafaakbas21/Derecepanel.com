@@ -6,20 +6,38 @@ import {
   Hand,
   Loader2,
   Scan,
+  Trash2,
   Upload,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
 
+import { SaveWrongPoolDialog } from "@/components/hata-recetesi/save-wrong-pool-dialog";
+import { FastAnswerPanel } from "@/components/test-maker/fast-answer-panel";
 import { QuestionPoolCard } from "@/components/test-maker/question-pool-card";
+import { Button } from "@/components/ui/button";
+import {
+  appendWrongPool,
+  buildWrongQuestionFromCrop,
+  WrongPoolQuotaError,
+} from "@/lib/hata-recetesi/storage";
+import type { HataKaynagi } from "@/lib/hata-recetesi/types";
 import { bulkAddToPool } from "@/lib/test-maker/question-pool";
 import type { TagState } from "@/lib/test-maker/use-pdf-cropper";
 import { usePdfCropper } from "@/lib/test-maker/use-pdf-cropper";
-import { getConcepts, getSubjects, getTopics, getSubjectById, getTopicById } from "@/lib/mufredat";
+import { useFastAnswers } from "@/lib/test-maker/use-fast-answers";
+import {
+  getConcepts,
+  getSubjectById,
+  getSubjects,
+  getTopicById,
+  getTopics,
+} from "@/lib/mufredat";
 import type { AnswerLetter, QuestionPoolItem } from "@/lib/test-maker/types";
 import { tmToast } from "@/lib/test-maker/notify";
+import { cn } from "@/lib/utils";
 
-const LETTERS: AnswerLetter[] = ["A", "B", "C", "D", "E"];
+import "@/styles/kirpici-studio.css";
 
 export function KirpiciPage() {
   const c = usePdfCropper();
@@ -27,8 +45,10 @@ export function KirpiciPage() {
   const [konuId, setKonuId] = useState("");
   const [kavramId, setKavramId] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [aktifIndex, setAktifIndex] = useState(0);
+  const [wrongPoolOpen, setWrongPoolOpen] = useState(false);
+  const [enterIds, setEnterIds] = useState<Set<string>>(() => new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevGalleryLenRef = useRef(0);
 
   const subjects = useMemo(() => getSubjects("ALL"), []);
   const topics = useMemo(() => (dersId ? getTopics(dersId) : []), [dersId]);
@@ -49,50 +69,105 @@ export function KirpiciPage() {
   }, [dersId, konuId, kavramId, concepts]);
 
   const tagPreview = [tag.ders, tag.konu, tag.kavram].filter(Boolean).join(" › ");
+  const tagIncomplete = Boolean(c.gallery.length && (!tag.ders || !tag.konu));
 
-  const getTag = (): TagState => tag;
+  const setAnswerAtIndex = useCallback(
+    (index: number, letter: AnswerLetter | null) => {
+      c.setGallery((g) => g.map((q, i) => (i === index ? { ...q, answer: letter } : q)));
+    },
+    [c.setGallery]
+  );
+
+  const fast = useFastAnswers({
+    items: c.gallery,
+    onSetAnswer: setAnswerAtIndex,
+    keyboardEnabled: !wrongPoolOpen,
+  });
+
+  useEffect(() => {
+    if (c.gallery.length > prevGalleryLenRef.current) {
+      const newIds = c.gallery.slice(prevGalleryLenRef.current).map((g) => g.id);
+      setEnterIds((prev) => new Set([...prev, ...newIds]));
+      window.setTimeout(() => {
+        setEnterIds((prev) => {
+          const next = new Set(prev);
+          newIds.forEach((id) => next.delete(id));
+          return next;
+        });
+      }, 360);
+    }
+    prevGalleryLenRef.current = c.gallery.length;
+  }, [c.gallery]);
 
   const onCropClick = () => {
     if (c.toolMode === "pan") {
       c.setToolMode("crop");
       return;
     }
-    void c.cropSelection(getTag());
+    void c.cropSelection(tag);
   };
 
-  const persistSelected = useCallback(
-    (items: typeof c.gallery) => {
-      const payload: Omit<QuestionPoolItem, "uuid" | "savedAt">[] = items.map(
-        (it) => ({
-          dataUrl: it.dataUrl,
-          ders: it.ders,
-          konu: it.konu,
-          kavram: it.kavram,
-          answer: it.answer,
-          page: it.page,
-          qNumber: it.qNumber,
-          auto: it.auto,
-        })
-      );
-      try {
-        bulkAddToPool(payload);
-        tmToast.success(`${items.length} soru başarıyla Soru Havuzuna kaydedildi!`);
-      } catch {
-        tmToast.error("Kayıt başarısız — depolama dolu");
-      }
-    },
-    []
-  );
+  const persistSelected = useCallback(async (items: typeof c.gallery) => {
+    const payload: Omit<QuestionPoolItem, "uuid" | "savedAt">[] = items.map((it) => ({
+      dataUrl: it.dataUrl,
+      ders: it.ders,
+      konu: it.konu,
+      kavram: it.kavram,
+      answer: it.answer,
+      page: it.page,
+      qNumber: it.qNumber,
+      auto: it.auto,
+      sourcePdf: it.sourcePdf,
+    }));
+    try {
+      await bulkAddToPool(payload);
+      tmToast.poolSavedToHavuz(items.length);
+    } catch {
+      tmToast.storageFull();
+    }
+  }, []);
 
   const saveSelectedToPool = () => {
-    const ids =
-      selected.size > 0 ? selected : new Set(c.gallery.map((g) => g.id));
+    const ids = selected.size > 0 ? selected : new Set(c.gallery.map((g) => g.id));
     const items = c.gallery.filter((g) => ids.has(g.id));
     if (!items.length) {
       tmToast.warning("Kaydedilecek soru yok");
       return;
     }
-    persistSelected(items);
+    void persistSelected(items);
+  };
+
+  const pendingWrongItems = () => {
+    const ids = selected.size > 0 ? selected : new Set(c.gallery.map((g) => g.id));
+    return c.gallery.filter((g) => ids.has(g.id));
+  };
+
+  const saveSelectedToWrongPool = (kaynak: HataKaynagi) => {
+    const items = pendingWrongItems();
+    if (!items.length) {
+      tmToast.warning("Kaydedilecek soru yok");
+      return;
+    }
+    try {
+      appendWrongPool(
+        items.map((it) =>
+          buildWrongQuestionFromCrop({
+            dataUrl: it.dataUrl,
+            ders: it.ders,
+            konu: it.konu,
+            kavram: it.kavram,
+            answer: it.answer,
+            hataKaynagi: kaynak,
+            page: it.page,
+            qNumber: it.qNumber,
+          })
+        )
+      );
+      tmToast.success(`${items.length} soru hatalı havuza kaydedildi`);
+    } catch (e) {
+      if (e instanceof WrongPoolQuotaError) tmToast.error(e.message);
+      else tmToast.error("Kayıt başarısız — depolama dolu");
+    }
   };
 
   const deleteSelected = () => {
@@ -101,28 +176,37 @@ export function KirpiciPage() {
     setSelected(new Set());
   };
 
+  const resetAll = () => {
+    c.clearPdf();
+    c.setGallery([]);
+    setDersId("");
+    setKonuId("");
+    setKavramId("");
+    setSelected(new Set());
+    fast.setActiveIndex(0);
+    prevGalleryLenRef.current = 0;
+    setEnterIds(new Set());
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!c.gallery.length) return;
-      const idx = Math.min(aktifIndex, c.gallery.length - 1);
-      const item = c.gallery[idx];
-      if (!item) return;
-      if (LETTERS.includes(e.key.toUpperCase() as AnswerLetter)) {
-        const letter = e.key.toUpperCase() as AnswerLetter;
-        c.setGallery((g) =>
-          g.map((q, i) => (i === idx ? { ...q, answer: letter } : q))
-        );
-        setAktifIndex((i) => Math.min(i + 1, c.gallery.length - 1));
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      if (e.target instanceof HTMLTextAreaElement) return;
+
+      if (wrongPoolOpen && e.key === "Escape") {
+        e.preventDefault();
+        setWrongPoolOpen(false);
+        return;
       }
-      if (e.key === "Backspace") {
-        c.setGallery((g) =>
-          g.map((q, i) => (i === idx ? { ...q, answer: null } : q))
-        );
+
+      if (e.key === "Enter" && c.marqueeVisible && c.toolMode === "crop" && !c.scanning) {
+        e.preventDefault();
+        void c.cropSelection(tag);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [c.gallery, aktifIndex, c]);
+  }, [c, tag, wrongPoolOpen]);
 
   const progressPct =
     c.scanProgress.total > 0
@@ -130,421 +214,403 @@ export function KirpiciPage() {
       : 0;
 
   return (
-    <div id="tw-scope" className="flex min-h-0 flex-1 overflow-hidden">
-      {/* Sol kokpit */}
-      <aside id="aks-left-panel" className="tm-filter-panel !w-72">
-        <div id="aks-kokpit-header" className="tm-panel-header">
-          <h2>PDF Kokpiti</h2>
-          <p>PDF yükleyin, etiketleyin ve kırpın</p>
+    <div id="tw-scope" className="kirpici-studio">
+      <header className="kirpici-studio__top">
+        <div>
+          <h1>Otomatik Soru Kırpıcı</h1>
+          <p>PDF ortada · kırpılan sorular sağda · otonom tarama sol kokpitte</p>
         </div>
-        <div className="tm-filter-body text-sm">
-          <div
-            id="aks-dropzone"
-            role="button"
-            tabIndex={0}
-            onClick={() => fileInputRef.current?.click()}
-            onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              const f = e.dataTransfer.files[0];
-              if (f?.type === "application/pdf") void c.loadPdf(f);
-            }}
-            className="tm-dropzone"
-          >
-            <Upload className="h-8 w-8 text-slate-400" />
-            <span className="font-medium text-slate-600">PDF sürükle veya seç</span>
-            <input
-              ref={fileInputRef}
-              id="aks-file-input"
-              type="file"
-              accept="application/pdf"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void c.loadPdf(f);
-              }}
-            />
-          </div>
-          {c.fileName && (
-            <div className="tm-kirpici-file-card">
-              <p id="aks-file-name-text" className="truncate text-xs font-semibold text-slate-800">
-                {c.fileName}
-              </p>
-              <p id="aks-file-page-count" className="text-[11px] text-slate-500">
-                {c.totalPages} sayfa
-              </p>
-              <button
-                id="aks-btn-clear-pdf"
-                type="button"
-                onClick={c.clearPdf}
-                className="mt-2 text-xs text-red-600 hover:underline"
-              >
-                PDF&apos;i kaldır
-              </button>
-            </div>
-          )}
-
-          <div>
-            <p className="tm-field-label">YKS Etiketleme</p>
-            <select
-              id="aks-sel-ders"
-              value={dersId}
-              onChange={(e) => {
-                setDersId(e.target.value);
-                setKonuId("");
-                setKavramId("");
-              }}
-              className={`tm-field-select mb-2 text-xs ${!dersId && c.gallery.length ? "!border-red-500" : ""}`}
-            >
-              <option value="">Ders seçin</option>
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-            <select
-              id="aks-sel-konu"
-              disabled={!dersId}
-              value={konuId}
-              onChange={(e) => {
-                setKonuId(e.target.value);
-                setKavramId("");
-              }}
-              className={`tm-field-select mb-2 text-xs ${!konuId && c.gallery.length ? "!border-red-500" : ""}`}
-            >
-              <option value="">Konu seçin</option>
-              {topics.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-            <select
-              id="aks-sel-kavram"
-              disabled={!konuId}
-              value={kavramId}
-              onChange={(e) => setKavramId(e.target.value)}
-              className="tm-field-select text-xs"
-            >
-              <option value="">Kavram (isteğe bağlı)</option>
-              {concepts.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.name}
-                </option>
-              ))}
-            </select>
-            <p id="aks-tag-text" className="mt-2 text-[11px] text-slate-500">
-              {tagPreview || "Etiket önizlemesi"}
-            </p>
-          </div>
-
-          <div>
-            <p className="tm-field-label">PDF Düzeni</p>
-            <div className="tm-segment-group">
-              <button
-                id="aks-mode-single"
-                type="button"
-                onClick={() => c.setColumnMode("single")}
-                className={`tm-segment-btn ${c.columnMode === "single" ? "tm-segment-btn--active" : ""}`}
-              >
-                Tek sütun
-              </button>
-              <button
-                id="aks-mode-double"
-                type="button"
-                onClick={() => c.setColumnMode("double")}
-                className={`tm-segment-btn ${c.columnMode === "double" ? "tm-segment-btn--active" : ""}`}
-              >
-                Çift sütun
-              </button>
-            </div>
-            <p id="aks-mode-desc" className="mt-1 text-[10px] text-slate-500">
-              {c.columnMode === "double"
-                ? "Ortadan ikiye bölünmüş PDF"
-                : "Tek sütun tam sayfa"}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <p className="tm-field-label">Araçlar</p>
-            <div className="tm-kirpici-tool-row">
-              <button
-                id="aks-btn-crop-mode"
-                type="button"
-                onClick={() => c.setToolMode("crop")}
-                className={`tm-kirpici-tool-btn ${c.toolMode === "crop" ? "tm-kirpici-tool-btn--active" : ""}`}
-              >
-                <Crop className="h-3.5 w-3.5" />
-                Kırp
-              </button>
-              <button
-                id="aks-btn-pan"
-                type="button"
-                onClick={() => c.setToolMode("pan")}
-                className={`tm-kirpici-tool-btn ${c.toolMode === "pan" ? "tm-kirpici-tool-btn--active" : ""}`}
-              >
-                <Hand className="h-3.5 w-3.5" />
-                Gez
-              </button>
-            </div>
-            <button
-              id="aks-btn-crop"
-              type="button"
-              disabled={!c.pdfDoc || !c.marqueeVisible}
-              onClick={onCropClick}
-              className="tm-btn-primary flex w-full items-center justify-center gap-2 py-2.5 text-xs disabled:opacity-45"
-            >
-              <Crop className="h-4 w-4" />
-              Seçili alanı kırp
-            </button>
-            <button
-              id="aks-btn-auto"
-              type="button"
-              disabled={c.scanning || !c.pdfDoc}
-              onClick={() => void c.runAutoScan(getTag())}
-              className="tm-kirpici-scan-btn"
-            >
-              {c.scanning ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Scan className="h-4 w-4" />
-              )}
-              {c.scanning ? "Taranıyor…" : "Tüm PDF'i Tara"}
-            </button>
-            <button
-              id="aks-btn-reset"
-              type="button"
-              onClick={() => {
-                c.clearPdf();
-                c.setGallery([]);
-                setDersId("");
-                setKonuId("");
-                setKavramId("");
-              }}
-              className="w-full rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              Sıfırla
-            </button>
-          </div>
-
-          {c.pdfDoc && (
-            <div id="aks-page-nav" className="flex items-center justify-between rounded-lg bg-slate-100 p-2">
-              <button
-                id="aks-prev-page"
-                type="button"
-                disabled={c.pageIndex <= 1}
-                onClick={() => c.setPageIndex((p) => Math.max(1, p - 1))}
-                className="rounded px-2 py-1 text-xs font-semibold disabled:opacity-40"
-              >
-                ‹
-              </button>
-              <span id="aks-page-info" className="text-xs font-medium">
-                {c.pageIndex} / {c.totalPages}
-              </span>
-              <button
-                id="aks-next-page"
-                type="button"
-                disabled={c.pageIndex >= c.totalPages}
-                onClick={() => c.setPageIndex((p) => Math.min(c.totalPages, p + 1))}
-                className="rounded px-2 py-1 text-xs font-semibold disabled:opacity-40"
-              >
-                ›
-              </button>
-            </div>
-          )}
+        <div className="kirpici-studio__stats">
+          <span className="kirpici-studio__stat">
+            Soru <strong>{c.gallery.length}</strong>
+          </span>
+          {c.fileName ? (
+            <span className="kirpici-studio__stat" title={c.fileName}>
+              PDF <strong className="max-w-[8rem] truncate inline-block align-bottom">{c.fileName}</strong>
+            </span>
+          ) : null}
+          {c.pdfDoc ? (
+            <span className="kirpici-studio__stat">
+              Sayfa <strong>{c.pageIndex}/{c.totalPages}</strong>
+            </span>
+          ) : null}
+          {c.scanning ? (
+            <span className="kirpici-studio__stat kirpici-studio__stat--accent">
+              Taranıyor <strong>{progressPct}%</strong>
+            </span>
+          ) : null}
         </div>
-      </aside>
+      </header>
 
-      {/* Orta radar */}
-      <section id="aks-middle-panel" className="tm-radar-panel">
-        <div id="aks-radar-toolbar" className="tm-kirpici-radar-toolbar">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Radar — PDF Çalışma Alanı</h3>
-            <p id="aks-radar-hint" className="text-[11px] text-slate-500">
+      <div className="kirpici-studio__body">
+        {/* Sol kokpit */}
+        <aside className="kirpici-cockpit" aria-label="Kırpıcı kokpit">
+          <div className="kirpici-cockpit__scroll">
+            <section className="kirpici-cockpit__section">
+              <p className="kirpici-cockpit__section-title">PDF kaynağı</p>
+              <div
+                role="button"
+                tabIndex={0}
+                className="kirpici-dropzone"
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const f = e.dataTransfer.files[0];
+                  if (f?.type === "application/pdf") void c.loadPdf(f);
+                }}
+              >
+                <Upload className="h-7 w-7 text-slate-400" />
+                <span className="text-sm font-semibold text-slate-700">PDF sürükle veya seç</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void c.loadPdf(f);
+                  }}
+                />
+              </div>
+              {c.fileName ? (
+                <div className="kirpici-file-chip">
+                  <p className="truncate text-xs font-semibold text-slate-800">{c.fileName}</p>
+                  <p className="text-[11px] text-slate-500">{c.totalPages} sayfa</p>
+                  <button
+                    type="button"
+                    onClick={c.clearPdf}
+                    className="mt-1.5 text-xs font-semibold text-red-600 hover:underline"
+                  >
+                    PDF&apos;i kaldır
+                  </button>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="kirpici-cockpit__section">
+              <p className="kirpici-cockpit__section-title">YKS etiketleri</p>
+              <select
+                value={dersId}
+                onChange={(e) => {
+                  setDersId(e.target.value);
+                  setKonuId("");
+                  setKavramId("");
+                }}
+                className={cn("kirpici-field mb-2", tagIncomplete && !dersId && "kirpici-field--warn")}
+              >
+                <option value="">Ders seçin</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                disabled={!dersId}
+                value={konuId}
+                onChange={(e) => {
+                  setKonuId(e.target.value);
+                  setKavramId("");
+                }}
+                className={cn("kirpici-field mb-2", tagIncomplete && !konuId && "kirpici-field--warn")}
+              >
+                <option value="">Konu seçin</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                disabled={!konuId}
+                value={kavramId}
+                onChange={(e) => setKavramId(e.target.value)}
+                className="kirpici-field"
+              >
+                <option value="">Kavram (isteğe bağlı)</option>
+                {concepts.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-[11px] text-slate-500">{tagPreview || "Etiket önizlemesi"}</p>
+            </section>
+
+            <section className="kirpici-cockpit__section">
+              <p className="kirpici-cockpit__section-title">PDF düzeni</p>
+              <div className="kirpici-segment">
+                <button
+                  type="button"
+                  className={cn(
+                    "kirpici-segment__btn",
+                    c.columnMode === "single" && "kirpici-segment__btn--on"
+                  )}
+                  onClick={() => c.setColumnMode("single")}
+                >
+                  Tek sütun
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "kirpici-segment__btn",
+                    c.columnMode === "double" && "kirpici-segment__btn--on"
+                  )}
+                  onClick={() => c.setColumnMode("double")}
+                >
+                  Çift sütun
+                </button>
+              </div>
+            </section>
+
+            <section className="kirpici-cockpit__section">
+              <p className="kirpici-cockpit__section-title">Araçlar</p>
+              <div className="kirpici-tool-pair mb-2">
+                <button
+                  type="button"
+                  className={cn(
+                    "kirpici-tool-pair__btn",
+                    c.toolMode === "crop" && "kirpici-tool-pair__btn--on"
+                  )}
+                  onClick={() => c.setToolMode("crop")}
+                >
+                  <Crop className="h-3.5 w-3.5" />
+                  Kırp
+                </button>
+                <button
+                  type="button"
+                  className={cn(
+                    "kirpici-tool-pair__btn",
+                    c.toolMode === "pan" && "kirpici-tool-pair__btn--on"
+                  )}
+                  onClick={() => c.setToolMode("pan")}
+                >
+                  <Hand className="h-3.5 w-3.5" />
+                  Gez
+                </button>
+              </div>
+              <Button
+                type="button"
+                variant="primary"
+                className="mb-2 w-full text-xs"
+                disabled={!c.pdfDoc || !c.marqueeVisible || c.scanning}
+                onClick={onCropClick}
+              >
+                <Crop className="h-4 w-4" />
+                Seçili alanı kırp
+              </Button>
+              <button
+                type="button"
+                disabled={c.scanning || !c.pdfDoc}
+                onClick={() => void c.runAutoScan(tag)}
+                className="kirpici-scan-btn mb-2"
+              >
+                {c.scanning ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Scan className="h-4 w-4" />
+                )}
+                {c.scanning ? "Taranıyor…" : "Otonom tarama (tüm PDF)"}
+              </button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full text-xs"
+                onClick={resetAll}
+              >
+                Sıfırla
+              </Button>
+            </section>
+
+            {c.pdfDoc ? (
+              <section className="kirpici-cockpit__section">
+                <p className="kirpici-cockpit__section-title">Sayfa</p>
+                <div className="kirpici-page-nav">
+                  <button
+                    type="button"
+                    disabled={c.pageIndex <= 1}
+                    onClick={() => c.setPageIndex((p) => Math.max(1, p - 1))}
+                  >
+                    ‹
+                  </button>
+                  <span className="text-xs font-semibold text-slate-700">
+                    {c.pageIndex} / {c.totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={c.pageIndex >= c.totalPages}
+                    onClick={() => c.setPageIndex((p) => Math.min(c.totalPages, p + 1))}
+                  >
+                    ›
+                  </button>
+                </div>
+              </section>
+            ) : null}
+          </div>
+        </aside>
+
+        {/* Orta — PDF önizleme */}
+        <section className="kirpici-radar" aria-label="PDF önizleme">
+          <div className="kirpici-radar__toolbar">
+            <div className="kirpici-radar__hint">
+              <strong>PDF çalışma alanı</strong>
               {c.pdfDoc
                 ? c.toolMode === "pan"
-                  ? "Sürükleyerek PDF üzerinde gezinin"
-                  : "Fare ile soru alanı çizin, ardından «Seçili alanı kırp»"
-                : "Sol kokpitten PDF yükleyin"}
-            </p>
+                  ? "Sürükleyerek gezinin"
+                  : "Alan seçin → «Seçili alanı kırp» veya Enter"
+                : "Sol panelden PDF yükleyin"}
+            </div>
+            <div className="kirpici-zoom">
+              <button type="button" onClick={() => c.setZoom(c.zoom - 0.1)} aria-label="Uzaklaştır">
+                <ZoomOut className="h-4 w-4" />
+              </button>
+              <span>{Math.round(c.zoom * 100)}%</span>
+              <button type="button" onClick={() => c.setZoom(c.zoom + 0.1)} aria-label="Yakınlaştır">
+                <ZoomIn className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-1 py-0.5">
-            <button
-              type="button"
-              id="aks-zoom-out"
-              className="tm-kirpici-zoom-btn"
-              onClick={() => c.setZoom(c.zoom - 0.1)}
-              aria-label="Uzaklaştır"
-            >
-              <ZoomOut className="h-4 w-4" />
-            </button>
-            <span id="aks-zoom-label" className="min-w-[3rem] text-center text-xs font-bold text-slate-700">
-              {Math.round(c.zoom * 100)}%
-            </span>
-            <button
-              type="button"
-              id="aks-zoom-in"
-              className="tm-kirpici-zoom-btn"
-              onClick={() => c.setZoom(c.zoom + 0.1)}
-              aria-label="Yakınlaştır"
-            >
-              <ZoomIn className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
 
-        {c.scanning && (
-          <div id="aks-progress-wrap" className="shrink-0 border-b border-slate-200 bg-white px-4 py-2">
-            <div className="mb-1 flex justify-between text-[11px]">
-              <span id="aks-progress-text">Taranıyor…</span>
-              <span id="aks-progress-page">
-                Sayfa {c.scanProgress.page}/{c.scanProgress.total}
-              </span>
-            </div>
-            <div className="tm-progress-track">
-              <div
-                id="aks-progress-bar"
-                className="tm-progress-fill"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <div className="mt-1 flex justify-between">
-              <span id="aks-progress-found">{c.scanProgress.found} bulundu</span>
+          {c.scanning ? (
+            <div className="kirpici-radar__progress">
+              <div className="mb-1 flex justify-between text-[11px] font-medium text-amber-900">
+                <span>Sayfa {c.scanProgress.page}/{c.scanProgress.total}</span>
+                <span>{c.scanProgress.found} soru bulundu</span>
+              </div>
+              <div className="tm-progress-track">
+                <div className="tm-progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
               <button
-                id="aks-btn-stop-scan"
                 type="button"
                 onClick={c.stopScan}
-                className="text-[11px] font-semibold text-red-600"
+                className="mt-1 text-[11px] font-bold text-red-600"
               >
-                Durdur
+                Taramayı durdur
               </button>
             </div>
-          </div>
-        )}
+          ) : null}
 
-        <div
-          ref={c.wrapRef}
-          id="aks-canvas-wrap"
-          className={`relative flex-1 overflow-auto p-6 ${c.toolMode === "pan" ? "tm-tool-pan" : "tm-tool-crop"}`}
-          onPointerDown={c.onWrapPointerDown}
-          onPointerMove={c.onWrapPointerMove}
-          onPointerUp={c.onWrapPointerUp}
-          onPointerCancel={c.onWrapPointerUp}
-        >
-          {!c.pdfDoc ? (
-            <div
-              id="aks-empty-state"
-              className="flex h-full min-h-[280px] flex-col items-center justify-center gap-2 text-center"
-            >
-              <p className="text-sm font-semibold text-slate-600">PDF çalışma alanı</p>
-              <p className="max-w-xs text-xs text-slate-500">
-                Sol panelden PDF yükleyin. Kırp modunda alan seçin; Gez modunda sürükleyerek kaydırın.
-              </p>
-            </div>
-          ) : (
-            <div className="flex w-full justify-center">
-              <div
-                ref={c.canvasHostRef}
-                id="aks-pdf-stage"
-                className="relative inline-block leading-none"
-              >
-                <canvas
-                  ref={c.pdfCanvasRef}
-                  id="aks-pdf-canvas"
-                  className="block max-w-none rounded-sm bg-white"
-                />
-                <div
-                  ref={c.marqueeRef}
-                  id="aks-crop-marquee"
-                  className="pointer-events-none absolute z-10 box-border"
-                  style={{
-                    display: c.marqueeVisible ? "block" : "none",
-                    left: `${c.marqueeStyle.left}px`,
-                    top: `${c.marqueeStyle.top}px`,
-                    width: `${c.marqueeStyle.width}px`,
-                    height: `${c.marqueeStyle.height}px`,
-                  }}
-                  aria-hidden
-                />
-                {c.scanning && (
-                  <div
-                    id="aks-scan-badge"
-                    className="absolute right-2 top-2 rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-md"
-                  >
-                    Taranıyor…
-                  </div>
-                )}
+          <div
+            ref={c.wrapRef}
+            className={cn(
+              "kirpici-radar__canvas",
+              c.toolMode === "pan" ? "kirpici-radar__canvas--pan" : "kirpici-radar__canvas--crop"
+            )}
+            onPointerDown={c.onWrapPointerDown}
+            onPointerMove={c.onWrapPointerMove}
+            onPointerUp={c.onWrapPointerUp}
+            onPointerCancel={c.onWrapPointerUp}
+          >
+            {!c.pdfDoc ? (
+              <div className="kirpici-radar__empty">
+                <Upload className="h-10 w-10 text-slate-300" />
+                <p className="text-sm font-semibold text-slate-600">PDF önizleme alanı</p>
+                <p className="max-w-sm text-xs text-slate-500">
+                  Deneme veya kaynak PDF&apos;inizi yükleyin. Ortada sayfa önizlemesi, sağda kırpılan
+                  sorular listelenir.
+                </p>
+                <Button variant="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                  PDF seç
+                </Button>
               </div>
-            </div>
-          )}
-        </div>
-        <div id="aks-status-bar" className="tm-status-bar flex items-center justify-between">
-          <span id="aks-status">{c.statusText}</span>
-          <span id="aks-sel-dims" className="text-slate-400">
-            {c.toolMode === "crop" ? "Kırpma" : "Gezme"} · {c.gallery.length} soru
-          </span>
-        </div>
-      </section>
-
-      {/* Sağ cephanelik */}
-      <aside id="aks-right-panel" className="tm-gallery-panel !w-[30rem] max-w-[42vw]">
-        <div className="tm-kirpici-gallery-head">
-          <h3>Soru Galerisi</h3>
-          <p>Kırpılan sorular — hızlı cevap ve havuza kayıt</p>
-        </div>
-        <div id="hizliCevapSeridi" className="shrink-0 border-b border-slate-200 bg-slate-50/80 p-3">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-            Hızlı cevap
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {c.gallery.map((g, i) => (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => setAktifIndex(i)}
-                className={`h-7 w-7 rounded text-xs font-bold ${i === aktifIndex ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
-              >
-                {i + 1}
-              </button>
-            ))}
+            ) : (
+              <div className="kirpici-radar__stage-wrap">
+                <div ref={c.canvasHostRef} className="kirpici-radar__stage relative h-max w-max">
+                  <canvas ref={c.pdfCanvasRef} />
+                  <div ref={c.marqueeRef} className="kirpici-marquee" aria-hidden />
+                  {c.toolMode === "crop" ? (
+                    <div
+                      ref={c.overlayRef}
+                      className="absolute inset-0 z-10 h-full w-full cursor-crosshair select-none touch-none"
+                      aria-hidden
+                    />
+                  ) : null}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2 border-b border-slate-200 p-3">
-          <button
-            id="aks-select-all"
-            type="button"
-            onClick={() => setSelected(new Set(c.gallery.map((g) => g.id)))}
-            className="tm-btn-link text-xs"
-          >
-            Tümünü seç
-          </button>
-          <button
-            id="aks-btn-delete-selected"
-            type="button"
-            onClick={deleteSelected}
-            className="text-xs font-semibold text-red-600"
-          >
-            Seçilileri sil
-          </button>
-          <button
-            id="aks-btn-save-selected"
-            type="button"
-            onClick={saveSelectedToPool}
-            className="tm-btn-primary ml-auto px-3 py-1.5 text-xs"
-          >
-            Havuza kaydet
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-3">
-          {c.gallery.length === 0 ? (
-            <p className="py-12 text-center text-sm text-slate-500">Henüz kırpılan soru yok</p>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {c.gallery.map((item) => (
+
+          <div className="kirpici-radar__status">
+            <span>{c.statusText}</span>
+            <span className="text-slate-400">
+              {c.toolMode === "crop" ? "Kırpma" : "Gezme"} · {c.gallery.length} soru
+            </span>
+          </div>
+        </section>
+
+        {/* Sağ — Cephanelik */}
+        <aside className="kirpici-gallery" aria-label="Cephanelik">
+          <div className="kirpici-gallery__head">
+            <div className="flex items-center gap-2">
+              <h2>Cephanelik</h2>
+              <span className="kirpici-gallery__count">{c.gallery.length}</span>
+            </div>
+            <p>Kırpılan sorular · hızlı cevap girişi · havuza kayıt</p>
+
+            <FastAnswerPanel
+              items={c.gallery}
+              activeIndex={fast.activeIndex}
+              stripRef={fast.stripRef}
+              onSelectIndex={fast.activateAndScroll}
+            />
+          </div>
+
+          <div className="kirpici-gallery__actions">
+            <button
+              type="button"
+              onClick={() => setSelected(new Set(c.gallery.map((g) => g.id)))}
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900"
+            >
+              Tümünü seç
+            </button>
+            <button
+              type="button"
+              onClick={deleteSelected}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-red-600"
+            >
+              <Trash2 className="h-3 w-3" />
+              Sil
+            </button>
+            <Button variant="primary" size="sm" className="ml-auto text-xs" onClick={saveSelectedToPool}>
+              Havuza kaydet
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                if (!pendingWrongItems().length) {
+                  tmToast.warning("Kaydedilecek soru yok");
+                  return;
+                }
+                setWrongPoolOpen(true);
+              }}
+            >
+              Hatalı havuz
+            </Button>
+          </div>
+
+          <SaveWrongPoolDialog
+            open={wrongPoolOpen}
+            count={pendingWrongItems().length}
+            onOpenChange={setWrongPoolOpen}
+            onConfirm={saveSelectedToWrongPool}
+          />
+
+          <div className="kirpici-gallery__list">
+            {c.gallery.length === 0 ? (
+              <p className="kirpici-gallery__empty">
+                Henüz kırpılan soru yok.
+                <br />
+                PDF&apos;te alan seçin veya otonom tarama çalıştırın.
+              </p>
+            ) : (
+              c.gallery.map((item, index) => (
                 <QuestionPoolCard
                   key={item.id}
+                  cardRef={(el) => fast.registerCardRef(item.id, el)}
                   item={{
                     uuid: item.id,
                     dataUrl: item.dataUrl,
@@ -555,10 +621,15 @@ export function KirpiciPage() {
                     page: item.page,
                     qNumber: item.qNumber,
                     auto: item.auto,
+                    sourcePdf: item.sourcePdf,
                     savedAt: "",
                   }}
                   variant="kirpici"
+                  col={item.col}
+                  active={index === fast.activeIndex}
+                  animateEnter={enterIds.has(item.id)}
                   selected={selected.has(item.id)}
+                  onActivate={() => fast.activateAndScroll(index)}
                   onSelect={(checked) => {
                     setSelected((s) => {
                       const n = new Set(s);
@@ -568,18 +639,23 @@ export function KirpiciPage() {
                     });
                   }}
                   onAnswer={(letter) => {
-                    c.setGallery((g) =>
-                      g.map((q) => (q.id === item.id ? { ...q, answer: letter } : q))
-                    );
+                    fast.setAnswer(index, letter);
                   }}
-                  onDelete={() => c.setGallery((g) => g.filter((x) => x.id !== item.id))}
+                  onDelete={() => {
+                    c.setGallery((g) => g.filter((x) => x.id !== item.id));
+                    setSelected((s) => {
+                      const n = new Set(s);
+                      n.delete(item.id);
+                      return n;
+                    });
+                  }}
                   onSaveOne={() => persistSelected([item])}
                 />
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
+              ))
+            )}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

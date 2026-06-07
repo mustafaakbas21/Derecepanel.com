@@ -39,13 +39,14 @@ export function ResetModal({ open, onOpenChange, onConfirm }: ResetModalProps) {
           <Button
             id="tm-reset-confirm"
             type="button"
-            className="rounded-xl bg-red-600 text-white hover:bg-red-700"
+            variant="destructive"
+            className="rounded-xl"
             onClick={() => {
               onConfirm();
               onOpenChange(false);
             }}
           >
-            Sıfırla
+            Evet, sıfırla
           </Button>
         </DialogFooter>
       </DialogContent>

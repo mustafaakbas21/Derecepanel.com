@@ -1,0 +1,57 @@
+---
+description: Onyx AI — koç ve öğrenci tek paylaşımlı mimari
+globs:
+  - "components/onyx/**"
+  - "lib/onyx/**"
+  - "lib/onyx-client.ts"
+  - "lib/onyx-engine.ts"
+  - "app/api/onyx/**"
+  - "app/**/onyx/**"
+alwaysApply: false
+---
+
+# Onyx AI birleşik mimari (zorunlu)
+
+Koç paneli (`/dashboard/onyx`) ve öğrenci paneli (`/ogrenci/onyx`) **aynı Onyx yığınını** kullanır. Yeni özellik veya düzeltme yaparken **her iki rolü de** etkileyecek şekilde tek noktadan güncelle.
+
+## Tek giriş (UI)
+
+| Rol | Sayfa | Bileşen |
+|-----|--------|---------|
+| Koç | `app/(coach)/dashboard/onyx/page.tsx` | `<OnyxApp role="coach" />` |
+| Öğrenci | `app/(student)/ogrenci/onyx/page.tsx` | `<OnyxApp role="student" />` |
+
+- Ortak çekirdek: **`OnyxChatPanel`** (`components/onyx/onyx-chat-panel.tsx`)
+- Sarıcı: **`OnyxApp`** (`components/onyx/onyx-app.tsx`)
+- `OnyxCommandCenter` / `OnyxStudentPageClient` yalnızca geriye dönük alias — yeni kod yazma
+
+## Paylaşılan katmanlar (ikisine birden uygula)
+
+| Katman | Dosya |
+|--------|--------|
+| API | `app/api/onyx/route.ts`, `app/api/onyx/vision/route.ts` |
+| Stream | `lib/onyx/run-onyx-stream.ts` (sunucu), `lib/onyx/stream-protocol.ts` (istemci+sunucu) |
+| İstemci | `lib/onyx-client.ts` |
+| Motor | `lib/onyx-engine.ts` |
+| Modeller | `lib/onyx/groq-models.ts`, `lib/onyx/ai-mode.ts` |
+| Girdi / mesaj UI | `onyx-chat-input-box.tsx`, `onyx-message-list.tsx`, `onyx-assistant-message-bubble.tsx` |
+
+## Rol farkları (yalnızca `OnyxChatPanel` içinde)
+
+- **Koç:** öğrenci seçici, koç bağlam paneli, sidebar öğrenci filtresi
+- **Öğrenci:** oturum `targetStudentId`, öğrenci bağlam paneli
+- **Ortak:** streaming, vision/fotoğraf, mod seçici, sohbet geçmişi, devam (continuity)
+
+Vision ve fotoğraf ekleme **`effectiveStudentId` varken her iki rolde** aynı akıştır (`askOnyxVision`, `handleImageFile`).
+
+## Yasak / kaçınılacak
+
+- Koç ve öğrenci için ayrı chat paneli veya ayrı stream istemcisi **ekleme**
+- Sadece bir role özel düzeltmeyi diğerine kopyalamak yerine `OnyxChatPanel` / `lib/onyx/*` içinde birleştir
+- Deprecated `OnyxStudentChatPanel` veya paralel API route açma
+
+## Güncelleme kontrol listesi
+
+1. Değişiklik `OnyxChatPanel` veya paylaşılan `lib/onyx/*` üzerinde mi?
+2. Koç sayfası ve öğrenci sayfası aynı bileşeni mi mount ediyor?
+3. Vision / streaming / hata mesajları her iki rolde test edildi mi?

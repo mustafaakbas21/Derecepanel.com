@@ -16,7 +16,8 @@ import {
 import { BulkImportDialog } from "@/components/students/bulk-import-dialog";
 import { StudentDetailModal } from "@/components/students/student-detail-modal";
 import { StudentWizardModal } from "@/components/students/student-wizard-modal";
-import { toast } from "sonner";
+import { useConfirm } from "@/hooks/use-confirm";
+import { appToast } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ export function StudentsPage() {
   const [editTarget, setEditTarget] = useState<StudentRecord | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const { confirm, ConfirmHost } = useConfirm();
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -127,7 +129,7 @@ export function StudentsPage() {
       return;
     }
     if (findStudentById(students, ogrenciId)) setDetailId(ogrenciId);
-    else toast.error("Öğrenci bulunamadı");
+    else appToast.error("Öğrenci bulunamadı");
   };
 
   const handleSave = (record: StudentRecord) => {
@@ -136,22 +138,35 @@ export function StudentsPage() {
       ? students.map((s) => (s.ogrenciId === record.ogrenciId ? record : s))
       : [...students, record];
     persist(next);
-    toast.success(exists ? "Öğrenci güncellendi" : "Öğrenci kaydedildi");
+    appToast.studentSaved(exists);
   };
 
-  const handleDelete = (s: StudentRecord) => {
-    if (!window.confirm(`${s.name} kaydını silmek istediğinize emin misiniz?`)) return;
+  const handleDelete = async (s: StudentRecord) => {
+    const ok = await confirm({
+      title: "Öğrenci silinsin mi?",
+      description: `${s.name} kaydı kalıcı olarak silinir.`,
+      confirmLabel: "Sil",
+      destructive: true,
+    });
+    if (!ok) return;
     persist(students.filter((x) => x.ogrenciId !== s.ogrenciId));
-    toast.success("Öğrenci silindi");
+    appToast.studentDeleted();
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!window.confirm(`${selectedIds.size} öğrenci silinsin mi?`)) return;
+    const n = selectedIds.size;
+    const ok = await confirm({
+      title: `${n} öğrenci silinsin mi?`,
+      description: "Seçili öğrenci kayıtları kalıcı olarak silinir.",
+      confirmLabel: "Sil",
+      destructive: true,
+    });
+    if (!ok) return;
     persist(students.filter((s) => !selectedIds.has(s.ogrenciId)));
     setSelectedIds(new Set());
     setMultiSelect(false);
-    toast.success("Seçili öğrenciler silindi");
+    appToast.studentsBulkDeleted(n);
   };
 
   const handleImported = useCallback(
@@ -226,11 +241,7 @@ export function StudentsPage() {
               Sil ({selectedIds.size})
             </Button>
           )}
-          <Button
-            type="button"
-            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800"
-            onClick={openAdd}
-          >
+          <Button type="button" variant="primary" onClick={openAdd}>
             <Plus className="h-4 w-4" />
             Öğrenci ekle
           </Button>
@@ -299,7 +310,7 @@ export function StudentsPage() {
           <p className="text-slate-600 font-medium">Henüz öğrenci yok</p>
           <p className="mt-1 text-sm text-slate-400">İlk kaydı ekleyin veya toplu içe aktarın.</p>
           <div className="mt-6 flex justify-center gap-2">
-            <Button className="rounded-xl bg-slate-900 text-white" onClick={openAdd}>
+            <Button variant="primary" onClick={openAdd}>
               Öğrenci ekle
             </Button>
             <Button variant="outline" className="rounded-xl" onClick={() => setImportOpen(true)}>
@@ -535,6 +546,7 @@ export function StudentsPage() {
         onEdit={openEdit}
       />
 
+      {ConfirmHost}
     </div>
   );
 }

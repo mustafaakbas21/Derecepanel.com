@@ -3,6 +3,7 @@ import { stableStudentIdFromRecord } from "@/lib/appointments/utils";
 import { CATALOG_KEY, STORAGE_KEY } from "@/lib/students/constants";
 import type { StudentRecord } from "@/lib/students/types";
 
+import { panelGetItem, panelRemoveItem, panelSetItem } from "@/lib/panel-store";
 function toRoster(s: StudentRecord): StudentRosterEntry {
   return {
     id: stableStudentIdFromRecord({
@@ -54,7 +55,7 @@ export function readStudentRoster(): StudentRosterEntry[] {
 
   const keys = ["students", STORAGE_KEY, "derecepanel_students_full_v1", CATALOG_KEY];
   for (const key of keys) {
-    const arr = parseArray(localStorage.getItem(key));
+    const arr = parseArray(panelGetItem(key));
     for (const item of arr) {
       const rec = item as StudentRecord;
       if (rec?.name) pushUnique(toRoster(rec));

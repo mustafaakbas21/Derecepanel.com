@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AtlasSinglePicker } from "@/components/yks-sim/atlas-single-picker";
+import { loadCoaches } from "@/lib/admin/coach-storage";
 import {
   DEFAULT_COACH_ID,
   GENDER_LABELS,
@@ -34,7 +36,10 @@ import {
   emptyStudentForm,
   recordToForm,
 } from "@/lib/students/constants";
-import type { UniversityDegreeLevel, UniversityListItem } from "@/lib/universities/types";
+import type { UniversityDegreeLevel } from "@/lib/universities/types";
+import { normalizeUsernameInput } from "@/lib/auth/local-auth";
+import { fetchAtlasMeta, fetchAtlasPrograms } from "@/lib/yks-sim/fetch-atlas";
+import { uniqueBolumler } from "@/lib/yks-sim/atlas-filter";
 import type { StudentFormState, StudentRecord } from "@/lib/students/types";
 import { cn } from "@/lib/utils";
 
@@ -54,42 +59,57 @@ type Props = {
   mode: "add" | "edit";
   initial?: StudentRecord | null;
   onSave: (record: StudentRecord) => void;
+  defaultCoachId?: string;
+  showCoachPicker?: boolean;
 };
 
-export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }: Props) {
+export function StudentWizardModal({
+  open,
+  onOpenChange,
+  mode,
+  initial,
+  onSave,
+  defaultCoachId,
+  showCoachPicker = false,
+}: Props) {
   const [step, setStep] = useState(1);
   const [unlocked, setUnlocked] = useState(1);
   const [form, setForm] = useState<StudentFormState>(emptyStudentForm());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPass, setShowPass] = useState(false);
   const [degreeLevel, setDegreeLevel] = useState<UniversityDegreeLevel>("lisans");
-  const [universities, setUniversities] = useState<UniversityListItem[]>([]);
+  const [universities, setUniversities] = useState<string[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [uniLoading, setUniLoading] = useState(false);
+  const [deptLoading, setDeptLoading] = useState(false);
+  const [selectedCoachId, setSelectedCoachId] = useState(
+    defaultCoachId || initial?.coachId || DEFAULT_COACH_ID
+  );
 
   useEffect(() => {
     if (!open) return;
     if (mode === "edit" && initial) {
       setForm(recordToForm(initial));
+      setSelectedCoachId(initial.coachId || defaultCoachId || DEFAULT_COACH_ID);
       setStep(1);
       setUnlocked(4);
     } else {
       setForm(emptyStudentForm());
+      setSelectedCoachId(defaultCoachId || DEFAULT_COACH_ID);
       setStep(1);
       setUnlocked(1);
     }
     setErrors({});
     setShowPass(false);
-  }, [open, mode, initial]);
+  }, [open, mode, initial, defaultCoachId]);
 
   useEffect(() => {
     if (!open || step !== 2) return;
     let cancelled = false;
     setUniLoading(true);
-    fetch(`/api/universities?level=${degreeLevel}`)
-      .then((r) => r.json())
-      .then((data: { universities?: UniversityListItem[] }) => {
-        if (!cancelled) setUniversities(data.universities ?? []);
+    fetchAtlasMeta(degreeLevel)
+      .then((meta) => {
+        if (!cancelled) setUniversities(meta.universities);
       })
       .catch(() => {
         if (!cancelled) setUniversities([]);
@@ -109,20 +129,39 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
       return;
     }
     let cancelled = false;
-    fetch(
-      `/api/universities?level=${degreeLevel}&university=${encodeURIComponent(uni)}`
-    )
-      .then((r) => r.json())
-      .then((data: { departments?: string[] }) => {
-        if (!cancelled) setDepartments(data.departments ?? []);
+    setDeptLoading(true);
+    fetchAtlasPrograms({ level: degreeLevel, universite: uni, limit: 500 })
+      .then((data) => {
+        if (!cancelled) setDepartments(uniqueBolumler(data.programs));
       })
       .catch(() => {
         if (!cancelled) setDepartments([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDeptLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [form.targetUniversity, degreeLevel]);
+
+  const uniOptions = useMemo(() => {
+    const list = universities.map((u) => ({ value: u, label: u }));
+    const cur = form.targetUniversity?.trim();
+    if (cur && !list.some((o) => o.value === cur)) {
+      list.unshift({ value: cur, label: cur });
+    }
+    return list;
+  }, [universities, form.targetUniversity]);
+
+  const deptOptions = useMemo(() => {
+    const list = departments.map((d) => ({ value: d, label: d }));
+    const cur = form.targetDepartment?.trim();
+    if (cur && !list.some((o) => o.value === cur)) {
+      list.unshift({ value: cur, label: cur });
+    }
+    return list;
+  }, [departments, form.targetDepartment]);
 
   const set = <K extends keyof StudentFormState>(key: K, value: StudentFormState[K]) => {
     setForm((p) => {
@@ -150,6 +189,12 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
       if (!form.parent.trim()) e.parent = "Veli adı zorunlu";
       if (!form.parentPhone.trim()) e.parentPhone = "Veli telefonu zorunlu";
     }
+    if (s === 4) {
+      if (showCoachPicker && !selectedCoachId) e.coachId = "Bağlı koç seçin";
+      if (!normalizeUsernameInput(form.kullaniciAdi ?? ""))
+        e.kullaniciAdi = "Panel kullanıcı adı zorunlu";
+      if (!form.panelSifre?.trim()) e.panelSifre = "Panel şifresi zorunlu";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -164,20 +209,23 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
   const handleSubmit = () => {
-    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
-      setStep(1);
-      return;
+    for (const s of [1, 2, 3, 4] as const) {
+      if (!validateStep(s)) {
+        setStep(s);
+        return;
+      }
     }
     const code = form.studentCode?.trim() || createStudentCode();
     const record: StudentRecord = {
       ...form,
       ogrenciId: initial?.ogrenciId ?? createOgrenciId(),
-      coachId: initial?.coachId ?? DEFAULT_COACH_ID,
+      coachId: selectedCoachId || initial?.coachId || defaultCoachId || DEFAULT_COACH_ID,
       name: form.name.trim(),
       studentCode: code,
       goal: form.goal.trim() || buildGoal(form.targetUniversity ?? "", form.targetDepartment ?? ""),
       parent: form.parent.trim(),
       parentPhone: form.parentPhone.trim(),
+      kullaniciAdi: normalizeUsernameInput(form.kullaniciAdi ?? ""),
       kayitDate: form.kayitDate || new Date().toISOString().slice(0, 10),
     };
     onSave(record);
@@ -188,15 +236,13 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="max-h-[92vh] overflow-y-auto sm:max-w-[640px]"
-        aria-labelledby="student-wizard-title"
-        aria-describedby="student-wizard-desc"
         onEscapeKeyDown={() => onOpenChange(false)}
       >
         <DialogHeader>
-          <DialogTitle id="student-wizard-title">
+          <DialogTitle>
             {mode === "add" ? "Yeni Öğrenci Kaydı" : "Öğrenciyi Düzenle"}
           </DialogTitle>
-          <DialogDescription id="student-wizard-desc">
+          <DialogDescription>
             4 adımda öğrenci bilgilerini tamamlayın.
           </DialogDescription>
         </DialogHeader>
@@ -316,43 +362,35 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Hedef Üniversite</Label>
-              <Select
+            <div className="space-y-1.5 sm:col-span-2">
+              <AtlasSinglePicker
+                label="Hedef Üniversite"
+                options={uniOptions}
                 value={form.targetUniversity ?? ""}
-                onValueChange={(v) => {
+                onChange={(v) => {
                   set("targetUniversity", v);
                   set("targetDepartment", "");
                 }}
+                placeholder="Üniversite seçin"
                 disabled={uniLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={uniLoading ? "Yükleniyor…" : "Üniversite seçin"}
-                  />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {universities.map((u) => (
-                    <SelectItem key={u.name} value={u.name}>
-                      {u.sehir ? `${u.name} (${u.sehir})` : u.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                loading={uniLoading}
+                emptyHint="Üniversite bulunamadı"
+              />
               {errors.targetUniversity && (
                 <p className="text-[11px] text-red-600">{errors.targetUniversity}</p>
               )}
             </div>
-            <div className="space-y-1.5">
-              <Label>Hedef Bölüm</Label>
-              <Select value={form.targetDepartment ?? ""} onValueChange={(v) => set("targetDepartment", v)} disabled={!form.targetUniversity}>
-                <SelectTrigger><SelectValue placeholder="Bölüm seçin" /></SelectTrigger>
-                <SelectContent>
-                  {departments.map((d) => (
-                    <SelectItem key={d} value={d}>{d}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-1.5 sm:col-span-2">
+              <AtlasSinglePicker
+                label="Hedef Bölüm"
+                options={deptOptions}
+                value={form.targetDepartment ?? ""}
+                onChange={(v) => set("targetDepartment", v)}
+                placeholder={form.targetUniversity ? "Bölüm seçin" : "Önce üniversite seçin"}
+                disabled={!form.targetUniversity || deptLoading}
+                loading={deptLoading}
+                emptyHint="Bölüm bulunamadı"
+              />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Hedef Özeti</Label>
@@ -459,9 +497,40 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
 
         {step === 4 && (
           <div className="grid gap-3">
+            {showCoachPicker ? (
+              <div className="space-y-1.5">
+                <Label>Bağlı koç *</Label>
+                <Select value={selectedCoachId} onValueChange={setSelectedCoachId}>
+                  <SelectTrigger className={inputCls}>
+                    <SelectValue placeholder="Koç seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loadCoaches().map((c) => (
+                      <SelectItem key={c.coachId} value={c.coachId}>
+                        {c.displayName || c.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.coachId ? (
+                  <p className="text-[11px] text-red-600">{errors.coachId}</p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="space-y-1.5">
               <Label htmlFor="kullaniciAdi">Panel Kullanıcı Adı</Label>
-              <Input id="kullaniciAdi" className={inputCls} value={form.kullaniciAdi ?? ""} onChange={(e) => set("kullaniciAdi", e.target.value)} placeholder="ogrenci.kullanici" />
+              <Input
+                id="kullaniciAdi"
+                className={inputCls}
+                value={form.kullaniciAdi ?? ""}
+                onChange={(e) => set("kullaniciAdi", e.target.value)}
+                placeholder="Öğrenci panel giriş adı"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              {errors.kullaniciAdi && (
+                <p className="text-[11px] text-red-600">{errors.kullaniciAdi}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="panelSifre">Panel Şifresi</Label>
@@ -482,10 +551,21 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              {errors.panelSifre && (
+                <p className="text-[11px] text-red-600">{errors.panelSifre}</p>
+              )}
             </div>
-            <p className="text-[12px] text-slate-500">
-              Öğrenci bu bilgilerle panele giriş yapabilir. Şifreyi güvenli bir kanaldan paylaşın.
-            </p>
+            <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-3 text-[12px] leading-relaxed text-slate-600">
+              <p>
+                Panel kullanıcı adı ve şifresini siz belirlersiniz. Öğrencinize güvenli bir kanaldan
+                iletmenizi rica ederiz.
+              </p>
+              <p className="mt-1.5 text-slate-500">
+                Unutulma, yanlış yazım veya paylaşım kaynaklı giriş sorunlarında platform tarafı
+                sorumluluk üstlenmez; gerekirse kayıt sonrası bu ekrandan bilgileri
+                güncelleyebilirsiniz.
+              </p>
+            </div>
           </div>
         )}
 
@@ -500,11 +580,11 @@ export function StudentWizardModal({ open, onOpenChange, mode, initial, onSave }
               </Button>
             )}
             {step < 4 ? (
-              <Button type="button" className="rounded-xl bg-slate-900 text-white hover:bg-slate-800" onClick={goNext}>
+              <Button type="button" variant="primary" onClick={goNext}>
                 İleri
               </Button>
             ) : (
-              <Button type="button" className="rounded-xl bg-slate-900 text-white hover:bg-slate-800" onClick={handleSubmit}>
+              <Button type="button" variant="primary" onClick={handleSubmit}>
                 {mode === "add" ? "Kaydı tamamla" : "Değişiklikleri kaydet"}
               </Button>
             )}

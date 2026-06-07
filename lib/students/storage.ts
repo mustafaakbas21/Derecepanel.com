@@ -1,3 +1,4 @@
+import { panelGetItem, panelSetItem } from "@/lib/panel-store";
 import {
   CATALOG_KEY,
   DEFAULT_COACH_ID,
@@ -60,7 +61,7 @@ function normalizeRecord(raw: StudentRecord): StudentRecord {
 /** Eski kayıtlarda "Sözel" gibi etiketler varsa diske doğru anahtarla yazar */
 function repairStoredStudentsIfNeeded(normalized: StudentRecord[]) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = panelGetItem(STORAGE_KEY);
     if (!raw) return;
     const parsed = JSON.parse(raw) as StudentRecord[];
     if (!Array.isArray(parsed)) return;
@@ -95,19 +96,19 @@ export function loadStudentsFull(options: LoadStudentsOptions = {}): StudentReco
   if (typeof window === "undefined") return seedIfEmpty ? SEED_STUDENTS : [];
 
   try {
-    const primary = parseStudentArray(localStorage.getItem(STORAGE_KEY));
+    const primary = parseStudentArray(panelGetItem(STORAGE_KEY));
     if (primary.length > 0) {
       repairStoredStudentsIfNeeded(primary);
       return primary;
     }
 
-    const legacyFull = parseStudentArray(localStorage.getItem(LEGACY_STUDENTS_FULL_KEY));
+    const legacyFull = parseStudentArray(panelGetItem(LEGACY_STUDENTS_FULL_KEY));
     if (legacyFull.length > 0) {
       persistStudentsFull(legacyFull, { silent: true });
       return legacyFull;
     }
 
-    const legacy = localStorage.getItem("students_v0");
+    const legacy = panelGetItem("students_v0");
     if (legacy) {
       const arr = JSON.parse(legacy) as LegacyStudent[];
       if (Array.isArray(arr) && arr.length > 0) {
@@ -126,13 +127,25 @@ export function loadStudentsFull(options: LoadStudentsOptions = {}): StudentReco
   return SEED_STUDENTS;
 }
 
+function syncStudentsToAppwrite(list: StudentRecord[]) {
+  if (typeof window === "undefined") return;
+  void fetch("/api/students/sync", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ students: list, provisionAuth: true }),
+  }).catch(() => {
+    /* arka plan senkron — panel-store birincil */
+  });
+}
+
 export function persistStudentsFull(
   list: StudentRecord[],
   options?: { silent?: boolean }
 ) {
   if (typeof window === "undefined") return;
   const normalized = list.map(normalizeRecord);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+  panelSetItem(STORAGE_KEY, JSON.stringify(normalized));
   const catalog = normalized.map((s) => ({
     ogrenciId: s.ogrenciId,
     name: s.name,
@@ -141,7 +154,8 @@ export function persistStudentsFull(
     alan: s.alan,
     status: s.status,
   }));
-  localStorage.setItem(CATALOG_KEY, JSON.stringify(catalog));
+  panelSetItem(CATALOG_KEY, JSON.stringify(catalog));
+  syncStudentsToAppwrite(normalized);
   if (!options?.silent) dispatchStudentsChange();
 }
 

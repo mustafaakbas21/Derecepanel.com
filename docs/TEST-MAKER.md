@@ -2,6 +2,8 @@
 
 Kaynak arşiv: `ESKİ DERECEPANEL/Derecepanel21/` (HTML + JS). Belirsizlikte **ESKİ kazanır**.
 
+Şablon motoru (10 şablon, DOM sözleşmesi, registry): **[TEST-MAKER-TEMPLATES.md](./TEST-MAKER-TEMPLATES.md)**.
+
 ## Modül diyagramı
 
 ```mermaid

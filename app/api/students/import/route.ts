@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireCoachAuth } from "@/lib/auth/require-coach";
+import { requireCoachAuth } from "@/lib/auth/require-coach-server";
 import { applyStudentImport } from "@/lib/students/import/persist";
 import { importApiRequestSchema } from "@/lib/students/import/validate";
 import type { ImportApiResponse } from "@/lib/students/import/types";

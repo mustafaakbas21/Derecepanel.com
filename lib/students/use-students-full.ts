@@ -15,16 +15,32 @@ const WATCH_KEYS = new Set([
   "students",
 ]);
 
+function readStudentsSync(seedIfEmpty?: boolean): StudentRecord[] {
+  if (typeof window === "undefined") return [];
+  return loadStudentsFull({ seedIfEmpty });
+}
+
+/**
+ * Modül seviyesi bayrak: ilk SSR hydration tamamlanana kadar `false`.
+ * Böylece ilk render sunucuyla birebir aynı (boş) olur → hydration mismatch yok;
+ * sonraki istemci-içi navigasyonlarda doğrudan localStorage okunur → flaş yok.
+ */
+let hasHydrated = false;
+
 export function useStudentsFull(options?: { seedIfEmpty?: boolean }) {
-  const [students, setStudents] = useState<StudentRecord[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const seed = options?.seedIfEmpty;
+  const [students, setStudents] = useState<StudentRecord[]>(() =>
+    hasHydrated ? readStudentsSync(seed) : []
+  );
+  const [hydrated, setHydrated] = useState(hasHydrated);
 
   const reload = useCallback(() => {
-    setStudents(loadStudentsFull({ seedIfEmpty: options?.seedIfEmpty }));
+    setStudents(readStudentsSync(seed));
     setHydrated(true);
-  }, [options?.seedIfEmpty]);
+  }, [seed]);
 
   useEffect(() => {
+    hasHydrated = true;
     reload();
     const onStorage = (e: StorageEvent) => {
       if (e.key === null || (e.key && WATCH_KEYS.has(e.key))) reload();

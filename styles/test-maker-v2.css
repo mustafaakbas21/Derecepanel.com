@@ -1,0 +1,206 @@
+/* Test Maker v2 — sayfa kabuğu (nav yalnızca sidebar) */
+
+.tm-v2-page {
+  min-height: 0;
+}
+
+.tm-v2-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tm-v2-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.tm-v2-title {
+  margin-top: 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.tm-v2-desc {
+  margin-top: 0.35rem;
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.tm-v2-metrics {
+  display: grid;
+  gap: 0;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .tm-v2-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .tm-v2-metrics {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.tm-v2-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+@media (min-width: 640px) {
+  .tm-v2-metric {
+    border-top: none;
+    border-left: 1px solid #f1f5f9;
+  }
+  .tm-v2-metrics > .tm-v2-metric:first-child {
+    border-left: none;
+  }
+}
+
+.tm-v2-metric__icon {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.65rem;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.tm-v2-metric__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.tm-v2-metric__value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.tm-v2-metric__sub {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+}
+
+.tm-v2-panel {
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.tm-v2-panel--pad {
+  padding: 1rem 1.15rem;
+}
+
+.tm-v2-status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tm-v2-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.tm-v2-pill strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.tm-v2-pill--warn {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.tm-v2-pill--muted {
+  background: #f8fafc;
+}
+
+.tm-v2-toolbar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.tm-v2-toolbar-section__label {
+  margin-bottom: 0.4rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.tm-v2-toolbar-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tm-v2-config-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .tm-v2-config-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .tm-v2-config-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tm-v2-field__label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.tm-v2-input {
+  appearance: none;
+}
+
+/* Havuz v2 → styles/havuz-studio.css (havuz-studio__body) */

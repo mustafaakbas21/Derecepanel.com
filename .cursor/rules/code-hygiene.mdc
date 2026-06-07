@@ -11,7 +11,7 @@
 ## Import kuralları
 
 - Müfredat: SADECE `@/lib/mufredat` (eski `@/lib/yks-mufredat` yolu yok)
-- Toast: SADECE `sonner` paketi (custom toast provider oluşturma)
+- Toast: SADECE `@/lib/notify` (`toast` / `appToast`) — `sonner` doğrudan import etme; ikinci Toaster ekleme (`.cursor/rules/notifications.mdc`)
 - Üniversite: SADECE `@/lib/universities/atlas-server` (barrel yok)
 
 ## Yasaklar

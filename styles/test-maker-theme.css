@@ -26,7 +26,8 @@
   --header-border: #e2e8f0;
   --btn-primary-bg: #0f172a;
   --btn-primary-hover: #1e293b;
-  background: var(--tm-page-bg);
+  /* Koç paneli beyaz zemin — ekstra gri katman yok */
+  background: transparent;
 }
 
 /* ── Üst alt menü (koyu şerit) ───────────────────────────── */
@@ -342,7 +343,8 @@
 }
 
 /* ── Test Oluşturucu stüdyo ────────────────────────────── */
-#tw-scope.tm-saas-shell {
+/* Test Oluşturucu: beyaz panel — gri yalnızca Kırpıcı tam ekran vb. */
+#tw-scope.tm-saas-shell:not(.tm-studio-page) {
   background: var(--tm-workspace-bg);
 }
 

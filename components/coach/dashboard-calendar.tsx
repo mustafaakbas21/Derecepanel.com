@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { clientMonthView, clientNow } from "@/lib/coach/client-now";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"] as const;
@@ -44,35 +45,10 @@ function isSameDay(a: Date, y: number, m: number, d: number) {
 }
 
 export function DashboardCalendar({ className }: { className?: string }) {
-  const [today, setToday] = useState<Date | null>(null);
-  const [view, setView] = useState<{ year: number; month: number } | null>(null);
+  const [today] = useState(clientNow);
+  const [view, setView] = useState(clientMonthView);
 
-  useEffect(() => {
-    const sync = () => {
-      const now = new Date();
-      setToday(now);
-      setView((prev) => prev ?? { year: now.getFullYear(), month: now.getMonth() });
-    };
-    sync();
-    const id = setInterval(sync, 60_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const cells = useMemo(() => {
-    if (!view) return [];
-    return buildMonthGrid(view.year, view.month);
-  }, [view]);
-
-  if (!today || !view) {
-    return (
-      <div
-        className={cn(
-          "h-full min-h-[380px] w-full animate-pulse rounded-2xl bg-slate-200/60",
-          className
-        )}
-      />
-    );
-  }
+  const cells = useMemo(() => buildMonthGrid(view.year, view.month), [view.year, view.month]);
 
   const todayShort = today.toLocaleDateString("tr-TR", {
     weekday: "long",
@@ -97,23 +73,26 @@ export function DashboardCalendar({ className }: { className?: string }) {
   return (
     <section
       className={cn(
-        "flex h-full min-h-[380px] w-full flex-col rounded-2xl border border-slate-200/70 bg-slate-100 p-5 sm:p-6",
+        "flex w-full flex-col rounded-2xl border border-slate-200/70 bg-slate-100 p-5 sm:p-6",
         className
       )}
       style={{ boxShadow: "0 2px 20px -6px rgba(15, 23, 42, 0.08)" }}
       aria-label="Takvim"
     >
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mb-5 flex items-start gap-4">
         <div className="min-w-0 flex-1 rounded-xl border border-slate-200/80 bg-white px-4 py-3.5 sm:px-5 sm:py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
             Bugün
           </p>
-          <p className="mt-1 text-lg font-bold capitalize leading-snug text-slate-900 sm:text-xl">
+          <p
+            className="mt-1 text-lg font-bold capitalize leading-snug text-slate-900 sm:text-xl"
+            suppressHydrationWarning
+          >
             <span className="sm:hidden">{todayCompact}</span>
             <span className="hidden sm:inline">{todayShort}</span>
           </p>
         </div>
-        <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => goMonth(-1)}
@@ -122,7 +101,7 @@ export function DashboardCalendar({ className }: { className?: string }) {
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <p className="w-[10.5rem] shrink-0 truncate text-center text-[15px] font-bold text-slate-800 sm:text-base">
+          <p className="w-[7rem] shrink-0 truncate text-center text-[15px] font-bold text-slate-800 sm:text-base">
             {MONTHS[view.month]} {view.year}
           </p>
           <button
@@ -136,20 +115,18 @@ export function DashboardCalendar({ className }: { className?: string }) {
         </div>
       </div>
 
-      {!isCurrentMonth ? (
+      {!isCurrentMonth && (
         <button
           type="button"
-          onClick={() =>
-            setView({ year: today.getFullYear(), month: today.getMonth() })
-          }
+          onClick={() => setView(clientMonthView(today))}
           className="mb-4 w-full rounded-xl border border-slate-200/80 bg-white py-2 text-[12px] font-semibold text-slate-600 transition hover:border-blue-200 hover:text-blue-700"
         >
           Bugüne dön
         </button>
-      ) : null}
+      )}
 
-      <div className="flex flex-1 flex-col rounded-xl border border-slate-200/80 bg-white p-3 sm:p-4">
-        <div className="mb-2 grid grid-cols-7 gap-1.5 sm:gap-2">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-3 sm:p-4">
+        <div className="mb-1 grid grid-cols-7 gap-1">
           {WEEKDAYS.map((d) => (
             <span
               key={d}
@@ -159,10 +136,10 @@ export function DashboardCalendar({ className }: { className?: string }) {
             </span>
           ))}
         </div>
-        <div className="grid flex-1 grid-cols-7 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-7 gap-1">
           {cells.map((day, i) => {
             if (day === null) {
-              return <span key={`e-${i}`} className="min-h-[2.25rem] sm:min-h-[2.5rem]" />;
+              return <span key={`e-${i}`} className="aspect-square" />;
             }
             const isToday = isSameDay(today, view.year, view.month, day);
             const dow = new Date(view.year, view.month, day).getDay();
@@ -172,7 +149,7 @@ export function DashboardCalendar({ className }: { className?: string }) {
               <span
                 key={`${view.year}-${view.month}-${day}`}
                 className={cn(
-                  "flex min-h-[2.25rem] items-center justify-center rounded-lg text-[13px] font-semibold transition sm:min-h-[2.5rem] sm:text-sm",
+                  "flex aspect-square items-center justify-center rounded-lg text-[13px] font-semibold transition sm:text-sm",
                   isToday
                     ? "bg-slate-900 text-white shadow-md shadow-slate-900/20"
                     : isWeekend

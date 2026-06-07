@@ -75,11 +75,7 @@ export function CoachAppointmentsPage() {
             yoğunluğu görün.
           </p>
         </div>
-        <Button
-          type="button"
-          className="shrink-0 bg-slate-900 text-white hover:bg-slate-800"
-          onClick={openCreate}
-        >
+        <Button type="button" variant="primary" className="shrink-0" onClick={openCreate}>
           <CalendarPlus className="mr-2 h-4 w-4" />
           Yeni randevu
         </Button>
@@ -152,7 +148,7 @@ export function CoachAppointmentsPage() {
           <p className="mt-2 max-w-sm text-sm text-slate-500">
             İlk görüşmenizi planlayarak haftalık takviminizi oluşturun.
           </p>
-          <Button className="mt-6 bg-slate-900 text-white hover:bg-slate-800" onClick={openCreate}>
+          <Button variant="primary" className="mt-6" onClick={openCreate}>
             Yeni randevu
           </Button>
         </div>

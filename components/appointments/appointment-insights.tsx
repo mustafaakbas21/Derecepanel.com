@@ -17,9 +17,11 @@ import type { Appointment } from "@/lib/appointments/types";
 import { computeWeekCounts, weekMetrics } from "@/lib/appointments/utils";
 import { cn } from "@/lib/utils";
 
+const DEFAULT_CHART_COLORS = { bar: "#2563eb", tick: "#64748b", grid: "#e2e8f0" };
+
 function readChartColors() {
   if (typeof window === "undefined") {
-    return { bar: "#2563eb", tick: "#64748b", grid: "#e2e8f0" };
+    return DEFAULT_CHART_COLORS;
   }
   const s = getComputedStyle(document.documentElement);
   return {
@@ -64,7 +66,7 @@ function MetricTile({
 }
 
 export function AppointmentInsights({ list }: { list: Appointment[] }) {
-  const [colors, setColors] = useState(readChartColors);
+  const [colors, setColors] = useState(DEFAULT_CHART_COLORS);
   const m = weekMetrics(list);
   const { counts } = useMemo(() => computeWeekCounts(list), [list]);
   const data = DAY_SHORT.map((day, i) => ({ day, count: counts[i] ?? 0 }));

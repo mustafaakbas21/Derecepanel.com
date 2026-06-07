@@ -2,12 +2,13 @@ import { getSubjectById, getSubjects, getTopicById, getTopics } from "@/lib/mufr
 import { STORAGE_KEYS } from "@/lib/test-maker/constants";
 import type { TMConfig } from "@/lib/test-maker/types";
 
+import { panelGetItem, panelRemoveItem, panelSetItem } from "@/lib/panel-store";
 export function defaultTMConfig(): TMConfig {
   const ders = getSubjects("ALL")[0];
   const konu = ders ? getTopics(ders.id)[0] : undefined;
   let kurum = "Derece Koçluk";
   if (typeof window !== "undefined") {
-    kurum = localStorage.getItem(STORAGE_KEYS.institutionBrief) || kurum;
+    kurum = panelGetItem(STORAGE_KEYS.institutionBrief) || kurum;
   }
   return {
     dersId: ders?.id ?? "",
@@ -32,6 +33,6 @@ export function syncTMConfig(config: TMConfig): TMConfig {
 
 export function cacheKurum(kurum: string) {
   if (typeof window !== "undefined" && kurum) {
-    localStorage.setItem(STORAGE_KEYS.institutionBrief, kurum);
+    panelSetItem(STORAGE_KEYS.institutionBrief, kurum);
   }
 }

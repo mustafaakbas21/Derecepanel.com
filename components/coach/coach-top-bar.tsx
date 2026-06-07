@@ -5,7 +5,7 @@ import { coachProfile } from "@/lib/coach/dummy-data";
 
 export function CoachTopBar() {
   return (
-    <header className="flex h-[80px] shrink-0 items-center gap-4 px-8">
+    <header className="coach-chrome flex h-[80px] shrink-0 items-center gap-4 px-8">
       {/* Wide search */}
       <div className="relative w-full max-w-2xl flex-1">
         <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

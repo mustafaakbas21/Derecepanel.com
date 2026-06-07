@@ -1,0 +1,36 @@
+---
+description: DerecePanel buton renkleri ve kullanımı (koç paneli)
+globs:
+  - "**/*.tsx"
+  - "**/*.css"
+alwaysApply: true
+---
+
+# Buton tasarımı (zorunlu)
+
+## Ana aksiyon rengi
+
+Koç paneli, kütüphane, deneme, öğrenci ve tüm dashboard ekranlarında **birincil butonlar** için:
+
+- Bileşen: `<Button variant="primary">` (`@/components/ui/button`)
+- Renk: **koyu lacivert** — Tailwind `bg-slate-900`, hover `bg-slate-800`
+- CSS değişkeni (wizard vb.): `#0f172a` (`--btn-primary-bg`)
+
+## Yasak / kaçınılacak
+
+- Birincil CTA için `bg-blue-600`, `bg-indigo-*`, parlak mor veya `bg-emerald-600` **kullanma**
+- `className="bg-slate-900 ..."` ile tekrar boyama — `variant="primary"` yeterli
+- Landing / giriş sayfası kahverengi `default` variant — sadece marketing/auth için
+
+## Örnekler
+
+```tsx
+<Button variant="primary" onClick={openModal}>Yeni kitap ekle</Button>
+<Button variant="outline">İptal</Button>
+<Button variant="destructive">Sil</Button>
+```
+
+## Kitap kütüphanesi
+
+- “Yeni kitap ekle” doğrudan `BookFormDialog` açmalı (`setFormOpen(true)`), inline form yok.
+- Sayfa düzeni: `LIBRARY_PAGE_CLASS` (`space-y-6`) + `LibraryPageHeader` + `LibraryInsights` + tek `LIBRARY_PANEL_CLASS` kartı (Öğrenciler / Denemeler ile aynı ritim). Ayrı gradient hero veya `max-w-*` + ekstra `py-8` kullanma.

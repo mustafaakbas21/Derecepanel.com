@@ -1,41 +1,26 @@
 import { STORAGE_KEYS } from "@/lib/test-maker/constants";
+import { panelGetItem, panelRemoveItem, panelSetItem } from "@/lib/panel-store";
+import {
+  dbClear,
+  dbDelete,
+  dbGetAll,
+  dbPutMany,
+  dbReplaceAll,
+  dbUpdateMeta,
+} from "@/lib/test-maker/question-pool-db";
 import type { AnswerLetter, QuestionPoolItem } from "@/lib/test-maker/types";
 
-const PLACEHOLDER =
-  "data:image/svg+xml," +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect fill="#f1f5f9" width="320" height="200"/><text x="160" y="100" text-anchor="middle" fill="#64748b" font-size="14">Soru</text></svg>'
-  );
-
-const SEED: QuestionPoolItem[] = [
-  {
-    uuid: "q_seed_1",
-    dataUrl: PLACEHOLDER,
-    ders: "TYT Matematik",
-    konu: "Türev",
-    kavram: "Zincir Kuralı",
-    answer: "C",
-    savedAt: new Date().toISOString(),
-  },
-  {
-    uuid: "q_seed_2",
-    dataUrl: PLACEHOLDER,
-    ders: "TYT Matematik",
-    konu: "Limit",
-    kavram: "Belirsizlik",
-    answer: "A",
-    savedAt: new Date().toISOString(),
-  },
-  {
-    uuid: "q_seed_3",
-    dataUrl: PLACEHOLDER,
-    ders: "TYT Türkçe",
-    konu: "Paragraf",
-    kavram: "Ana düşünce",
-    answer: "B",
-    savedAt: new Date().toISOString(),
-  },
-];
+/** Eski demo kayıtları (q_seed_*) */
+function isLegacySeedItem(item: QuestionPoolItem): boolean {
+  if (item.uuid.startsWith("q_seed_")) return true;
+  const url = item.dataUrl ?? "";
+  if (!url.startsWith("data:image/svg+xml,")) return false;
+  try {
+    return decodeURIComponent(url).includes(">Soru</text>");
+  } catch {
+    return false;
+  }
+}
 
 export type PoolFilters = {
   dersName?: string;
@@ -44,44 +29,108 @@ export type PoolFilters = {
   answerMode?: "all" | "answered" | "unanswered" | AnswerLetter;
 };
 
+export const QUESTION_POOL_UPDATED_EVENT = "derece:question-pool-updated";
+
+let poolCache: QuestionPoolItem[] | null = null;
+let initPromise: Promise<QuestionPoolItem[]> | null = null;
+
+function notifyPoolUpdated() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(QUESTION_POOL_UPDATED_EVENT));
+}
+
+function syncLsIndex(list: QuestionPoolItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    const index = list.map(({ uuid, ders, konu, kavram, savedAt, answer }) => ({
+      uuid,
+      ders,
+      konu,
+      kavram,
+      savedAt,
+      answer,
+    }));
+    panelSetItem(STORAGE_KEYS.questionPool, JSON.stringify(index));
+  } catch {
+    /* Appwrite birincil — panel-store indeks */
+  }
+}
+
+function readLegacyLocalStorage(): QuestionPoolItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = panelGetItem(STORAGE_KEYS.questionPool);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as QuestionPoolItem[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item) => !isLegacySeedItem(item));
+  } catch {
+    return [];
+  }
+}
+
+async function migrateLegacyLocalStorageIfNeeded(): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (panelGetItem(STORAGE_KEYS.questionPoolIdbMigrated) === "1") return;
+
+  const legacy = readLegacyLocalStorage();
+  const withImages = legacy.filter(
+    (item) => typeof item.dataUrl === "string" && item.dataUrl.length > 64
+  );
+
+  if (withImages.length > 0) {
+    await dbReplaceAll(withImages.filter((item) => !isLegacySeedItem(item)));
+  }
+
+  panelSetItem(STORAGE_KEYS.questionPoolIdbMigrated, "1");
+  syncLsIndex(withImages);
+}
+
 export function createPoolUuid() {
   return `q_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function readRaw(): QuestionPoolItem[] {
-  if (typeof window === "undefined") return [...SEED];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.questionPool);
-    if (raw) {
-      const parsed = JSON.parse(raw) as QuestionPoolItem[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch {
-    /* ignore */
+/** İlk yükleme — Appwrite + eski localStorage/IndexedDB migrasyonu */
+export async function ensureQuestionPoolInit(): Promise<QuestionPoolItem[]> {
+  if (poolCache) return poolCache;
+  if (typeof window === "undefined") return [];
+  if (!initPromise) {
+    initPromise = (async () => {
+      await migrateLegacyLocalStorageIfNeeded();
+      poolCache = await dbGetAll();
+      syncLsIndex(poolCache);
+      return poolCache;
+    })().catch((err) => {
+      initPromise = null;
+      throw err;
+    });
   }
-  persistQuestionPool(SEED);
-  return [...SEED];
+  return initPromise;
 }
 
-export function persistQuestionPool(list: QuestionPoolItem[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEYS.questionPool, JSON.stringify(list));
-  } catch {
-    throw new Error("STORAGE_FULL");
-  }
-}
-
+/** Senkron okuma — init sonrası önbellek; aksi halde legacy LS */
 export function loadQuestionPool(): QuestionPoolItem[] {
-  return readRaw();
+  if (poolCache) return poolCache;
+  return readLegacyLocalStorage();
+}
+
+export async function loadQuestionPoolAsync(): Promise<QuestionPoolItem[]> {
+  return ensureQuestionPoolInit();
+}
+
+export async function persistQuestionPool(list: QuestionPoolItem[]): Promise<void> {
+  await dbReplaceAll(list);
+  poolCache = list;
+  syncLsIndex(list);
+  notifyPoolUpdated();
 }
 
 export async function listPool(_coachId?: string, filters?: PoolFilters): Promise<QuestionPoolItem[]> {
-  return getFiltered(filters);
+  const list = await ensureQuestionPoolInit();
+  return getFilteredFromList(list, filters);
 }
 
-export function getFiltered(filters?: PoolFilters): QuestionPoolItem[] {
-  const list = readRaw();
+function getFilteredFromList(list: QuestionPoolItem[], filters?: PoolFilters): QuestionPoolItem[] {
   if (!filters) return list;
   return list.filter((q) => {
     if (filters.dersName && q.ders !== filters.dersName) return false;
@@ -100,44 +149,64 @@ export function getFiltered(filters?: PoolFilters): QuestionPoolItem[] {
   });
 }
 
+export function getFiltered(filters?: PoolFilters): QuestionPoolItem[] {
+  return getFilteredFromList(loadQuestionPool(), filters);
+}
+
 export async function appendToPool(items: QuestionPoolItem[]): Promise<void> {
-  const list = readRaw();
-  persistQuestionPool([...items, ...list]);
+  await ensureQuestionPoolInit();
+  await dbPutMany(items);
+  poolCache = [...items, ...(poolCache ?? [])];
+  syncLsIndex(poolCache);
+  notifyPoolUpdated();
 }
 
 export async function updateAnswer(uuid: string, answer: AnswerLetter | null): Promise<QuestionPoolItem[]> {
-  const list = readRaw();
+  await ensureQuestionPoolInit();
+  const list = poolCache ?? [];
   const item = list.find((x) => x.uuid === uuid);
   if (!item) return list;
   item.answer = answer;
-  persistQuestionPool(list);
+  await dbUpdateMeta(uuid, { answer });
+  syncLsIndex(list);
+  notifyPoolUpdated();
   return list;
 }
 
 export async function deleteFromPool(uuid: string): Promise<QuestionPoolItem[]> {
-  const list = readRaw().filter((x) => x.uuid !== uuid);
-  persistQuestionPool(list);
-  return list;
+  await ensureQuestionPoolInit();
+  await dbDelete(uuid);
+  poolCache = (poolCache ?? []).filter((x) => x.uuid !== uuid);
+  syncLsIndex(poolCache);
+  notifyPoolUpdated();
+  return poolCache;
 }
 
 export async function clearPool(_coachId?: string): Promise<void> {
-  persistQuestionPool([]);
+  await dbClear();
+  poolCache = [];
+  if (typeof window !== "undefined") {
+    panelRemoveItem(STORAGE_KEYS.questionPool);
+  }
+  notifyPoolUpdated();
 }
 
 export function setPoolAnswer(uuid: string, answer: AnswerLetter | null) {
   return updateAnswer(uuid, answer);
 }
 
-export function bulkAddToPool(
+export async function bulkAddToPool(
   items: Omit<QuestionPoolItem, "uuid" | "savedAt">[]
-): QuestionPoolItem[] {
-  const stamped = items.map((item) => ({
+): Promise<QuestionPoolItem[]> {
+  await ensureQuestionPoolInit();
+  const stamped: QuestionPoolItem[] = items.map((item) => ({
     ...item,
     uuid: createPoolUuid(),
     savedAt: new Date().toISOString(),
   }));
-  const list = readRaw();
-  const next = [...stamped, ...list];
-  persistQuestionPool(next);
-  return next;
+  await dbPutMany(stamped);
+  poolCache = [...stamped, ...(poolCache ?? [])];
+  syncLsIndex(poolCache);
+  notifyPoolUpdated();
+  return poolCache;
 }

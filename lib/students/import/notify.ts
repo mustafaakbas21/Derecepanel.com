@@ -1,6 +1,4 @@
-import { toast } from "sonner";
-
-import { TOAST_ERROR_MS, TOAST_SUCCESS_MS } from "@/lib/students/import/constants";
+import { appToast } from "@/lib/notify";
 import { IMPORT_ERROR_MESSAGES } from "@/lib/students/import/errors";
 import type { ImportApiResponse } from "@/lib/students/import/types";
 
@@ -16,51 +14,44 @@ function formatErrorLines(errors: { row: number; reason: string }[], limit = 8):
     .join("\n");
 }
 
-const toastBase = {
-  success: { duration: TOAST_SUCCESS_MS, "aria-live": "polite" as const },
-  error: { duration: TOAST_ERROR_MS, "aria-live": "polite" as const },
-  info: { duration: TOAST_SUCCESS_MS, "aria-live": "polite" as const },
-};
-
-/** İçe aktarma sonucu için Türkçe sonner bildirimleri */
+/** İçe aktarma sonucu bildirimleri */
 export function notifyImportResult(result: NotifyImportPayload) {
   const { imported, skipped, errors } = result;
 
   if (imported > 0 && skipped > 0) {
-    toast.success(`${imported} kayıt eklendi, ${skipped} satır atlandı.`, {
-      ...toastBase.success,
-      description:
-        errors.length > 0
-          ? formatErrorLines(errors)
-          : "Boş, örnek veya mükerrer satırlar atlandı.",
-    });
+    appToast.success(
+      `${imported} kayıt eklendi, ${skipped} satır atlandı.`,
+      errors.length > 0
+        ? formatErrorLines(errors)
+        : "Boş, örnek veya mükerrer satırlar atlandı."
+    );
     return;
   }
 
   if (imported > 0) {
-    toast.success(`Başarılı. ${imported} öğrenci kaydedildi.`, toastBase.success);
+    appToast.success(`Başarılı. ${imported} öğrenci kaydedildi.`);
     return;
   }
 
   if (skipped > 0) {
-    toast.warning(`${skipped} satır atlandı; yeni kayıt eklenmedi.`, {
-      ...toastBase.info,
-      description: errors.length > 0 ? formatErrorLines(errors) : undefined,
-    });
+    appToast.warning(
+      `${skipped} satır atlandı; yeni kayıt eklenmedi.`,
+      errors.length > 0 ? formatErrorLines(errors) : undefined
+    );
     return;
   }
 
-  toast.error(IMPORT_ERROR_MESSAGES.NO_VALID_ROWS, toastBase.error);
+  appToast.error(IMPORT_ERROR_MESSAGES.NO_VALID_ROWS);
 }
 
 export function notifyImportError(message: string) {
-  toast.error(message, toastBase.error);
+  appToast.error(message);
 }
 
 export function notifySessionExpired() {
-  toast.error("Oturum süresi doldu.", toastBase.error);
+  appToast.error("Oturum süresi doldu.");
 }
 
 export function notifyServerImportFailed() {
-  toast.error("İçe aktarma başarısız. Tekrar deneyin.", toastBase.error);
+  appToast.error("İçe aktarma başarısız. Tekrar deneyin.");
 }

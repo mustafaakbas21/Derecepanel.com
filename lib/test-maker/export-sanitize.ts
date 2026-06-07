@@ -1,6 +1,6 @@
 /** ESKİ stripTeacherUiFromTmA4Clone + applyExportLayoutToTmA4Clone */
 export function stripTeacherUiFromClone(clone: HTMLElement) {
-  clone.querySelectorAll(".teacher-only-ui").forEach((el) => el.remove());
+  clone.querySelectorAll(".teacher-only-ui, .tm-q-answer-picker").forEach((el) => el.remove());
   clone.querySelectorAll(".tm-delete-page-btn").forEach((el) => el.remove());
   clone.querySelectorAll(".tm-q-crop-target").forEach((el) => el.remove());
 }

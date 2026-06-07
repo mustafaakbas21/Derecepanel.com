@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 import { DashboardCalendar } from "@/components/coach/dashboard-calendar";
+import { clientNow } from "@/lib/coach/client-now";
 import {
   formatCountdownUnit,
   formatRemainingLabel,
@@ -25,7 +26,6 @@ function CountdownBox({
 }: {
   value: string;
   label: string;
-  /** Sabit genişlik — rakam değişince layout kaymasın */
   digits?: 2 | 3;
 }) {
   return (
@@ -36,8 +36,9 @@ function CountdownBox({
           "text-[1.75rem] sm:text-[2rem] lg:text-[2.125rem]",
           digits === 3 ? "min-w-[3.25rem]" : "min-w-[2.75rem]"
         )}
-        aria-live="polite"
+        aria-live="off"
         aria-atomic="true"
+        suppressHydrationWarning
       >
         {value}
       </span>
@@ -48,20 +49,72 @@ function CountdownBox({
   );
 }
 
+const CountdownDigits = memo(function CountdownDigits({ targetDate }: { targetDate: Date }) {
+  const [now, setNow] = useState(clientNow);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const parts = getCountdownParts(targetDate, now);
+  const values = {
+    days:
+      parts.days >= 100 ? String(parts.days) : formatCountdownUnit(parts.days),
+    hours: formatCountdownUnit(parts.hours),
+    minutes: formatCountdownUnit(parts.minutes),
+    seconds: formatCountdownUnit(parts.seconds),
+  };
+
+  return (
+    <div className="mb-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+      {UNITS.map(({ key, label }) => (
+        <CountdownBox
+          key={key}
+          value={values[key]}
+          label={label}
+          digits={key === "days" ? 3 : 2}
+        />
+      ))}
+    </div>
+  );
+});
+
+const SessionRemaining = memo(function SessionRemaining({
+  targetDate,
+  fallback,
+}: {
+  targetDate: Date;
+  fallback: string;
+}) {
+  const [label, setLabel] = useState(() => formatRemainingLabel(targetDate, clientNow()));
+
+  useEffect(() => {
+    const tick = () => setLabel(formatRemainingLabel(targetDate, new Date()));
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [targetDate]);
+
+  return <>{label || fallback}</>;
+});
+
 function SessionCard({
   type,
   status,
   statusTone,
   date,
   dayTime,
-  remainingLabel,
+  targetDate,
+  remainingFallback,
 }: {
   type: "TYT" | "AYT";
   status: string;
   statusTone: "success" | "muted";
   date: string;
   dayTime: string;
-  remainingLabel: string;
+  targetDate: Date;
+  remainingFallback: string;
 }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5">
@@ -78,44 +131,42 @@ function SessionCard({
           {status}
         </span>
       </div>
-      <p className="mt-2.5 text-[15px] font-bold leading-snug text-slate-900 sm:text-base">
-        {date}
-      </p>
+      <p className="mt-2.5 text-[15px] font-bold leading-snug text-slate-900 sm:text-base">{date}</p>
       <p className="mt-0.5 text-[13px] text-slate-400">{dayTime}</p>
       <div className="my-3 border-t border-dashed border-slate-200" aria-hidden />
-      <p className="min-h-[1.35rem] truncate text-[14px] font-semibold tabular-nums text-slate-600">
-        {remainingLabel}
+      <p
+        className="min-h-[1.35rem] truncate text-[14px] font-semibold tabular-nums text-slate-600"
+        suppressHydrationWarning
+      >
+        <SessionRemaining targetDate={targetDate} fallback={remainingFallback} />
       </p>
     </div>
   );
 }
 
-function YksCountdownPanel() {
+const YksCountdownPanel = memo(function YksCountdownPanel() {
   const { title, subtitle, targetDate, progressPercent, sessions } = yksCountdownConfig;
-  const [now, setNow] = useState<Date | null>(null);
 
-  useEffect(() => {
-    setNow(new Date());
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const parts = now
-    ? getCountdownParts(targetDate, now)
-    : { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  const values = {
-    days:
-      parts.days >= 100
-        ? String(parts.days)
-        : formatCountdownUnit(parts.days),
-    hours: formatCountdownUnit(parts.hours),
-    minutes: formatCountdownUnit(parts.minutes),
-    seconds: formatCountdownUnit(parts.seconds),
-  };
+  const sessionCards = useMemo(
+    () =>
+      sessions.map((session) => (
+        <SessionCard
+          key={session.type}
+          type={session.type}
+          status={session.status}
+          statusTone={session.statusTone}
+          date={session.date}
+          dayTime={session.dayTime}
+          targetDate={session.targetDate}
+          remainingFallback={session.remainingLabel}
+        />
+      )),
+    [sessions]
+  );
 
   return (
     <section
-      className="flex h-full min-h-[380px] w-full flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-100 p-5 sm:p-6"
+      className="flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-100 p-5 sm:p-6"
       style={{ boxShadow: "0 2px 20px -6px rgba(15, 23, 42, 0.08)" }}
       aria-label="YKS geri sayım"
     >
@@ -130,7 +181,7 @@ function YksCountdownPanel() {
           </p>
           <div className="flex h-2 overflow-hidden rounded-full bg-slate-200">
             <div
-              className="h-full rounded-l-full bg-blue-600 transition-[width] duration-500"
+              className="h-full rounded-l-full bg-slate-900 transition-[width] duration-500"
               style={{ width: `${progressPercent}%` }}
             />
             <div className="h-full min-w-[8%] flex-1 rounded-r-full bg-slate-300" />
@@ -138,52 +189,25 @@ function YksCountdownPanel() {
         </div>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-        {UNITS.map(({ key, label }) => (
-          <CountdownBox
-            key={key}
-            value={values[key]}
-            label={label}
-            digits={key === "days" ? 3 : 2}
-          />
-        ))}
-      </div>
+      <CountdownDigits targetDate={targetDate} />
 
-      <div className="mt-auto grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
-        {sessions.map((session) => (
-          <SessionCard
-            key={session.type}
-            type={session.type}
-            status={session.status}
-            statusTone={session.statusTone}
-            date={session.date}
-            dayTime={session.dayTime}
-            remainingLabel={
-              now ? formatRemainingLabel(session.targetDate, now) : session.remainingLabel
-            }
-          />
-        ))}
-      </div>
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">{sessionCards}</div>
     </section>
   );
-}
+});
 
-/** Üst hero: sol/orta YKS sayaç, sağda sabit genişlikte takvim (layout kayması yok) */
+/** Üst hero: sol/orta YKS sayaç, sağda sabit genişlikte takvim */
 export function YksCountdown() {
   return (
     <div
       className={cn(
-        "grid w-full grid-cols-1 items-stretch gap-4",
+        "grid w-full grid-cols-1 items-start gap-4",
         "lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:gap-5",
         "xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]"
       )}
     >
-      <div className="min-w-0">
-        <YksCountdownPanel />
-      </div>
-      <div className="min-w-0 lg:w-full">
-        <DashboardCalendar className="h-full lg:min-h-full" />
-      </div>
+      <YksCountdownPanel />
+      <DashboardCalendar />
     </div>
   );
 }

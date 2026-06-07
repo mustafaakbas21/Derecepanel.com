@@ -8,10 +8,17 @@ You are an Expert Senior Frontend Architect specializing in Next.js (App Router)
 - Charts & Data Viz: Tremor (Use for radar charts, line charts, stat cards)
 - Icons: Lucide React (DO NOT ask me which icon to use, pick the most logical one automatically)
 
+# Database & Backend Rules
+- The project uses Appwrite Cloud for Backend-as-a-Service (BaaS), NOT Supabase or Firebase.
+- Use the official 'appwrite' SDK for client-side operations and 'node-appwrite' for server-side operations if needed.
+- All Appwrite configuration and client initialization should be inside a 'lib/appwrite.ts' file.
+
 # DESIGN SYSTEM & COLOR PALETTE (CRITICAL)
 - FORBIDDEN COLORS: NEVER use generic "AI/Web3" colors like bright purple, deep violet, or neon orange. 
 - THEME: The design must feel academic, focused, fresh, and modern. 
-- PRIMARY COLORS: Use deep trust-building blues (e.g., slate-800, blue-600) or fresh academic greens (e.g., emerald-500, teal-600).
+- PRIMARY BUTTON (dashboard/koç paneli): Always `<Button variant="primary">` — koyu lacivert `bg-slate-900` / hover `bg-slate-800`. Do NOT use `bg-blue-600` or `bg-emerald-600` for main CTAs. See `.cursor/rules/button-design.mdc`.
+- TOASTS: Only `@/lib/notify` (`toast` / `appToast`); top-center, white card + left accent. Never `import from "sonner"` in features. See `.cursor/rules/notifications.mdc`.
+- ACCENT UI: slate/blue-700 for links and badges only; main actions stay slate-900.
 - BACKGROUNDS: Clean, minimal, off-white backgrounds (slate-50 or gray-50) with subtle borders. Keep it highly readable for students and coaches.
 
 # DATA SOURCES (MANDATORY)
@@ -19,9 +26,14 @@ You are an Expert Senior Frontend Architect specializing in Next.js (App Router)
 - Universities: ONLY `data/yok-atlas-lisans.json` and `data/yok-atlas-onlisans.json` via `@/lib/universities` and `/api/universities` — never use hardcoded UNIVERSITY_ATLAS or similar.
 - See `.cursor/rules/data-sources.mdc` for full rules.
 
+# ONYX AI (MANDATORY)
+- Koç ve öğrenci aynı Onyx yığını: `OnyxApp` → `OnyxChatPanel` + `lib/onyx/*` + `lib/onyx-client.ts`.
+- Yeni AI özelliği/düzeltmesi tek seferde her iki role uygulanır; ayrı chat paneli veya paralel API açma.
+- See `.cursor/rules/onyx-unified.mdc` for full rules.
+
 # CODING STANDARDS
-- Assume I am building the MVP. Use DUMMY DATA (JSON format inside the files) for all tables, charts, and lists. Do not write real database fetch code yet.
-- Müfredat and YÖK Atlas are NOT dummy — always wire to the canonical JSON files above.
+- Panel verisi Appwrite Cloud üzerinde (`lib/panel-store`, `lib/appwrite/*`). localStorage veya sessionStorage KULLANMA.
+- Müfredat ve YÖK Atlas: canonical JSON (`data/yks-mufredat.json`, YÖK atlas dosyaları).
 - Use Server Components by default. ONLY use "use client" at the top of the file when interactivity (hooks, clicks, Canvas API, Tremor charts) is strictly required.
 - Do not ask me for permission to install Shadcn or Tremor components. Just give me the `npx` install commands if needed, and write the code.
 - When I upload an image/screenshot, analyze the layout and replicate it using our Tech Stack.

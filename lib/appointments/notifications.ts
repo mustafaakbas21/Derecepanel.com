@@ -1,6 +1,7 @@
 import type { StudentNotification } from "@/lib/appointments/types";
 import { formatDdMmFromIso } from "@/lib/appointments/utils";
 
+import { panelGetItem, panelRemoveItem, panelSetItem } from "@/lib/panel-store";
 function notificationKey(studentId: string) {
   return `student_notifications_${studentId}`;
 }
@@ -9,11 +10,11 @@ export function pushStudentNotification(studentId: string, item: StudentNotifica
   if (!studentId || typeof window === "undefined") return;
   const key = notificationKey(studentId);
   try {
-    const raw = localStorage.getItem(key);
+    const raw = panelGetItem(key);
     const list: StudentNotification[] = raw ? (JSON.parse(raw) as StudentNotification[]) : [];
     if (!Array.isArray(list)) return;
     list.unshift(item);
-    localStorage.setItem(key, JSON.stringify(list));
+    panelSetItem(key, JSON.stringify(list));
   } catch {
     /* ignore */
   }

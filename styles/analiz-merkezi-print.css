@@ -1,0 +1,61 @@
+/**
+ * Analiz Merkezi — yazdır (Sonuç Merkezi ile aynı #bds-modal motoru)
+ */
+.am-report-root .am-report-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.am-report-root .am-report-kpi {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 0.65rem 0.85rem;
+  font-size: 11px;
+}
+
+.am-report-root .am-report-kpi span {
+  display: block;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.am-report-root .am-report-kpi strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.am-report-root .am-report-section {
+  margin-top: 1.5rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.am-report-root .am-report-section-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.am-report-root .am-report-note {
+  margin: 0 0 0.65rem;
+  font-size: 11px;
+  color: #64748b;
+}
+
+@media print {
+  .am-report-root .am-report-section {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .am-report-root .bds-karne-tablewrap {
+    break-inside: avoid;
+  }
+}

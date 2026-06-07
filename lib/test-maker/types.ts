@@ -1,5 +1,8 @@
 export type AnswerLetter = "A" | "B" | "C" | "D" | "E";
-export type QPerPage = 4 | 6;
+/** Kırpma / cevap anahtarı — boş bırakılmış soru */
+export type QuestionAnswer = AnswerLetter | "blank" | null;
+export type CropAnswerChoice = AnswerLetter | "blank";
+export type QPerPage = 2 | 4 | 6;
 
 export type TemplateId =
   | "derece"
@@ -16,7 +19,7 @@ export type TemplateId =
 export interface TMQuestion {
   id: string;
   imageDataUrl: string;
-  answer: AnswerLetter | null;
+  answer: QuestionAnswer;
   fromHavuz?: boolean;
   poolUuid?: string;
 }
@@ -34,16 +37,20 @@ export interface TMConfig {
 export interface QuestionPoolItem {
   uuid: string;
   dataUrl: string;
+  imageFileId?: string;
+  imageBucketId?: string;
   ders: string;
   konu: string;
   kavram: string;
-  answer: AnswerLetter | null;
+  answer: QuestionAnswer;
   page?: number | null;
   qNumber?: string;
   soruNo?: string;
   auto?: boolean;
   savedAt: string;
   hataKaynagi?: "deneme" | "soru_bankasi";
+  /** Yalnızca UI — kırpma önizlemesi; baskı/PDF çıktısına girmez */
+  sourcePdf?: string;
 }
 
 export interface TaramaRecord {
@@ -70,6 +77,12 @@ export interface TaramaExportMeta {
   savedAt: string;
 }
 
+export type FascicleSource =
+  | "test_maker_send"
+  | "tarama_deposu"
+  | "tarama_deposu_send"
+  | "fasikul_wizard";
+
 export interface FascicleAssignment {
   id: string;
   title: string;
@@ -78,18 +91,20 @@ export interface FascicleAssignment {
   template: string;
   studentCode?: string;
   studentId?: string;
-  source: "test_maker_send";
+  source: FascicleSource;
   assignedAt: string;
   status: "bekliyor" | "tamamlandi";
   pdf_file_id?: string;
+  depoId?: string;
+  metaName?: string;
 }
 
 export interface MatrixQuestionRow {
   qNo: number;
   subjectId: string;
   subjectName: string;
-  topicId: string;
-  topicName: string;
+  topicId: string | null;
+  topicName: string | null;
 }
 
 export interface MatrixBundle {

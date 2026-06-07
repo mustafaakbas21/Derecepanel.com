@@ -15,10 +15,14 @@
 
 # next.js
 /.next/
+/.next-admin/
 /out/
 
 # production
 /build
+
+# local platform settings (bakım modu vb.)
+/data/platform-store.json
 
 # misc
 .DS_Store

@@ -64,8 +64,9 @@ export function BulkImportDialog({
         <div className="space-y-4 px-6 py-5">
           <Button
             type="button"
+            variant="primary"
             disabled={isImporting}
-            className="h-11 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+            className="h-11 w-full"
             onClick={() => downloadTemplate()}
           >
             <Download className="h-4 w-4" />

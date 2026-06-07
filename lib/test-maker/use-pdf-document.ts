@@ -59,9 +59,7 @@ export function usePdfDocument() {
 
   const updateCanvasHost = useCallback((canvas: HTMLCanvasElement) => {
     const host = document.getElementById("tm-canvas-size-host");
-    const sWrap = document.getElementById("tm-canvas-scale-wrap");
-    if (!host || !sWrap) return;
-    sWrap.style.transform = "none";
+    if (!host) return;
     if (canvas.classList.contains("hidden")) {
       host.style.width = "1px";
       host.style.height = "1px";
@@ -82,7 +80,7 @@ export function usePdfDocument() {
         zoom,
         maxWidth,
       });
-      if (taskId !== renderTaskRef.current) return null;
+      if (taskId !== renderTaskRef.current || result.cancelled) return null;
 
       canvas.classList.remove("hidden");
       renderMetaRef.current = {
@@ -126,6 +124,18 @@ export function usePdfDocument() {
     setPanY(0);
   }, []);
 
+  const clearAllFiles = useCallback(() => {
+    setFiles([]);
+    setActiveFileId(null);
+    setPageIndex(1);
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
+    setPanMode(false);
+    setCropMode(false);
+    setRenderGen((g) => g + 1);
+  }, []);
+
   return {
     files,
     activeFileId,
@@ -140,7 +150,7 @@ export function usePdfDocument() {
     totalPages,
     zoom,
     setZoom: (z: number) => {
-      setZoom(z);
+      setZoom(Math.max(0.5, Math.min(3, z)));
       bumpRender();
     },
     panX,
@@ -150,6 +160,7 @@ export function usePdfDocument() {
       setPanY(y);
     },
     resetPan,
+    clearAllFiles,
     panMode,
     setPanMode: (v: boolean) => setPanMode(v),
     cropMode,

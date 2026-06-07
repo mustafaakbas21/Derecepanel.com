@@ -151,7 +151,6 @@
 }
 
 .tm-a4-sheet {
-  aspect-ratio: 21 / 29.7;
   width: 100%;
   max-width: min(218mm, 100%);
   margin-left: auto;
@@ -159,6 +158,12 @@
   background: #fff;
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08);
+}
+
+.tm-a4-sheet.tm-q-question-sheet {
+  height: 297mm;
+  max-height: 297mm;
+  overflow: hidden;
 }
 
 .tm-pdf-page-num-input {
@@ -186,23 +191,104 @@
   margin: 0;
 }
 
-.tm-strict-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 2rem;
-  align-items: start;
-  position: relative;
+/* A4 soru gövdesi — iki bağımsız flex sütun, katı sayfa içinde */
+.tm-q-sheet-body {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.tm-strict-grid::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #e2e8f0;
-  pointer-events: none;
+.tm-q-col-left,
+.tm-q-col-right {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+.tm-q-sheet-header,
+.tm-q-sheet-footer {
+  flex-shrink: 0;
+}
+
+/* Kilitli header/footer alanında şablon bandını sıkıştır */
+.tm-q-sheet-header .tm-tpl-hdr-bg {
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.25rem !important;
+}
+
+.tm-q-sheet-header .tm-tpl-divider {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.35rem !important;
+}
+
+.tm-q-sheet-footer .tm-q-footer {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Ortadaki sütun ayırıcı — eski test-olusturucu questions-wrapper çizgisi */
+#tm-a4-page .tm-q-col-spine {
+  background-color: var(--tm-divider-color, #cbd5e1);
+}
+
+#tm-a4-page[data-tpl="derece"] .tm-q-col-spine {
+  width: 2px;
+  background-color: var(--tm-divider-color, #1565c0);
+}
+
+#tm-a4-page[data-tpl="sarmal"] .tm-q-col-spine {
+  width: 0;
+  border-left: 1px dashed var(--tm-divider-color, #e65100);
+  background: transparent;
+}
+
+#tm-a4-page[data-tpl="limitless"] .tm-q-col-spine {
+  background-color: #000;
+}
+
+.tm-q-slot,
+.tm-q-measure-slot {
+  flex-shrink: 0;
+}
+
+.tm-q-solve-space {
+  flex-shrink: 0;
+}
+
+.tm-q-sheet-body .tm-q-item {
+  width: 100%;
+}
+
+/* Önizleme: soru kartları şablon header/footer üstünde; sayfa boyutu kilitli kalır */
+@media screen {
+  #tm-a4-page .tm-q-sheet-body {
+    z-index: 30;
+    overflow: hidden;
+  }
+
+  #tm-a4-page .tm-q-slot,
+  #tm-a4-page .tm-q-item {
+    position: relative;
+    z-index: 35;
+    background: #fff;
+  }
+
+  #tm-a4-page .tm-q-sheet-header,
+  #tm-a4-page .tm-q-sheet-footer,
+  #tm-a4-page .tm-q-footer {
+    position: relative;
+    z-index: 10;
+  }
+
+  #tm-a4-page .tm-q-col-spine {
+    z-index: 15;
+  }
 }
 
 .tm-pdf-dropzone {
@@ -221,6 +307,8 @@
   }
   body {
     background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .dashboard-shell > div:first-child,
   .sidebar-panel,
@@ -234,14 +322,64 @@
   .tm-premium-action-bar {
     display: none !important;
   }
-  .coach-panel-main {
+  body:has(#tm-a4-page) .coach-panel-main {
     padding: 0 !important;
     overflow: visible !important;
   }
   #tm-a4-page {
     box-shadow: none !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+  }
+  .tm-a4-sheet {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: always;
+    break-after: page;
+  }
+  .tm-a4-sheet.tm-q-question-sheet,
+  #tm-sheet-cover {
+    height: 297mm !important;
+    max-height: 297mm !important;
+    min-height: 297mm !important;
+    overflow: hidden !important;
+  }
+  /* Son sayfada zorunlu sayfa sonu bırakma → sonda boş A4 basılmasın */
+  #tm-a4-page > .tm-a4-sheet:last-child,
+  #tm-q-pages:last-child > .tm-a4-sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .tm-a4-sheet .tm-q-sheet-body {
+    overflow: hidden !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+  .tm-q-col-left,
+  .tm-q-col-right {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    justify-content: flex-start !important;
+    gap: 2rem !important;
+    overflow: hidden !important;
+  }
+  #tm-a4-page .tm-q-col-spine {
+    display: block !important;
+    print-color-adjust: exact;
+  }
+  .tm-q-sheet-body .tm-q-item {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  .tm-q-image {
+    max-height: none !important;
   }
   .teacher-only-ui {
+    display: none !important;
+  }
+  .tm-q-answer-picker {
     display: none !important;
   }
 }

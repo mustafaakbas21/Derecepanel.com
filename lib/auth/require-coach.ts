@@ -1,15 +1,31 @@
+import { getCachedAuthSession } from "@/lib/auth/local-auth";
 import { DEFAULT_COACH_ID } from "@/lib/students/constants";
+
+export type CoachRole = "coach" | "admin" | "institution" | "student";
 
 export type CoachSession = {
   coachId: string;
-  role: "coach" | "institution";
+  role: CoachRole;
 };
 
-/**
- * MVP: oturum yokken varsayılan koç kimliği.
- * Gerçek auth eklendiğinde cookie/session doğrulaması buraya taşınır.
- */
-export async function requireCoachAuth(): Promise<CoachSession> {
-  // TODO: NextAuth / session cookie kontrolü
-  return { coachId: DEFAULT_COACH_ID, role: "coach" };
+export class AuthError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
+/** İstemci fetch için auth header'ları */
+export function clientAuthHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const session = getCachedAuthSession();
+  const role = session?.role || "coach";
+  const userId = session?.userId || DEFAULT_COACH_ID;
+  return {
+    "x-dp-auth-role": role,
+    "x-dp-auth-user-id": userId,
+  };
 }

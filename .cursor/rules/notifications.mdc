@@ -1,0 +1,54 @@
+---
+description: Panel genelinde tek tip toast bildirimi (konum, renk, süre)
+globs:
+  - "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Bildirimler / toast (zorunlu)
+
+## Tek kaynak
+
+- **API:** `import { toast, appToast } from "@/lib/notify"`
+- **Kök bileşen:** `AppToaster` (`components/providers.tsx` → `AppRootProviders`)
+- **`sonner` doğrudan import etmeyin** (`import { toast } from "sonner"` yasak)
+
+## Konum ve davranış
+
+| Özellik | Değer |
+|--------|--------|
+| Konum | `top-center` (tüm sayfalar) |
+| Başarı süresi | 5 sn (`TOAST_SUCCESS_MS`) |
+| Hata süresi | 6 sn (`TOAST_ERROR_MS`) |
+| z-index | `99999` |
+| Kapat | `closeButton` açık |
+
+## Görünüm
+
+- Kart: beyaz zemin, `border-slate-200`, `rounded-xl`, gölge
+- Tip ayrımı: **sol kenar çizgisi** (success emerald, error red, warning amber, info slate)
+- Tam kartı boyama (`bg-emerald-50`, `bg-sky-50` toast arka planı) **kullanma**
+- `richColors` veya ikinci `Toaster` **ekleme**
+
+## Hangi API?
+
+```tsx
+// Genel mesajlar
+toast.success("Kaydedildi");
+toast.error("Yüklenemedi");
+toast.warning("Şablon uyumsuz");
+toast.info("İşlem sürüyor");
+toast.message("Liste boş"); // nötr
+
+// Alan özel kısayollar (tercih edilir)
+appToast.studentSaved(true);
+appToast.examResultsUploaded(42);
+```
+
+- **`window.alert` / `window.confirm` / `confirm()` YASAK** — `useConfirm()` + `ConfirmDialog` (`@/hooks/use-confirm`)
+- Silme / temizleme: `destructive: true`, açıklama metni zorunlu
+- Sayfa içi banner gerekiyorsa aynı semantik renkler (amber uyarı kutusu vb.) — toast ile karıştırma
+
+## Test Maker
+
+- `tmToast` (`lib/test-maker/notify.ts`) — içeride `appToast` kullanır; yeni TM mesajları için genişlet

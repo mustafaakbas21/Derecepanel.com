@@ -1,0 +1,235 @@
+/**
+ * Sonuç Merkezi — yazdır (body.bds-print-active)
+ * Kenar boşlukları: --print-margin-* + padding (popup: body.print-safe-area)
+ */
+:root {
+  --print-margin-top: 11mm;
+  --print-margin-bottom: 11mm;
+  --print-margin-x: 10mm;
+}
+
+@media print {
+  body.print-safe-area:not(.bds-print-active) {
+    padding: var(--print-margin-top) var(--print-margin-x) var(--print-margin-bottom) !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html,
+  body:not(.print-safe-area),
+  .bds-karne-kurum-stats,
+  .bds-karne-logo-ph,
+  .bds-karne-rank-box--premium,
+  .bds-karne-rank-box--accent,
+  .bds-karne-vsbar-fill--ok,
+  .bds-karne-vsbar-fill--low,
+  .bds-karne-topics-wrap,
+  .bds-karne-avatar-ph,
+  .bds-karne-qr-ph {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.bds-print-active > *:not(#bds-modal) {
+    display: none !important;
+  }
+
+  body.bds-print-active,
+  body.bds-print-active #bds-modal,
+  body.bds-print-active #bds-modal * {
+    visibility: visible !important;
+  }
+
+  html,
+  body.bds-print-active {
+    background: #fff !important;
+    color: #0f172a !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.bds-print-active #bds-modal-backdrop,
+  body.bds-print-active .bds-no-print,
+  body.bds-print-active .sm-modal-toolbar {
+    display: none !important;
+  }
+
+  body.bds-print-active #bds-modal {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    z-index: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.bds-print-active #bds-modal-panel {
+    position: static !important;
+    display: block !important;
+    max-width: none !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    flex: none !important;
+    padding: 0 !important;
+  }
+
+  body.bds-print-active #bds-modal-body,
+  body.bds-print-active .sm-modal-body,
+  body.bds-print-active .bds-karne-print-host {
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    flex: none !important;
+    margin: 0 !important;
+    background: #fff !important;
+    width: auto !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    padding: var(--print-margin-top, 11mm) var(--print-margin-x, 10mm)
+      var(--print-margin-bottom, 11mm) !important;
+  }
+
+  .bds-print-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .bds-karne-kurum {
+    page-break-after: auto;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .bds-karne-kurum__head,
+  .bds-karne-kurum-premium {
+    page-break-after: avoid;
+  }
+
+  .bds-karne-tablewrap {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+  }
+
+  .bds-karne-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 8.5pt !important;
+    table-layout: fixed;
+  }
+
+  .bds-karne-table th,
+  .bds-karne-table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 4px 5px !important;
+    color: #0f172a !important;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .bds-karne-table thead th {
+    background: #e2e8f0 !important;
+    font-weight: 800 !important;
+  }
+
+  .bds-karne-table__row--a td {
+    background: #fff !important;
+  }
+
+  .bds-karne-table__row--b td {
+    background: #f1f5f9 !important;
+  }
+
+  .bds-karne-student-print-unit {
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .bds-karne-student-print-unit:last-of-type {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  section.bds-karne-student-page1,
+  section.bds-karne-student-page {
+    break-inside: auto;
+    page-break-inside: auto;
+    page-break-after: always !important;
+    break-after: page !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 0 3mm !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    min-height: 0 !important;
+  }
+
+  .bds-karne-matrix-page,
+  .matrix-page {
+    page-break-before: always !important;
+    break-before: page !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 2mm 0 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    min-height: 0 !important;
+  }
+
+  .bds-karne-rank-box,
+  .bds-karne-rank-box--accent {
+    border: 1px solid #94a3b8 !important;
+  }
+
+  .bds-karne-vsbar-marker {
+    background: #0f172a !important;
+  }
+
+  .bds-karne-note {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  body.bds-print-active .bds-karne-matrix-page:last-child,
+  body.bds-print-active .matrix-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+}

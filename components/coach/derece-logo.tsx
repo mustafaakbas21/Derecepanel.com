@@ -1,15 +1,37 @@
-export function DereceLogoMark({ size = 28 }: { size?: number }) {
+import { cn } from "@/lib/utils";
+
+export const DERECE_LOGO_SRC = "/images/derece-panel-logo.png";
+export const DERECE_LOGO_WIDTH = 640;
+export const DERECE_LOGO_HEIGHT = 160;
+
+/** Yatay DerecePanel logosu — tüm marka alanlarında tek kaynak. */
+export function DereceLogo({
+  height = 32,
+  className,
+  priority,
+}: {
+  height?: number;
+  className?: string;
+  priority?: boolean;
+}) {
+  const width = Math.round((height * DERECE_LOGO_WIDTH) / DERECE_LOGO_HEIGHT);
+
   return (
-    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" aria-hidden>
-      <circle cx="14" cy="6" r="2.2" fill="#F97316" />
-      <circle cx="20.5" cy="9" r="2" fill="#FB923C" />
-      <circle cx="22.5" cy="14" r="2.2" fill="#F97316" />
-      <circle cx="20" cy="19.5" r="2" fill="#EA580C" />
-      <circle cx="14" cy="22" r="2.2" fill="#F97316" />
-      <circle cx="8" cy="19.5" r="2" fill="#FB923C" />
-      <circle cx="5.5" cy="14" r="2.2" fill="#F97316" />
-      <circle cx="7.5" cy="9" r="2" fill="#EA580C" />
-      <circle cx="14" cy="14" r="2.8" fill="#F97316" />
-    </svg>
+    // Yerel statik asset — next/image optimizasyonu landing header'da boyut çöküşüne yol açıyordu.
+    <img
+      src={DERECE_LOGO_SRC}
+      alt="DerecePanel"
+      width={width}
+      height={height}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
+      className={cn("block shrink-0 object-contain object-left", className)}
+      style={{ width, height, maxWidth: "none" }}
+    />
   );
+}
+
+/** @deprecated `DereceLogo` kullanın — `size` yükseklik (px) olarak yorumlanır. */
+export function DereceLogoMark({ size = 28 }: { size?: number }) {
+  return <DereceLogo height={size} />;
 }
