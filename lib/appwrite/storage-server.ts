@@ -24,12 +24,28 @@ export function isAppwriteStorageConfigured(): boolean {
   return isAppwriteServerConfigured();
 }
 
+export function storageOwnerPrefix(userId: string): string {
+  const safe = userId.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  return `owner:${safe}/`;
+}
+
+export function canAccessStorageObject(
+  session: { userId: string; role: "coach" | "student" | "admin" },
+  objectName: string
+): boolean {
+  if (session.role === "admin") return true;
+  const name = String(objectName || "");
+  if (!name.includes("owner:")) return true;
+  return name.startsWith(storageOwnerPrefix(session.userId));
+}
+
 export async function uploadBufferToBucket(input: {
   bucketId: AppwriteBucketId;
   buffer: Buffer | Uint8Array;
   filename: string;
   fileId?: string;
   mimeType?: string;
+  ownerId?: string;
 }): Promise<{ fileId: string; bucketId: string }> {
   if (!isAppwriteStorageConfigured()) {
     throw new Error("Appwrite storage yapılandırması eksik.");
@@ -37,7 +53,10 @@ export async function uploadBufferToBucket(input: {
 
   const storage = getAdminStorage();
   const fileId = input.fileId || ID.unique();
-  const file = InputFile.fromBuffer(Buffer.from(input.buffer), input.filename);
+  const filename = input.ownerId
+    ? `${storageOwnerPrefix(input.ownerId)}${input.filename}`
+    : input.filename;
+  const file = InputFile.fromBuffer(Buffer.from(input.buffer), filename);
 
   const created = await storage.createFile({
     bucketId: input.bucketId,

@@ -14,7 +14,12 @@ import { completeSolveVision } from "@/lib/onyx/complete-solve-vision";
 import { resolveVisionSolveSkillResponse } from "@/lib/onyx/skill-adapters";
 import { detectOnyxReplyContinuity } from "@/lib/onyx/continuity";
 import { completeOnyxWithGroq, OnyxGroqError } from "@/lib/onyx/groq-server";
-import { resolveOnyxRequestRole } from "@/lib/onyx/onyx-persona";
+import { AuthError } from "@/lib/auth/require-coach";
+import {
+  assertOnyxStudentAccess,
+  requireOnyxAuth,
+} from "@/lib/auth/require-onyx";
+import { enforceRateLimit } from "@/lib/security/apply-rate-limit";
 import { wantsImmediateQuestionSolve } from "@/lib/onyx/solve-intent";
 import type { OnyxRole } from "@/lib/onyx/role-quick-prompts";
 
@@ -63,14 +68,29 @@ function imageDataUrl(
 /** Soru çözme & müfredat — vision / metin */
 export async function POST(request: Request) {
   try {
+    const ctx = await requireOnyxAuth();
+    const rateLimited = await enforceRateLimit(
+      request,
+      "onyx-vision",
+      30,
+      60,
+      ctx.userId
+    );
+    if (rateLimited) return rateLimited;
+
     const body = (await request.json()) as OnyxVisionPostBody;
-    const studentId = String(body?.studentId ?? "").trim();
+    const studentId = String(
+      body?.studentId ?? (ctx.role === "student" ? ctx.userId : "")
+    ).trim();
     if (!studentId) {
       return NextResponse.json(
         { error: "studentId gerekli", code: "BAD_REQUEST" },
         { status: 400 }
       );
     }
+
+    await assertOnyxStudentAccess(ctx, studentId);
+    const role = ctx.onyxRole;
 
     const prompt = String(body?.prompt ?? "").trim();
     const vision = body?.vision;
@@ -82,7 +102,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const role = resolveOnyxRequestRole(body);
     const immediateSolve = wantsImmediateQuestionSolve(prompt);
     const socraticTurn = immediateSolve
       ? 2
@@ -200,6 +219,9 @@ export async function POST(request: Request) {
       sessionId: chat.sessionId,
     });
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     if (err instanceof OnyxGroqError) {
       const status =
         err.code === "MISSING_API_KEY"
@@ -225,30 +247,40 @@ export async function POST(request: Request) {
 
 /** Koç — soru geçmişi + zorlanılan sorular (QuestionMemory) */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const studentId = searchParams.get("studentId")?.trim();
-  const studentName =
-    searchParams.get("studentName")?.trim() || "Öğrenci";
-  if (!studentId) {
-    return NextResponse.json(
-      { error: "studentId query parametresi gerekli" },
-      { status: 400 }
-    );
+  try {
+    const ctx = await requireOnyxAuth();
+    const { searchParams } = new URL(request.url);
+    const studentId = searchParams.get("studentId")?.trim();
+    const studentName =
+      searchParams.get("studentName")?.trim() || "Öğrenci";
+    if (!studentId) {
+      return NextResponse.json(
+        { error: "studentId query parametresi gerekli" },
+        { status: 400 }
+      );
+    }
+
+    await assertOnyxStudentAccess(ctx, studentId);
+
+    const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [solves, weakTopics, struggled, deepErrorAlerts] = await Promise.all([
+      listOnyxSolvesByStudent(studentId, 30),
+      getWeakTopicsFromSolves(studentId, 8),
+      listQuestionMemoryByStudent(studentId, { since: since7, limit: 30 }),
+      getCoachDeepErrorAlerts(studentId, studentName, 7),
+    ]);
+
+    return NextResponse.json({
+      solves,
+      weakTopics,
+      struggledQuestions: struggled,
+      deepErrorAlerts,
+    });
+  } catch (e) {
+    if (e instanceof AuthError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
-
-  const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-  const [solves, weakTopics, struggled, deepErrorAlerts] = await Promise.all([
-    listOnyxSolvesByStudent(studentId, 30),
-    getWeakTopicsFromSolves(studentId, 8),
-    listQuestionMemoryByStudent(studentId, { since: since7, limit: 30 }),
-    getCoachDeepErrorAlerts(studentId, studentName, 7),
-  ]);
-
-  return NextResponse.json({
-    solves,
-    weakTopics,
-    struggledQuestions: struggled,
-    deepErrorAlerts,
-  });
 }

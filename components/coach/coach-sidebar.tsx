@@ -23,6 +23,7 @@ import { NavAnalizBetaLink } from "@/components/analiz-merkezi/NavAnalizBetaLink
 import { NavPazarlamaBetaLink } from "@/components/pazarlama/NavPazarlamaBetaLink";
 import "@/components/analiz-merkezi/nav-analiz-beta.css";
 import { CoachNavGroup } from "@/components/coach/coach-nav-group";
+import { SidebarUpgradeCta } from "@/components/marketing/pricing/sidebar-upgrade-cta";
 import { navItems } from "@/lib/coach/dummy-data";
 import { denemelerNavGroup, DENEMELER_ROUTES } from "@/lib/coach/denemeler-nav-config";
 import { hataRecetesiNavGroup } from "@/lib/coach/hata-recetesi-nav-config";
@@ -282,25 +283,12 @@ export function CoachSidebar() {
       </nav>
 
       <div className="mt-4 shrink-0 space-y-3 border-t border-slate-200/70 pt-4">
-        <div
-          className="overflow-hidden rounded-2xl bg-slate-900 p-4"
-          style={{ boxShadow: "0 6px 24px rgba(15,23,42,0.18)" }}
-        >
-          <p className="text-sm font-bold leading-snug text-white">Pro&apos;ya Geç!</p>
-          <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
-            Sınırsız öğrenci ve gelişmiş raporlar.
-          </p>
-          <button
-            type="button"
-            className="mt-4 w-full rounded-xl py-2.5 text-xs font-bold text-slate-900 transition hover:brightness-105"
-            style={{
-              background: "linear-gradient(135deg, #f97316 0%, #fb923c 100%)",
-              boxShadow: "0 4px 12px rgba(249,115,22,0.3)",
-            }}
-          >
-            Şimdi Yükselt
-          </button>
-        </div>
+        <SidebarUpgradeCta
+          audience="koc"
+          title="Planını Yükselt"
+          subtitle="Daha fazla öğrenci, Test Maker ve Onyx AI modülleri."
+          buttonLabel="Paketleri Gör"
+        />
 
         <button
           type="button"

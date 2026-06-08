@@ -1,17 +1,16 @@
 import "server-only";
 
-import { ID, Query } from "node-appwrite";
-
 import {
   APPWRITE_COLLECTION_USERS,
   APPWRITE_DATABASE_ID,
-  resolveCoachLoginEmail,
 } from "@/lib/appwrite/config";
-import { getAdminDatabases, getAdminUsers } from "@/lib/appwrite/server";
+import { getAdminDatabases } from "@/lib/appwrite/server";
 import {
-  isAppwriteAuthReady,
-  provisionCoachAccount,
-} from "@/lib/auth/appwrite-login";
+  ensureAppwriteAuthUser,
+  resolveAuthEmailFromUsername,
+} from "@/lib/appwrite/auth-users-server";
+import { isAppwriteAuthReady } from "@/lib/auth/appwrite-login";
+import { Query } from "node-appwrite";
 
 export type ProvisionCoachInput = {
   username: string;
@@ -26,12 +25,38 @@ export type ProvisionCoachResult = {
   appwriteUserId?: string;
 };
 
-async function findAppwriteUserIdByEmail(email: string): Promise<string | null> {
+async function findCoachUserDoc(params: {
+  coachId: string;
+  email: string;
+  username: string;
+  appwriteUserId: string;
+}) {
+  const db = getAdminDatabases();
+
+  const byCoachId = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
+    Query.equal("coachId", params.coachId),
+    Query.limit(1),
+  ]);
+  if (byCoachId.documents[0]) return byCoachId.documents[0];
+
+  const byEmail = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
+    Query.equal("email", params.email),
+    Query.limit(1),
+  ]);
+  if (byEmail.documents[0]) return byEmail.documents[0];
+
+  const byUsername = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
+    Query.equal("username", params.username),
+    Query.limit(1),
+  ]);
+  if (byUsername.documents[0]) return byUsername.documents[0];
+
   try {
-    const users = getAdminUsers();
-    const page = await users.list([Query.equal("email", email), Query.limit(1)]);
-    const user = page.users[0];
-    return user?.$id ?? null;
+    return await db.getDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_USERS,
+      params.appwriteUserId
+    );
   } catch {
     return null;
   }
@@ -45,10 +70,6 @@ async function upsertCoachUserDoc(params: {
   displayName: string;
 }): Promise<void> {
   const db = getAdminDatabases();
-  const existing = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
-    Query.equal("coachId", params.coachId),
-    Query.limit(1),
-  ]);
 
   const payload = {
     role: "coach",
@@ -58,7 +79,7 @@ async function upsertCoachUserDoc(params: {
     fullName: params.displayName,
   };
 
-  const doc = existing.documents[0];
+  const doc = await findCoachUserDoc(params);
   if (doc) {
     await db.updateDocument(
       APPWRITE_DATABASE_ID,
@@ -80,29 +101,16 @@ async function upsertCoachUserDoc(params: {
 export async function provisionCoachWithAppwrite(
   input: ProvisionCoachInput
 ): Promise<ProvisionCoachResult> {
-  const email = resolveCoachLoginEmail(input.username);
-  if (!email) {
-    throw new Error("Geçersiz kullanıcı adı.");
-  }
-
   if (!isAppwriteAuthReady()) {
+    const email = resolveAuthEmailFromUsername(input.username);
     return { email, appwriteProvisioned: false };
   }
 
-  await provisionCoachAccount(email, input.password);
-
-  let appwriteUserId = await findAppwriteUserIdByEmail(email);
-  if (!appwriteUserId) {
-    const name = input.displayName.trim() || input.username;
-    const created = await getAdminUsers().create(
-      ID.unique(),
-      email,
-      undefined,
-      input.password,
-      name
-    );
-    appwriteUserId = created.$id;
-  }
+  const { userId: appwriteUserId, email } = await ensureAppwriteAuthUser({
+    usernameOrEmail: input.username,
+    password: input.password,
+    displayName: input.displayName,
+  });
 
   try {
     await upsertCoachUserDoc({

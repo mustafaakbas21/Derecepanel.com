@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 export { DP_SESSION_COOKIE } from "@/lib/auth/cookie-names";
 
@@ -15,9 +15,16 @@ export type DpSessionPayload = {
 };
 
 function signingKey(): string {
-  const key = process.env.APPWRITE_API_KEY?.trim();
-  if (key) return key;
-  return `${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "derecepanel"}:dev-session`;
+  const sessionSecret = process.env.SESSION_SIGNING_SECRET?.trim();
+  if (sessionSecret) return sessionSecret;
+
+  const apiKey = process.env.APPWRITE_API_KEY?.trim();
+  if (apiKey) {
+    return createHash("sha256").update(`${apiKey}:dp-session-v1`).digest("hex");
+  }
+
+  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "derecepanel";
+  return createHash("sha256").update(`${projectId}:dp-session-fallback-v1`).digest("hex");
 }
 
 function sign(data: string): string {
@@ -44,7 +51,12 @@ export function verifyDpSession(
   const sig = token.slice(dot + 1);
   if (!data || !sig) return null;
 
-  const expected = sign(data);
+  let expected: string;
+  try {
+    expected = sign(data);
+  } catch {
+    return null;
+  }
   try {
     const a = Buffer.from(sig);
     const b = Buffer.from(expected);

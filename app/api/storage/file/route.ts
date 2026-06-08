@@ -5,6 +5,10 @@ import {
   APPWRITE_BUCKET_SORU_HAVUZU,
 } from "@/lib/appwrite/config";
 import { downloadBucketFileBuffer } from "@/lib/appwrite/download-server";
+import {
+  canAccessStorageObject,
+  getBucketFileMeta,
+} from "@/lib/appwrite/storage-server";
 import { getServerAuthSession } from "@/lib/auth/session-server";
 
 const ALLOWED_BUCKETS = new Set([APPWRITE_BUCKET_SORU_HAVUZU, APPWRITE_BUCKET_DENEME_DEPOSU]);
@@ -24,6 +28,11 @@ export async function GET(request: Request) {
   }
 
   try {
+    const meta = await getBucketFileMeta(bucketId, fileId);
+    if (!canAccessStorageObject(session, meta.name)) {
+      return NextResponse.json({ error: "Yetkisiz dosya erişimi" }, { status: 403 });
+    }
+
     const { buffer, mimeType } = await downloadBucketFileBuffer(bucketId, fileId);
     return new NextResponse(new Uint8Array(buffer), {
       headers: {

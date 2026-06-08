@@ -5,6 +5,7 @@ import {
   APPWRITE_ENDPOINT,
   APPWRITE_PROJECT_ID,
 } from "@/lib/appwrite/config";
+import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
 
 function appwriteConfig() {
   const endpoint = APPWRITE_ENDPOINT;
@@ -22,6 +23,15 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  try {
+    await requireCoachAuth();
+  } catch (e) {
+    if (e instanceof AuthError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
+    return NextResponse.json({ error: "Oturum gerekli" }, { status: 401 });
+  }
+
   const { endpoint, projectId, bucketId, apiKey } = appwriteConfig();
   if (!endpoint || !projectId || !bucketId || !apiKey) {
     return NextResponse.json(

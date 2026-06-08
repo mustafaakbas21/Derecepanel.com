@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { CoachNavGroup } from "@/components/coach/coach-nav-group";
+import { SidebarUpgradeCta } from "@/components/marketing/pricing/sidebar-upgrade-cta";
 import {
   isStudentSubLinkActive,
   isStudentTopLinkActive,
@@ -249,7 +250,14 @@ export function StudentSidebar() {
         </CoachNavGroup>
       </nav>
 
-      <div className="mt-4 shrink-0 border-t border-slate-200/70 pt-4">
+      <div className="mt-4 shrink-0 space-y-3 border-t border-slate-200/70 pt-4">
+        <SidebarUpgradeCta
+          audience="ogrenci"
+          title="Paketini Yükselt"
+          subtitle="Dijital Plus ile analiz araçları ve Onyx desteği."
+          buttonLabel="Paketleri Gör"
+        />
+
         <button
           type="button"
           onClick={handleLogout}

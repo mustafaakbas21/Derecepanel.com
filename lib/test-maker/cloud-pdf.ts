@@ -1,4 +1,7 @@
-import { HTML2CANVAS_SAFE_ONCLONE } from "@/lib/html-export/html2canvas-onclone";
+import {
+  HTML2CANVAS_SAFE_ONCLONE,
+  patchDocumentStylesForHtml2Canvas,
+} from "@/lib/html-export/html2canvas-onclone";
 import { TM_A4_PRINT_CSS } from "@/lib/test-maker/a4-print-css";
 import {
   prepareA4CloneForPrint,
@@ -107,6 +110,7 @@ export async function downloadPdfLocal(coverTitle: string): Promise<boolean> {
   const fname = slugifyPdfName(coverTitle);
   const host = createExportHost(clone);
 
+  const restoreStyles = patchDocumentStylesForHtml2Canvas();
   try {
     const blob = (await html2pdf()
       .set({ ...HTML2PDF_OPTS, filename: fname })
@@ -125,6 +129,7 @@ export async function downloadPdfLocal(coverTitle: string): Promise<boolean> {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     return true;
   } finally {
+    restoreStyles();
     host.remove();
   }
 }
@@ -148,6 +153,7 @@ export async function exportTestPdfToCloud(
 
   const host = createExportHost(clone);
 
+  const restoreStyles = patchDocumentStylesForHtml2Canvas();
   try {
     onProgress?.("PDF oluşturuluyor (html2canvas)…");
     const pdfBlob = (await html2pdf()
@@ -178,6 +184,7 @@ export async function exportTestPdfToCloud(
 
     return data.fileId;
   } finally {
+    restoreStyles();
     host.remove();
   }
 }

@@ -6,10 +6,15 @@ import Sortable from "sortablejs";
 import { OptikForm } from "@/components/test-maker/optik-form";
 import { QuestionItem, QuestionSolveSpace } from "@/components/test-maker/question-item";
 import {
+  appendQuestionToDisplayLayout,
+  buildHeightsWithFallback,
   collectPageColumnIdsFromDom,
   createOpticPage,
+  flattenPagesQuestionIds,
   isOpticQuestionPage,
-  paginateByMeasuredHeights,
+  layoutFlatKey,
+  paginateForwardOnly,
+  pickPreviousLayout,
   readColumnDomMetrics,
   refineLayoutWithDom,
   splitAnswerKeyColumns,
@@ -237,12 +242,16 @@ export function A4Document({
   const columnProbeBodyRef = useRef<HTMLDivElement>(null);
   const measureSignatureRef = useRef("");
   const layoutPassRef = useRef(0);
-  const baseLayoutKeyRef = useRef("");
+  const stableLayoutRef = useRef<MeasuredQuestionPage[]>([]);
+  const paginatedPagesRef = useRef<MeasuredQuestionPage[]>([]);
+  const prevQuestionCountRef = useRef(0);
 
   const [measuredHeights, setMeasuredHeights] = useState<Record<string, number>>({});
   const [columnMaxPx, setColumnMaxPx] = useState(TM_MAX_COLUMN_HEIGHT_PX);
   const [paginatedPages, setPaginatedPages] = useState<MeasuredQuestionPage[]>([]);
   const [layoutStable, setLayoutStable] = useState(false);
+
+  paginatedPagesRef.current = paginatedPages;
 
   const questionIndexById = useMemo(() => {
     const map = new Map<string, number>();
@@ -268,36 +277,57 @@ export function A4Document({
     [questions, measuredHeights]
   );
 
-  const basePages = useMemo(
-    () =>
-      paginationReady
-        ? paginateByMeasuredHeights(questions, measuredHeights, columnMaxPx)
-        : [],
-    [questions, measuredHeights, columnMaxPx, paginationReady]
-  );
-
-  const baseLayoutKey = useMemo(
-    () => `${measureSignature}:${columnMaxPx}:${JSON.stringify(measuredHeights)}`,
-    [measureSignature, columnMaxPx, measuredHeights]
-  );
-
   useLayoutEffect(() => {
-    if (baseLayoutKeyRef.current === baseLayoutKey) return;
-    baseLayoutKeyRef.current = baseLayoutKey;
-    layoutPassRef.current = 0;
-    setLayoutStable(false);
-    setPaginatedPages(basePages);
-  }, [baseLayoutKey, basePages]);
+    if (questions.length === 0) {
+      setPaginatedPages([]);
+      setLayoutStable(true);
+      stableLayoutRef.current = [];
+      prevQuestionCountRef.current = 0;
+      return;
+    }
+
+    const heights = buildHeightsWithFallback(questions, measuredHeights);
+    const prevCount = prevQuestionCountRef.current;
+    const isSingleAppend = questions.length === prevCount + 1 && prevCount > 0;
+
+    let nextPages: MeasuredQuestionPage[] | null = null;
+
+    if (isSingleAppend && paginatedPagesRef.current.length > 0) {
+      nextPages = appendQuestionToDisplayLayout(
+        questions,
+        heights,
+        columnMaxPx,
+        paginatedPagesRef.current
+      );
+    }
+
+    if (!nextPages) {
+      const previousLayout = pickPreviousLayout(
+        questions,
+        paginatedPagesRef.current,
+        stableLayoutRef.current
+      );
+      nextPages = paginateForwardOnly(questions, heights, columnMaxPx, previousLayout);
+    }
+
+    const currentKey = layoutFlatKey(paginatedPagesRef.current);
+    const nextKey = layoutFlatKey(nextPages);
+
+    if (currentKey !== nextKey || paginatedPagesRef.current.length === 0) {
+      layoutPassRef.current = 0;
+      setLayoutStable(false);
+      setPaginatedPages(nextPages);
+    }
+
+    prevQuestionCountRef.current = questions.length;
+  }, [questions, measuredHeights, columnMaxPx, measureSignature]);
 
   useLayoutEffect(() => {
     if (questions.length === 0) {
       setMeasuredHeights({});
       setColumnMaxPx(TM_MAX_COLUMN_HEIGHT_PX);
-      setPaginatedPages([]);
-      setLayoutStable(true);
       measureSignatureRef.current = "";
       layoutPassRef.current = 0;
-      baseLayoutKeyRef.current = "";
       return;
     }
 
@@ -336,8 +366,7 @@ export function A4Document({
   }, [measureSignature, questions]);
 
   useLayoutEffect(() => {
-    if (!paginationReady || paginatedPages.length === 0 || !pagesWrapRef.current) {
-      if (paginationReady && questions.length === 0) setLayoutStable(true);
+    if (questions.length === 0 || paginatedPages.length === 0 || !pagesWrapRef.current) {
       return;
     }
 
@@ -349,7 +378,11 @@ export function A4Document({
     const pageMetrics = readPageMetrics(pagesWrapRef.current);
     if (pageMetrics.length === 0) return;
 
-    const refined = refineLayoutWithDom(paginatedPages, measuredHeights, pageMetrics);
+    const refined = refineLayoutWithDom(
+      paginatedPages,
+      buildHeightsWithFallback(questions, measuredHeights),
+      pageMetrics
+    );
     if (refined) {
       layoutPassRef.current += 1;
       setPaginatedPages(refined);
@@ -357,9 +390,14 @@ export function A4Document({
     }
 
     setLayoutStable(true);
-  }, [paginatedPages, measuredHeights, paginationReady, questions.length]);
+  }, [paginatedPages, measuredHeights, questions.length]);
 
-  const displayPages = layoutStable || paginatedPages.length > 0 ? paginatedPages : basePages;
+  useLayoutEffect(() => {
+    if (!layoutStable || paginatedPages.length === 0) return;
+    stableLayoutRef.current = paginatedPages.filter((page) => !page.isOpticPage);
+  }, [layoutStable, paginatedPages]);
+
+  const displayPages = paginatedPages;
 
   const akCols = splitAnswerKeyColumns(questions);
   const dersKonu = [config.dersLabel, config.konuLabel].filter(Boolean).join(" — ");
@@ -399,12 +437,7 @@ export function A4Document({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayPages.length, questions.length]);
 
-  const questionPagesToRender =
-    displayPages.length > 0
-      ? displayPages
-      : paginationReady
-        ? basePages
-        : [];
+  const questionPagesToRender = displayPages.length > 0 ? displayPages : [];
 
   const pagesToRender = useMemo(() => {
     if (!showOptic || questions.length === 0) return questionPagesToRender;

@@ -1,3 +1,4 @@
+import { normalizeLoginUsername } from "@/lib/appwrite/config";
 import { DEFAULT_COACH_ID } from "@/lib/students/constants";
 import { panelRemoveItem, panelSetItem } from "@/lib/panel-store";
 import type { StudentRecord } from "@/lib/students/types";
@@ -9,12 +10,7 @@ export const BUILTIN_COACH = {
   displayName: "admin1",
 } as const;
 
-export const BUILTIN_ADMIN = {
-  username: "admin1",
-  password: "admin123",
-  id: "admin-super-1",
-  displayName: "Kurucu",
-} as const;
+export { BUILTIN_ADMIN } from "@/lib/auth/builtin-admin-constants";
 
 export const ADMINS_STORAGE_KEY = "admins_v1";
 export const COACHES_STORAGE_KEY = "coaches";
@@ -50,10 +46,31 @@ export type LocalAdminAccount = {
 
 export type AuthRole = "coach" | "student" | "admin";
 
+export function isAdminPortalClient(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "admin.localhost" || host.startsWith("admin.");
+}
+
 export function homePathForRole(role: AuthRole): string {
   if (role === "student") return "/ogrenci";
-  if (role === "admin") return "/admin";
+  if (role === "admin") return isAdminPortalClient() ? "/" : "/admin";
   return "/dashboard";
+}
+
+/** Kurucu paneli: admin.* host'ta /giris → /admin/giris rewrite */
+export function loginPathForRole(role: AuthRole): string {
+  if (role === "admin") {
+    return isAdminPortalClient() ? "/giris" : "/admin/giris";
+  }
+  return "/giris";
+}
+
+/** Admin giriş rotası — subdomain'de tarayıcı yolu /giris olabilir */
+export function isAdminLoginPath(pathname: string): boolean {
+  if (pathname === "/admin/giris") return true;
+  if (isAdminPortalClient() && pathname === "/giris") return true;
+  return false;
 }
 
 /** `next` yalnızca oturum rolüyle uyumlu rotalara izin verilir (redirect döngüsünü önler). */
@@ -61,7 +78,9 @@ export function isSafeNextForRole(next: string | null | undefined, role: AuthRol
   if (!next || !next.startsWith("/") || next.startsWith("//")) return false;
   if (next.startsWith("/giris") || next.startsWith("/admin/giris")) return false;
   if (role === "student") return next.startsWith("/ogrenci");
-  if (role === "admin") return next.startsWith("/admin");
+  if (role === "admin") {
+    return next.startsWith("/admin") || (isAdminPortalClient() && next === "/");
+  }
   return !next.startsWith("/ogrenci") && !next.startsWith("/admin");
 }
 
@@ -71,6 +90,15 @@ export function resolvePostLoginPath(
 ): string {
   if (isSafeNextForRole(next, role)) return next!;
   return homePathForRole(role);
+}
+
+/** Koç/öğrenci giriş formu — asla /admin'e yönlendirmez */
+export function resolvePanelLoginRedirect(
+  role: "coach" | "student",
+  next: string | null | undefined
+): string {
+  if (isSafeNextForRole(next, role)) return next!;
+  return role === "student" ? "/ogrenci" : "/dashboard";
 }
 
 export type ClientAuthSession = {
@@ -88,7 +116,7 @@ export function isValidPanelUsername(value: string): boolean {
 }
 
 export function normalizeUsernameInput(value: string): string {
-  return value.trim();
+  return normalizeLoginUsername(value);
 }
 
 /** Appwrite oturumu — yerel roster seed artık kullanılmaz */
@@ -197,14 +225,26 @@ async function loginViaApi(
     credentials: "same-origin",
     body: JSON.stringify({ role, username, password }),
   });
-  const data = (await res.json()) as {
+
+  const raw = await res.text();
+  let data: {
     error?: string;
     role?: AuthRole;
     userId?: string;
     email?: string;
     username?: string;
     student?: StudentRecord | null;
-  };
+  } = {};
+  if (raw.trim()) {
+    try {
+      data = JSON.parse(raw) as typeof data;
+    } catch {
+      throw new Error(
+        res.ok ? GENERIC_LOGIN_ERROR : "Sunucu yanıtı işlenemedi. Lütfen tekrar deneyin."
+      );
+    }
+  }
+
   if (!res.ok) {
     throw new Error(data.error || GENERIC_LOGIN_ERROR);
   }
@@ -229,7 +269,7 @@ async function loginViaApi(
 
 export async function loginAsCoach(
   username: string,
-  password: string
+  password = ""
 ): Promise<ClientAuthSession | null> {
   return loginViaApi("coach", username, password);
 }

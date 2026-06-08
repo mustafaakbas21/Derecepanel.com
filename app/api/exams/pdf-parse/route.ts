@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
+import { enforceRateLimit } from "@/lib/security/apply-rate-limit";
 import {
   PDF_ENGINE_MAX_BYTES,
   parseExamPdf,
@@ -13,6 +15,16 @@ const SINAV_SET = new Set<SinavTipi>(["TYT", "AYT", "YDT"]);
 
 export async function POST(request: Request) {
   try {
+    const session = await requireCoachAuth();
+    const rateLimited = await enforceRateLimit(
+      request,
+      "pdf-parse",
+      5,
+      60,
+      session.coachId
+    );
+    if (rateLimited) return rateLimited;
+
     const form = await request.formData();
     const file = form.get("file");
     const sinavRaw = String(form.get("sinav") || "TYT").toUpperCase();
@@ -41,6 +53,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     const message = err instanceof Error ? err.message : "PDF işlenemedi";
     return NextResponse.json({ error: message }, { status: 500 });
   }

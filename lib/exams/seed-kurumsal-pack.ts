@@ -179,7 +179,7 @@ export function generateStudentAnswersForKey(
 export function getStudentsForKurumSeed(): StudentRecord[] {
   const cid = getActiveCoachId() || DEFAULT_COACH_ID;
   let list = loadStudentsFull({ seedIfEmpty: false });
-  if (!list.length) list = loadStudentsFull({ seedIfEmpty: true });
+  if (!list.length) return [];
   return list.filter((s) => {
     const coachOk =
       !s.coachId || s.coachId === cid || s.coachId === DEFAULT_COACH_ID;

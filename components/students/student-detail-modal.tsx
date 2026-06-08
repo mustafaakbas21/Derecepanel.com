@@ -164,12 +164,12 @@ export function StudentDetailModal({ student, open, onOpenChange, onEdit }: Prop
             <Row label="Öğrenci No" value={student.studentCode} />
             <Row label="Kayıt" value={formatKayitDate(student.kayitDate)} />
             <Row label="Kullanıcı adı" value={student.kullaniciAdi} />
-            <Row label="Panel şifresi" value={student.panelSifre ? "••••••••" : undefined} />
+            <Row
+              label="Panel şifresi"
+              value={student.kullaniciAdi ? "••••••••" : undefined}
+            />
             <div className="mt-2 flex flex-wrap gap-2">
               <CopyBtn value={student.studentCode} label="Öğrenci no" />
-              {student.panelSifre && (
-                <CopyBtn value={student.panelSifre} label="Şifre" />
-              )}
             </div>
           </DetailCard>
         </div>

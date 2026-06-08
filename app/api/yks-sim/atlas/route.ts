@@ -30,7 +30,7 @@ function parseLevel(raw: string | null): "lisans" | "onlisans" | "all" {
 
 export async function GET(request: Request) {
   try {
-    await requireYksSimRead(request);
+    await requireYksSimRead();
     const url = new URL(request.url);
     const level = parseLevel(url.searchParams.get("level"));
     const metaOnly = url.searchParams.get("meta") === "1";

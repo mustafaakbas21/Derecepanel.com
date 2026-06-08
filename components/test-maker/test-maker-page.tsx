@@ -56,7 +56,11 @@ import { tmToast } from "@/lib/test-maker/notify";
 import { buildAnswerKey } from "@/lib/test-maker/paginate";
 import { usePdfDocument } from "@/lib/test-maker/use-pdf-document";
 import { ensureQuestionPoolInit } from "@/lib/test-maker/question-pool";
-import { createQuestion } from "@/lib/test-maker/questions";
+import {
+  adjustLastWorkedIndexAfterDelete,
+  createQuestion,
+  lastFilledQuestionIndex,
+} from "@/lib/test-maker/questions";
 import {
   genTaramaId,
   pushExportMeta,
@@ -153,6 +157,12 @@ export function TestMakerPage() {
   const initOnceRef = useRef(false);
   const baselineRef = useRef("");
   const pendingNavRef = useRef<string | null>(null);
+  /** Kırpma / cevap girişinde son işlenen soru — yeni kırpma bunun altına eklenir. */
+  const lastWorkedQuestionIndexRef = useRef(-1);
+
+  const syncLastWorkedFromQuestions = useCallback((qs: TMQuestion[]) => {
+    lastWorkedQuestionIndexRef.current = lastFilledQuestionIndex(qs);
+  }, []);
 
   useEffect(() => {
     void isCloudPdfConfigured().then(setCloudReady);
@@ -193,6 +203,7 @@ export function TestMakerPage() {
 
     const applyFreshStudio = () => {
       pdf.clearAllFiles();
+      lastWorkedQuestionIndexRef.current = -1;
       setQuestions([]);
       setCurrentTaramaId(null);
       setCurrentReceteId(null);
@@ -227,7 +238,10 @@ export function TestMakerPage() {
         }
         cfg = syncTMConfig(cfg);
         setConfig(cfg);
-        if (entry.questions.length) setQuestions(entry.questions);
+        if (entry.questions.length) {
+          setQuestions(entry.questions);
+          lastWorkedQuestionIndexRef.current = lastFilledQuestionIndex(entry.questions);
+        }
         pendingAutoprint.current = entry.autoprint;
         syncBaselineFrom(emptyBaseline());
         setHydrated(true);
@@ -250,6 +264,7 @@ export function TestMakerPage() {
           const tpl = resolveTemplateId(rec.layout?.sablon);
           setConfig(merged);
           setQuestions(qs);
+          lastWorkedQuestionIndexRef.current = lastFilledQuestionIndex(qs);
           setTemplate(tpl);
           setTemplateName(getTemplateName(tpl));
           syncBaselineFrom({
@@ -283,6 +298,7 @@ export function TestMakerPage() {
           const cfg = sid ? { ...merged, ogrenciId: sid } : merged;
           setConfig(cfg);
           setQuestions(qs);
+          lastWorkedQuestionIndexRef.current = lastFilledQuestionIndex(qs);
           setTemplate(tpl);
           setTemplateName(getTemplateName(tpl));
           syncBaselineFrom({
@@ -371,6 +387,7 @@ export function TestMakerPage() {
 
   const discardWorkspace = useCallback(() => {
     pdf.clearAllFiles();
+    lastWorkedQuestionIndexRef.current = -1;
     setQuestions([]);
     setCurrentTaramaId(null);
     setCurrentReceteId(null);
@@ -435,17 +452,43 @@ export function TestMakerPage() {
         poolUuid: item.uuid,
       })
     );
-    setQuestions((q) => [...q, ...added]);
+    setQuestions((q) => {
+      const next = [...q, ...added];
+      lastWorkedQuestionIndexRef.current = next.length - 1;
+      return next;
+    });
     tmToast.poolAdded(added.length);
   };
 
   const handleAnswer = (id: string, letter: QuestionAnswer) => {
-    setQuestions((qs) =>
-      qs.map((q) =>
+    setQuestions((qs) => {
+      const idx = qs.findIndex((q) => q.id === id);
+      if (idx >= 0) lastWorkedQuestionIndexRef.current = idx;
+      return qs.map((q) =>
         q.id === id ? { ...q, answer: q.answer === letter ? null : letter } : q
-      )
-    );
+      );
+    });
   };
+
+  const handleDeleteQuestion = useCallback((id: string) => {
+    setQuestions((q) => {
+      const deletedIndex = q.findIndex((x) => x.id === id);
+      const next = q.filter((x) => x.id !== id);
+      lastWorkedQuestionIndexRef.current = adjustLastWorkedIndexAfterDelete(
+        lastWorkedQuestionIndexRef.current,
+        deletedIndex
+      );
+      return next;
+    });
+  }, []);
+
+  const handleQuestionsReorder = useCallback(
+    (next: TMQuestion[]) => {
+      setQuestions(next);
+      syncLastWorkedFromQuestions(next);
+    },
+    [syncLastWorkedFromQuestions]
+  );
 
   const handleSaveRecete = async () => {
     if (questions.length === 0) {
@@ -600,7 +643,11 @@ export function TestMakerPage() {
       correctLetter: letter,
       fromHavuz: Boolean(letter),
     });
-    setQuestions((q) => [...q, newQ]);
+    setQuestions((q) => {
+      const next = [...q, newQ];
+      lastWorkedQuestionIndexRef.current = next.length - 1;
+      return next;
+    });
     if (letter) {
       const label = letter === "blank" ? "Boş" : letter;
       tmToast.success(`Soru eklendi — cevap: ${label}`);
@@ -1026,9 +1073,9 @@ export function TestMakerPage() {
             showCover={showCover}
             showAnswerKey={showAnswerKey}
             showOptic={showOptic}
-            onQuestionsChange={setQuestions}
+            onQuestionsChange={handleQuestionsReorder}
             onAnswer={handleAnswer}
-            onDelete={(id) => setQuestions((q) => q.filter((x) => x.id !== id))}
+            onDelete={handleDeleteQuestion}
           />
           </div>
         </div>

@@ -1,13 +1,23 @@
 import "server-only";
 
-import { ID, Query } from "node-appwrite";
+import { Query } from "node-appwrite";
 
 import {
   APPWRITE_COLLECTION_STUDENTS,
   APPWRITE_COLLECTION_USERS,
   APPWRITE_DATABASE_ID,
+  normalizeLoginUsername,
   resolveCoachLoginEmail,
+  resolveStudentLoginEmail,
 } from "@/lib/appwrite/config";
+import {
+  createAppwriteAuthUser,
+  findAppwriteUserIdByEmail,
+} from "@/lib/appwrite/auth-users-server";
+import {
+  completeStudentLogin,
+  findStudentForLogin,
+} from "@/lib/appwrite/students-server";
 import {
   getAdminDatabases,
   getAdminUsers,
@@ -87,79 +97,85 @@ async function resolveRoleFromUsers(
   appwriteUserId: string,
   email: string
 ): Promise<{ role: AppwriteLoginResult["role"]; username?: string; coachId?: string }> {
-  const fallback = {
-    role: "coach" as const,
-    coachId: appwriteUserId,
-  };
-
-  try {
-    const db = getAdminDatabases();
-    const byId = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
-      Query.equal("$id", appwriteUserId),
+  const db = getAdminDatabases();
+  const byId = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
+    Query.equal("$id", appwriteUserId),
+    Query.limit(1),
+  ]);
+  let doc = byId.documents[0] as UserDoc | undefined;
+  if (!doc && email) {
+    const byEmail = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
+      Query.equal("email", email),
       Query.limit(1),
     ]);
-    let doc = byId.documents[0] as UserDoc | undefined;
-    if (!doc && email) {
-      const byEmail = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
-        Query.equal("email", email),
-        Query.limit(1),
-      ]);
-      doc = byEmail.documents[0] as UserDoc | undefined;
-    }
-    const roleRaw = String(doc?.role || "").toLowerCase();
-    if (roleRaw === "admin" || roleRaw === "admin_roster") {
-      return { role: "admin", username: doc?.username };
-    }
-    if (roleRaw === "student" || roleRaw === "ogrenci") {
-      return { role: "student", username: doc?.username };
-    }
-    return {
-      role: "coach",
-      username: doc?.username,
-      coachId: String(doc?.coachId || appwriteUserId).trim() || appwriteUserId,
-    };
-  } catch (err) {
-    const msg = String((err as Error)?.message || "").toLowerCase();
-    if (/collection.*not found|could not be found/i.test(msg)) {
-      return fallback;
-    }
-    throw err;
+    doc = byEmail.documents[0] as UserDoc | undefined;
   }
+
+  if (!doc) {
+    throw new Error("Geçersiz kullanıcı adı veya şifre");
+  }
+
+  const roleRaw = String(doc.role || "").toLowerCase();
+  if (roleRaw === "admin" || roleRaw === "admin_roster") {
+    return { role: "admin", username: doc.username };
+  }
+  if (roleRaw === "student" || roleRaw === "ogrenci") {
+    return { role: "student", username: doc.username };
+  }
+  return {
+    role: "coach",
+    username: doc.username,
+    coachId: String(doc.coachId || appwriteUserId).trim() || appwriteUserId,
+  };
 }
 
-async function findStudentByCredentials(
-  usernameOrEmail: string,
-  password: string
-): Promise<StudentRecord | null> {
-  const clue = usernameOrEmail.trim();
-  const pw = password.trim();
-  if (!clue || !pw) return null;
+async function findStudentDocByClue(clue: string): Promise<StudentDoc | null> {
+  const trimmed = clue.trim();
+  if (!trimmed) return null;
 
-  try {
-    const db = getAdminDatabases();
-    const queries = clue.includes("@")
-      ? [Query.equal("email", clue), Query.limit(5)]
-      : [Query.equal("kullaniciAdi", clue), Query.limit(5)];
-
+  const db = getAdminDatabases();
+  if (trimmed.includes("@")) {
     const result = await db.listDocuments(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_STUDENTS,
-      queries
+      [Query.equal("email", trimmed), Query.limit(5)]
     );
-
-    for (const raw of result.documents) {
-      const doc = raw as StudentDoc;
-      if (String(doc.panelSifre || "") !== pw) continue;
-      return mapStudentDoc(doc);
-    }
-    return null;
-  } catch (err) {
-    const msg = String((err as Error)?.message || "").toLowerCase();
-    if (/collection.*not found|could not be found/i.test(msg)) {
-      return null;
-    }
-    throw err;
+    return (result.documents[0] as StudentDoc | undefined) ?? null;
   }
+
+  const normalized = normalizeLoginUsername(trimmed) || trimmed;
+  for (const username of [normalized, trimmed]) {
+    const result = await db.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_STUDENTS,
+      [Query.equal("kullaniciAdi", username), Query.limit(5)]
+    );
+    const doc = result.documents[0] as StudentDoc | undefined;
+    if (doc) return doc;
+  }
+  return null;
+}
+
+async function findUserDocByUsername(normalized: string): Promise<UserDoc | null> {
+  const db = getAdminDatabases();
+  const byUsername = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
+    Query.equal("username", normalized),
+    Query.limit(1),
+  ]);
+  return (byUsername.documents[0] as UserDoc | undefined) ?? null;
+}
+
+function isAdminUserDoc(doc: UserDoc | null | undefined): boolean {
+  const roleRaw = String(doc?.role || "").toLowerCase();
+  return roleRaw === "admin" || roleRaw === "admin_roster";
+}
+
+/** Kurucu şifresiz giriş — users koleksiyonundaki role göre doğrular */
+export async function isAdminPanelUsername(username: string): Promise<boolean> {
+  const normalized = normalizeLoginUsername(username) || username.trim();
+  if (!normalized) return false;
+  const doc = await findUserDocByUsername(normalized);
+  return isAdminUserDoc(doc);
 }
 
 /** Appwrite Cloud: SDK guest scope hatası verir; REST ile şifre doğrulanır. */
@@ -221,6 +237,107 @@ export function isAppwriteAuthReady(): boolean {
   return isAppwriteServerConfigured();
 }
 
+/** Koç girişi — yalnızca kullanıcı adı; Appwrite users + admin session */
+export async function loginCoachWithUsernameOnly(
+  username: string
+): Promise<AppwriteLoginResult> {
+  if (!isAppwriteServerConfigured()) {
+    throw new Error("Appwrite sunucu yapılandırması eksik.");
+  }
+
+  const normalized = normalizeLoginUsername(username) || username.trim();
+  if (!normalized) {
+    throw new Error("Kullanıcı adınızı girin.");
+  }
+
+  const email = resolveCoachLoginEmail(normalized);
+
+  let appwriteUserId: string | null = null;
+  let profileUsername = normalized;
+
+  const userDoc = await findUserDocByUsername(normalized);
+
+  if (userDoc) {
+    const roleRaw = String(userDoc.role || "").toLowerCase();
+    if (roleRaw === "student" || roleRaw === "ogrenci") {
+      throw new Error("Geçersiz kullanıcı adı");
+    }
+    appwriteUserId = userDoc.$id;
+    profileUsername = String(userDoc.username || normalized).trim() || normalized;
+  }
+
+  if (!appwriteUserId) {
+    appwriteUserId = await findAppwriteUserIdByEmail(email);
+  }
+
+  if (!appwriteUserId) {
+    throw new Error("Geçersiz kullanıcı adı");
+  }
+
+  const profile = await resolveRoleFromUsers(appwriteUserId, email);
+  if (profile.role === "student") {
+    throw new Error("Geçersiz kullanıcı adı");
+  }
+
+  const sessionSecret = await createServerSessionForUser(appwriteUserId);
+
+  return {
+    sessionSecret,
+    userId: profile.coachId || appwriteUserId,
+    email,
+    // Koç kapısından giriş — admin hesabı da koç oturumu açar (loginWithAppwrite ile aynı)
+    role: "coach",
+    username: profile.username || profileUsername,
+  };
+}
+
+/** Öğrenci girişi — yalnızca kullanıcı adı; students + Appwrite admin session */
+export async function loginStudentWithUsernameOnly(
+  username: string
+): Promise<AppwriteLoginResult> {
+  if (!isAppwriteServerConfigured()) {
+    throw new Error("Appwrite sunucu yapılandırması eksik.");
+  }
+
+  const normalized = normalizeLoginUsername(username) || username.trim();
+  if (!normalized) {
+    throw new Error("Kullanıcı adınızı girin.");
+  }
+
+  let studentDoc: StudentDoc | null = null;
+  try {
+    studentDoc = await findStudentDocByClue(normalized);
+  } catch (err) {
+    const msg = String((err as Error)?.message || "").toLowerCase();
+    if (/collection.*not found|could not be found/i.test(msg)) {
+      throw new Error("Geçersiz kullanıcı adı");
+    }
+    throw err;
+  }
+
+  if (!studentDoc) {
+    throw new Error("Geçersiz kullanıcı adı");
+  }
+
+  const student = mapStudentDoc(studentDoc);
+  const loginEmail = resolveStudentLoginEmail(student.kullaniciAdi || normalized);
+  const appwriteUserId = await findAppwriteUserIdByEmail(loginEmail);
+  if (!appwriteUserId) {
+    throw new Error("Geçersiz kullanıcı adı");
+  }
+
+  const sessionSecret = await createServerSessionForUser(appwriteUserId);
+
+  return {
+    sessionSecret,
+    userId: student.ogrenciId,
+    email: loginEmail,
+    role: "student",
+    username: student.kullaniciAdi || normalized,
+    student,
+  };
+}
+
 export async function loginWithAppwrite(input: {
   role: "coach" | "student" | "admin";
   username: string;
@@ -237,30 +354,34 @@ export async function loginWithAppwrite(input: {
   }
 
   if (input.role === "student") {
-    const student = await findStudentByCredentials(username, password);
-    const email = student?.email || resolveCoachLoginEmail(username);
-    const sessionSecret = await createEmailSessionWithOptionalProvision(
-      email,
-      password,
-      false
-    );
-    const account = getSessionAccount(sessionSecret);
-    const user = await account.get();
+    const student = await findStudentForLogin(username, password);
+    if (!student) {
+      throw new Error("Geçersiz kullanıcı adı veya şifre");
+    }
+
+    const { appwriteUserId, email } = await completeStudentLogin(student, password);
+    const sessionSecret = await createServerSessionForUser(appwriteUserId);
+
     return {
       sessionSecret,
-      userId: student?.ogrenciId || user.$id,
-      email: String(user.email || email),
+      userId: student.ogrenciId,
+      email,
       role: "student",
-      username: student?.kullaniciAdi || username,
-      student: student ?? undefined,
+      username: student.kullaniciAdi || username,
+      student,
     };
   }
 
-  const email = resolveCoachLoginEmail(username);
+  const normalized = normalizeLoginUsername(username) || username;
+  const email = resolveCoachLoginEmail(normalized);
+  const allowBuiltinProvision =
+    process.env.NODE_ENV !== "production" &&
+    input.role === "coach" &&
+    isBuiltinCoachCredentials(username, password);
   const sessionSecret = await createEmailSessionWithOptionalProvision(
     email,
     password,
-    input.role === "coach" && isBuiltinCoachCredentials(username, password)
+    allowBuiltinProvision
   );
   const account = getSessionAccount(sessionSecret);
   const user = await account.get();
@@ -297,11 +418,9 @@ export async function logoutAppwriteSession(sessionSecret: string | null): Promi
 }
 
 export async function provisionCoachAccount(email: string, password: string): Promise<void> {
-  const name = email.split("@")[0] || email;
-  try {
-    await getAdminUsers().create(ID.unique(), email, undefined, password, name);
-  } catch (err) {
-    const msg = String((err as Error)?.message || "").toLowerCase();
-    if (!/already exists|409|duplicate|user_already/i.test(msg)) throw err;
-  }
+  await createAppwriteAuthUser({
+    email,
+    password,
+    name: email.split("@")[0] || email,
+  });
 }

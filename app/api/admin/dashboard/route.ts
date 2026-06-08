@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { listAccountingTransactions } from "@/lib/admin/accounting-server";
+import { computeAdminStatsFromPlatform } from "@/lib/admin/admin-stats-server";
 import { isMaintenanceModeServer } from "@/lib/admin/maintenance-server";
 import { listRegistrationRequests } from "@/lib/admin/registration-requests-server";
 import { AuthError, requireAdminAuth } from "@/lib/admin/require-admin";
@@ -17,15 +18,17 @@ export async function GET() {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 403 });
   }
 
-  const [accounting, registrationRequests, maintenance] = await Promise.all([
+  const [accounting, registrationRequests, maintenance, stats] = await Promise.all([
     listAccountingTransactions(),
     listRegistrationRequests(),
     isMaintenanceModeServer(),
+    computeAdminStatsFromPlatform(),
   ]);
 
   return NextResponse.json({
     accounting,
     registrationRequests,
     maintenance,
+    stats,
   });
 }

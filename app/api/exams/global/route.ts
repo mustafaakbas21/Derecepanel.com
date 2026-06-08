@@ -4,9 +4,9 @@ import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
 import { enrichGlobalExam, loadGlobalExams, persistGlobalExams } from "@/lib/exams/global-exam-storage";
 import type { GlobalExam } from "@/lib/exams/types";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const list = loadGlobalExams().map(enrichGlobalExam);
     return NextResponse.json({
       exams: list,
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const body = (await request.json()) as GlobalExam[] | { exams?: GlobalExam[] };
     const raw = Array.isArray(body) ? body : body.exams;
     if (!Array.isArray(raw)) {

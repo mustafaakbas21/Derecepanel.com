@@ -10,7 +10,7 @@ export const revalidate = 0;
 
 export async function POST(request: Request) {
   try {
-    const session = await requireCoachAuth(request);
+    const session = await requireCoachAuth();
     let sync: CoachBriefingSyncPayload | undefined;
 
     try {

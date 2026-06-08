@@ -42,6 +42,7 @@ export async function POST(request: Request) {
         buffer,
         filename,
         mimeType: file.type || undefined,
+        ownerId: session.userId,
       });
 
     let uploaded;

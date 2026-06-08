@@ -194,6 +194,8 @@ export function StudentWizardModal({
       if (!normalizeUsernameInput(form.kullaniciAdi ?? ""))
         e.kullaniciAdi = "Panel kullanıcı adı zorunlu";
       if (!form.panelSifre?.trim()) e.panelSifre = "Panel şifresi zorunlu";
+      else if (form.panelSifre.trim().length < 8)
+        e.panelSifre = "Panel şifresi en az 8 karakter olmalı";
     }
     setErrors(e);
     return Object.keys(e).length === 0;

@@ -33,7 +33,7 @@ import {
   AdminStatusBadge,
   AdminWaveMetric,
 } from "@/components/admin/admin-ui";
-import { computeAdminStats, type AdminDashboardStats } from "@/lib/admin/admin-stats";
+import type { AdminDashboardStats } from "@/lib/admin/admin-stats";
 import { ADMIN_ROUTES } from "@/lib/admin/admin-nav-config";
 import { RegistrationRequestsSummary } from "@/components/admin/registration-requests-summary";
 import { useAdminLiveRefresh } from "@/hooks/use-admin-live-refresh";
@@ -51,18 +51,30 @@ export function AdminDashboardPage() {
 
   const load = useCallback(async ({ silent }: { silent: boolean }) => {
     await refreshAdminPanelData();
-    const platform = computeAdminStats();
 
     try {
       const res = await fetch("/api/admin/dashboard", { cache: "no-store" });
       const json = (await res.json()) as {
         accounting?: unknown[];
         registrationRequests?: RegistrationRequestRecord[];
+        stats?: AdminDashboardStats;
       };
       const accounting = Array.isArray(json.accounting) ? json.accounting : [];
       const registrationRequests = Array.isArray(json.registrationRequests)
         ? json.registrationRequests
         : [];
+      const platform = json.stats ?? {
+        totalCoaches: 0,
+        activeCoaches: 0,
+        totalStudents: 0,
+        activeStudents: 0,
+        studentsWithPanel: 0,
+        recentStudents: 0,
+        studentTrendPercent: 0,
+        monthlyRegistrations: [],
+        statusBreakdown: { aktif: 0, donduruldu: 0, mezun: 0, other: 0 },
+        segmentProgress: [],
+      };
 
       setData({
         platform,
@@ -72,7 +84,18 @@ export function AdminDashboardPage() {
     } catch {
       if (!silent) {
         setData({
-          platform,
+          platform: {
+            totalCoaches: 0,
+            activeCoaches: 0,
+            totalStudents: 0,
+            activeStudents: 0,
+            studentsWithPanel: 0,
+            recentStudents: 0,
+            studentTrendPercent: 0,
+            monthlyRegistrations: [],
+            statusBreakdown: { aktif: 0, donduruldu: 0, mezun: 0, other: 0 },
+            segmentProgress: [],
+          },
           finance: computeAccountingStats([]),
           registrationRequests: [],
         });

@@ -13,7 +13,7 @@ import {
   loginAsCoach,
   loginAsStudent,
   normalizeUsernameInput,
-  resolvePostLoginPath,
+  resolvePanelLoginRedirect,
 } from "@/lib/auth/local-auth";
 import { MAINTENANCE_BLOCK_MESSAGE } from "@/lib/admin/maintenance";
 import { hydratePanelStore } from "@/lib/panel-store";
@@ -96,7 +96,7 @@ export function GirisLoginForm() {
         /* oturum açıldı; panel verisi sonra yüklenecek */
       }
 
-      const dest = resolvePostLoginPath(session.role, searchParams.get("next"));
+      const dest = resolvePanelLoginRedirect(role, searchParams.get("next"));
       window.location.replace(dest);
     } catch (err) {
       setError(String((err as Error)?.message || GENERIC_LOGIN_ERROR));
@@ -160,7 +160,7 @@ export function GirisLoginForm() {
             focusedField === "username" ? "text-slate-900" : "text-slate-600"
           )}
         >
-          {role === "coach" ? "Kullanıcı adı veya e-posta" : "Kullanıcı adı"}
+          Kullanıcı adı
         </Label>
         <Input
           id="login-username"

@@ -6,7 +6,7 @@ import type { StudentRecord } from "@/lib/students/types";
 
 export async function POST(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const body = (await request.json().catch(() => ({}))) as {
       students?: StudentRecord[];
       provisionAuth?: boolean;

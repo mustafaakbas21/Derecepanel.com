@@ -19,7 +19,6 @@ import {
 import { ADMIN_ROUTES } from "@/lib/admin/admin-nav-config";
 import {
   countStudentsByCoach,
-  deleteCoach,
   loadCoaches,
 } from "@/lib/admin/coach-storage";
 import type { LocalCoachAccount } from "@/lib/auth/local-auth";
@@ -91,7 +90,13 @@ export function CoachesPage() {
     });
     if (!ok) return;
     try {
-      deleteCoach(coach.coachId);
+      const res = await fetch(`/api/admin/coaches?coachId=${encodeURIComponent(coach.coachId)}`, {
+        method: "DELETE",
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        throw new Error(data.error || "Koç silinemedi");
+      }
       void reload({ silent: true });
       appToast.success("Koç silindi");
     } catch (err) {

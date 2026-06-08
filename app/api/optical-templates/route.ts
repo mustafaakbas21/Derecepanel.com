@@ -4,9 +4,9 @@ import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
 import { parseFmtText } from "@/lib/exams/fmt-parse";
 import { DEFAULT_TABBED_TEMPLATE } from "@/lib/exams/fmt-store";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     return NextResponse.json({
       source: "client-indexeddb",
       templates: [DEFAULT_TABBED_TEMPLATE],
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const contentType = request.headers.get("content-type") || "";
 
     if (contentType.includes("application/json")) {

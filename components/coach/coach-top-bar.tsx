@@ -1,12 +1,12 @@
-import { Bell, ChevronDown, Search } from "lucide-react";
+"use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { coachProfile } from "@/lib/coach/dummy-data";
+import { Bell, Search } from "lucide-react";
+
+import { ProfileMenu } from "@/components/profile/profile-menu";
 
 export function CoachTopBar() {
   return (
     <header className="coach-chrome flex h-[80px] shrink-0 items-center gap-4 px-8">
-      {/* Wide search */}
       <div className="relative w-full max-w-2xl flex-1">
         <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input
@@ -17,7 +17,6 @@ export function CoachTopBar() {
         />
       </div>
 
-      {/* Right actions */}
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <button
           type="button"
@@ -39,21 +38,7 @@ export function CoachTopBar() {
             style={{ background: "#f97316" }}
           />
         </button>
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded-full bg-white py-1 pl-1 pr-2 transition hover:shadow-md"
-          style={{ boxShadow: "var(--card-shadow-sm)" }}
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarFallback
-              className="rounded-full text-[13px] font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #f97316, #fb923c)" }}
-            >
-              {coachProfile.avatarInitials}
-            </AvatarFallback>
-          </Avatar>
-          <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 sm:block" />
-        </button>
+        <ProfileMenu role="coach" fallbackName="Koç" />
       </div>
     </header>
   );

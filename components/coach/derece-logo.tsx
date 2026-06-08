@@ -1,33 +1,34 @@
 import { cn } from "@/lib/utils";
 
-export const DERECE_LOGO_SRC = "/images/derece-panel-logo.png";
 export const DERECE_LOGO_WIDTH = 640;
 export const DERECE_LOGO_HEIGHT = 160;
 
-/** Yatay DerecePanel logosu — tüm marka alanlarında tek kaynak. */
+/** Yatay DerecePanel logosu — tüm marka alanlarında tek kaynak (statik PNG yok). */
 export function DereceLogo({
   height = 32,
   className,
-  priority,
+  priority: _priority,
 }: {
   height?: number;
   className?: string;
   priority?: boolean;
 }) {
   const width = Math.round((height * DERECE_LOGO_WIDTH) / DERECE_LOGO_HEIGHT);
+  const fontSize = Math.round(height * 0.62);
 
   return (
-    // Yerel statik asset — next/image optimizasyonu landing header'da boyut çöküşüne yol açıyordu.
-    <img
-      src={DERECE_LOGO_SRC}
-      alt="DerecePanel"
-      width={width}
-      height={height}
-      fetchPriority={priority ? "high" : "auto"}
-      decoding="async"
-      className={cn("block shrink-0 object-contain object-left", className)}
-      style={{ width, height, maxWidth: "none" }}
-    />
+    <span
+      role="img"
+      aria-label="DerecePanel"
+      className={cn(
+        "inline-flex shrink-0 items-baseline whitespace-nowrap leading-none tracking-tight",
+        className
+      )}
+      style={{ width, height, fontSize }}
+    >
+      <span className="font-extrabold text-slate-900">Derece</span>
+      <span className="font-semibold text-slate-500">Panel</span>
+    </span>
   );
 }
 

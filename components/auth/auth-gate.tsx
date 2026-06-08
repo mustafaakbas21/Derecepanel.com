@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import {
   fetchClientAuthSession,
   homePathForRole,
+  isAdminLoginPath,
+  loginPathForRole,
   type AuthRole,
 } from "@/lib/auth/local-auth";
 
@@ -14,39 +16,48 @@ type AuthGateProps = {
   children: React.ReactNode;
 };
 
+const MAX_ATTEMPTS = 4;
+
 export function AuthGate({ role, children }: AuthGateProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const [allowed, setAllowed] = useState(false);
+  const redirectingRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function verify(attempt: number) {
       const session = await fetchClientAuthSession();
-      if (cancelled) return;
+      if (cancelled || redirectingRef.current) return;
 
       if (session?.role === role) {
         setAllowed(true);
         return;
       }
+
       if (session) {
+        redirectingRef.current = true;
         const dest =
-          session.role === "admin" ? "/admin/giris" : homePathForRole(session.role);
-        router.replace(dest);
+          role === "admin" && session.role !== "admin"
+            ? loginPathForRole("admin")
+            : session.role === "admin"
+              ? loginPathForRole("admin")
+              : homePathForRole(session.role);
+        if (dest !== pathname && !isAdminLoginPath(pathname)) {
+          window.location.replace(dest);
+        }
         return;
       }
 
-      // Giriş sonrası çerezler bazen ilk istekte henüz hazır olmaz
-      if (attempt < 2) {
-        await new Promise((r) => setTimeout(r, 200));
-        if (!cancelled) await verify(attempt + 1);
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+        if (!cancelled && !redirectingRef.current) await verify(attempt + 1);
         return;
       }
 
+      redirectingRef.current = true;
       const next = encodeURIComponent(pathname || "/");
-      const loginPath = role === "admin" ? "/admin/giris" : "/giris";
-      router.replace(`${loginPath}?next=${next}`);
+      window.location.replace(`${loginPathForRole(role)}?next=${next}`);
     }
 
     void verify(0);
@@ -54,7 +65,7 @@ export function AuthGate({ role, children }: AuthGateProps) {
     return () => {
       cancelled = true;
     };
-  }, [role, router, pathname]);
+  }, [role, pathname]);
 
   if (!allowed) {
     return (

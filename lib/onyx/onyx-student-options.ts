@@ -1,4 +1,3 @@
-import { SEED_STUDENTS } from "@/lib/students/seed";
 import type { StudentRecord } from "@/lib/students/types";
 
 /** Onyx UI — sunucudan istemciye güvenle aktarılabilir öğrenci özeti */
@@ -28,9 +27,9 @@ export function toOnyxStudentOption(student: StudentRecord): OnyxStudentOption {
   };
 }
 
-/** Sunucu (RSC) — localStorage yok; seed + tip güvenli liste (istemci hydrate ile güncellenir) */
+/** Sunucu (RSC) — localStorage yok; istemci hydrate ile dolar */
 export function getServerOnyxStudentOptions(): OnyxStudentOption[] {
-  return SEED_STUDENTS.filter((s) => s.status === "aktif").map(toOnyxStudentOption);
+  return [];
 }
 
 export function onyxOptionToStudentRecord(option: OnyxStudentOption): StudentRecord {

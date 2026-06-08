@@ -5,7 +5,7 @@ import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
 
 export async function POST(request: Request) {
   try {
-    const session = await requireCoachAuth(request);
+    const session = await requireCoachAuth();
     const body = (await request.json().catch(() => ({}))) as {
       coachId?: string;
       entityId?: string;

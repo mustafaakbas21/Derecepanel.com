@@ -260,6 +260,27 @@ export async function persistChatExchange(input: {
   return { sessionId };
 }
 
+/** Sohbet oturumunun öğrenci kimliği — erişim kontrolü için */
+export async function getChatSessionStudentId(
+  sessionId: string
+): Promise<string | null> {
+  const id = sessionId.trim();
+  if (!id) return null;
+
+  const prisma = getPrisma();
+  if (prisma) {
+    const row = await prisma.chatSession.findUnique({
+      where: { id },
+      select: { studentId: true },
+    });
+    return row?.studentId?.trim() || null;
+  }
+
+  const store = await readFallback();
+  const hit = store.sessions.find((s) => s.id === id);
+  return hit?.studentId?.trim() || null;
+}
+
 export async function listChatMessages(
   sessionId: string
 ): Promise<PersistedChatMessage[]> {

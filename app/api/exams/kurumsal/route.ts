@@ -26,7 +26,7 @@ function filterList(
 
 export async function GET(request: Request) {
   try {
-    const session = await requireCoachAuth(request);
+    const session = await requireCoachAuth();
     const url = new URL(request.url);
     const list = filterList(
       loadKurumDenemelerMerged(),
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const body = (await request.json()) as KurumDeneme;
     const enriched = enrichKurumDeneme({ ...body, scope: "kurumsal" });
     return NextResponse.json({ exam: enriched });

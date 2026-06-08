@@ -1,10 +1,12 @@
 import "server-only";
 
-import { BUILTIN_ADMIN } from "@/lib/auth/local-auth";
+import { isAdminHost } from "@/lib/admin/admin-portal";
+import {
+  BUILTIN_ADMIN,
+  BUILTIN_ADMIN_SESSION_PREFIX,
+} from "@/lib/auth/builtin-admin-constants";
 
-export { BUILTIN_ADMIN };
-
-export const BUILTIN_ADMIN_SESSION_PREFIX = "builtin:admin:";
+export { BUILTIN_ADMIN, BUILTIN_ADMIN_SESSION_PREFIX };
 
 export function isBuiltinAdminCredentials(username: string, password: string): boolean {
   return (
@@ -20,9 +22,9 @@ export function isBuiltinAdminSession(secret: string): boolean {
   return secret.startsWith(BUILTIN_ADMIN_SESSION_PREFIX);
 }
 
-export function builtinAdminSessionAllowed(): boolean {
-  return (
-    process.env.NODE_ENV === "development" ||
-    process.env.ALLOW_BUILTIN_ADMIN_LOGIN === "1"
-  );
+/** Yerleşik kurucu girişi — dev veya admin subdomain */
+export function builtinAdminSessionAllowed(host?: string): boolean {
+  if (process.env.NODE_ENV === "development") return true;
+  if (host && isAdminHost(host)) return true;
+  return false;
 }

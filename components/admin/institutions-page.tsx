@@ -14,13 +14,7 @@ import {
   AdminPageHeader,
   AdminStatusBadge,
 } from "@/components/admin/admin-ui";
-import {
-  deleteInstitution,
-  loadInstitutions,
-  persistInstitution,
-  type Institution,
-  type InstitutionDraft,
-} from "@/lib/admin/institutions";
+import type { Institution, InstitutionDraft } from "@/lib/admin/institutions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { appToast } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
@@ -33,11 +27,22 @@ export function InstitutionsPage() {
   const [editTarget, setEditTarget] = useState<Institution | null>(null);
   const { confirm, ConfirmHost } = useConfirm();
 
-  const reload = () => setItems(loadInstitutions());
+  const reload = async () => {
+    const res = await fetch("/api/admin/institutions", { cache: "no-store" });
+    const data = (await res.json().catch(() => ({}))) as {
+      institutions?: Institution[];
+      error?: string;
+    };
+    if (!res.ok) {
+      throw new Error(data.error || "Kurum listesi yüklenemedi");
+    }
+    setItems(data.institutions ?? []);
+  };
 
   useEffect(() => {
-    reload();
-    setHydrated(true);
+    void reload()
+      .catch((err) => appToast.error(err instanceof Error ? err.message : "Yüklenemedi"))
+      .finally(() => setHydrated(true));
   }, []);
 
   const filtered = useMemo(() => {
@@ -51,10 +56,16 @@ export function InstitutionsPage() {
     );
   }, [items, search]);
 
-  const handleSave = (draft: InstitutionDraft) => {
+  const handleSave = async (draft: InstitutionDraft) => {
     try {
-      persistInstitution(draft, editTarget?.id);
-      reload();
+      const res = await fetch("/api/admin/institutions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...draft, id: editTarget?.id }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(data.error || "Kayıt başarısız");
+      await reload();
       appToast.success(editTarget ? "Kurum güncellendi" : "Kurum eklendi");
       setEditTarget(null);
     } catch (err) {
@@ -70,9 +81,17 @@ export function InstitutionsPage() {
       destructive: true,
     });
     if (!ok) return;
-    deleteInstitution(inst.id);
-    reload();
-    appToast.success("Kurum silindi");
+    try {
+      const res = await fetch(`/api/admin/institutions?id=${encodeURIComponent(inst.id)}`, {
+        method: "DELETE",
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(data.error || "Silinemedi");
+      await reload();
+      appToast.success("Kurum silindi");
+    } catch (err) {
+      appToast.error(err instanceof Error ? err.message : "Silinemedi");
+    }
   };
 
   if (!hydrated) return <AdminLoadingSkeleton />;
@@ -81,7 +100,7 @@ export function InstitutionsPage() {
     <div className={ADMIN_PAGE_CLASS}>
       <AdminPageHeader
         title="Kurumlar"
-        description="Platforma bağlı kurum ve iş ortakları."
+        description="Platforma bağlı dershane ve koçluk merkezlerini yönetin."
         action={
           <Button
             variant="primary"
@@ -103,8 +122,8 @@ export function InstitutionsPage() {
           {filtered.length === 0 ? (
             <AdminEmptyState
               icon={Building2}
-              title="Henüz kurum yok"
-              description="İlk kurumu ekleyerek başlayın."
+              title="Kurum bulunamadı"
+              description="Henüz kurum yok veya arama sonucu boş."
               action={
                 <Button
                   variant="primary"
@@ -137,14 +156,11 @@ export function InstitutionsPage() {
                     <td className="py-3.5 pr-4 font-medium text-slate-900">{inst.name}</td>
                     <td className="py-3.5 pr-4 text-slate-600">{inst.contactName || "—"}</td>
                     <td className="py-3.5 pr-4 text-slate-600">
-                      <p>{inst.email || "—"}</p>
-                      {inst.phone ? (
-                        <p className="text-xs text-slate-400">{inst.phone}</p>
-                      ) : null}
+                      {[inst.phone, inst.email].filter(Boolean).join(" · ") || "—"}
                     </td>
                     <td className="py-3.5 pr-4">
                       <AdminStatusBadge
-                        status={inst.status === "Aktif" ? "active" : "inactive"}
+                        status={inst.status === "Pasif" ? "inactive" : "active"}
                       >
                         {inst.status}
                       </AdminStatusBadge>
@@ -186,8 +202,9 @@ export function InstitutionsPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         initial={editTarget}
-        onSave={handleSave}
+        onSave={(draft) => void handleSave(draft)}
       />
+
       {ConfirmHost}
     </div>
   );

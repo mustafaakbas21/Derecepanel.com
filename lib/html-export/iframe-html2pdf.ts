@@ -12,7 +12,7 @@ export type IframeHtml2PdfOptions = {
 
 /**
  * Tam HTML belgesini ana uygulama stillerinden izole iframe'de PDF'e çevirir.
- * (html2canvas lab()/oklch() hatasını önler)
+ * (html2canvas lab()/oklab()/oklch() hatasını önler)
  */
 export async function downloadPdfFromHtmlDocument(
   html: string,

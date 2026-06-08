@@ -7,7 +7,7 @@ import { resolveNets } from "@/lib/yks-sim/net-resolve";
 
 export async function GET(request: Request) {
   try {
-    await requireYksSimRead(request);
+    await requireYksSimRead();
     const url = new URL(request.url);
     const programKodu = url.searchParams.get("programKodu")?.trim();
     if (!programKodu) {

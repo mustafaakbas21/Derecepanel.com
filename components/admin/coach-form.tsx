@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -10,9 +11,11 @@ import {
   LibraryPageHeader,
 } from "@/components/library/library-shell";
 import { ADMIN_ROUTES } from "@/lib/admin/admin-nav-config";
-import { persistCoach, type CoachDraft } from "@/lib/admin/coach-storage";
+import type { CoachDraft } from "@/lib/admin/coach-storage";
 import type { LocalCoachAccount } from "@/lib/auth/local-auth";
+import { isValidPanelUsername, normalizeUsernameInput } from "@/lib/auth/local-auth";
 import { appToast } from "@/lib/notify";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +40,7 @@ export function CoachForm({ mode, initial }: Props) {
   const [displayName, setDisplayName] = useState(initial?.displayName ?? "");
   const [username, setUsername] = useState(initial?.username ?? "");
   const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [phone, setPhone] = useState(initial?.phone ?? "");
   const [specialty, setSpecialty] = useState(initial?.specialty ?? "");
   const [status, setStatus] = useState<"Aktif" | "Pasif">(
@@ -49,6 +53,9 @@ export function CoachForm({ mode, initial }: Props) {
     const e: Record<string, string> = {};
     if (!displayName.trim()) e.displayName = "Ad soyad zorunlu";
     if (!username.trim()) e.username = "Kullanıcı adı zorunlu";
+    else if (!isValidPanelUsername(username)) {
+      e.username = "Sadece harf, rakam, nokta, tire ve alt çizgi kullanın";
+    }
     if (mode === "create" && password.trim().length < 6) {
       e.password = "Şifre en az 6 karakter olmalı";
     }
@@ -65,7 +72,7 @@ export function CoachForm({ mode, initial }: Props) {
 
     const draft: CoachDraft = {
       displayName: displayName.trim(),
-      username: username.trim(),
+      username: normalizeUsernameInput(username),
       password: mode === "create" ? password : password.trim() || initial?.password || "",
       phone: phone.trim() || undefined,
       specialty: specialty.trim() || undefined,
@@ -94,14 +101,29 @@ export function CoachForm({ mode, initial }: Props) {
         if (!res.ok) {
           throw new Error(data.error || "Koç hesabı oluşturulamadı");
         }
-        persistCoach(draft);
         if (data.appwriteProvisioned === false) {
           appToast.success("Koç kaydedildi (demo mod — Appwrite girişi yapılandırılmadı)");
         } else {
           appToast.success("Koç hesabı oluşturuldu");
         }
       } else {
-        persistCoach(draft, initial?.coachId);
+        const res = await fetch("/api/admin/coaches", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            coachId: initial?.coachId,
+            displayName: draft.displayName,
+            username: draft.username,
+            password: draft.password || undefined,
+            phone: draft.phone,
+            specialty: draft.specialty,
+            status: draft.status,
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        if (!res.ok) {
+          throw new Error(data.error || "Koç güncellenemedi");
+        }
         appToast.success("Koç güncellendi");
       }
       router.push(ADMIN_ROUTES.coaches);
@@ -151,21 +173,35 @@ export function CoachForm({ mode, initial }: Props) {
               />
               {errors.username ? (
                 <p className="text-[11px] text-red-600">{errors.username}</p>
-              ) : null}
+              ) : (
+                <p className="text-[11px] text-slate-400">
+                  Türkçe karakterler otomatik dönüştürülür (örn. fatoştokar → fatostokar).
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="password">
                 Panel şifresi {mode === "create" ? "*" : "(boş bırakılırsa değişmez)"}
               </Label>
-              <Input
-                id="password"
-                type="password"
-                className={inputCls}
-                value={password}
-                onChange={(ev) => setPassword(ev.target.value)}
-                autoComplete="new-password"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPass ? "text" : "password"}
+                  className={cn(inputCls, "pr-12")}
+                  value={password}
+                  onChange={(ev) => setPassword(ev.target.value)}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  onClick={() => setShowPass((v) => !v)}
+                  aria-label={showPass ? "Şifreyi gizle" : "Şifreyi göster"}
+                >
+                  {showPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
               {errors.password ? (
                 <p className="text-[11px] text-red-600">{errors.password}</p>
               ) : null}

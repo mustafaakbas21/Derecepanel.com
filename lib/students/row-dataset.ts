@@ -20,6 +20,5 @@ export function studentRowDataAttributes(
     "data-phone": s.phone,
     "data-tc-no": s.tcNo,
     "data-kullanici-adi": s.kullaniciAdi,
-    "data-panel-sifre": s.panelSifre,
   };
 }

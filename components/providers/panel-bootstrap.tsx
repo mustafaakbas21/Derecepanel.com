@@ -3,7 +3,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
-import { fetchClientAuthSession } from "@/lib/auth/local-auth";
+import {
+  fetchClientAuthSession,
+  isAdminPortalClient,
+} from "@/lib/auth/local-auth";
 import { runCloudMigrationIfNeeded } from "@/lib/migration/cloud-migration";
 import { clearPanelStoreCache, hydratePanelStore } from "@/lib/panel-store";
 
@@ -12,6 +15,10 @@ type PanelBootstrapProps = {
 };
 
 function isPublicMarketingPath(pathname: string): boolean {
+  const onAdminPortal = isAdminPortalClient();
+  if (onAdminPortal) {
+    return pathname === "/giris" || pathname === "/admin/giris";
+  }
   return (
     pathname === "/" ||
     pathname === "/giris" ||

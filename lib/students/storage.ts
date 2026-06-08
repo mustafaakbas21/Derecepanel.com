@@ -12,8 +12,7 @@ import {
   normalizeStudentStatus,
   normalizeStudyField,
 } from "@/lib/students/normalize-field";
-import { SEED_STUDENTS } from "@/lib/students/seed";
-import type { StudentRecord, StudyField, StudentStatus } from "@/lib/students/types";
+import type { StudentRecord } from "@/lib/students/types";
 
 /** ESKİ Derecepanel tam liste anahtarı */
 export const LEGACY_STUDENTS_FULL_KEY = "derecepanel_students_full_v1";
@@ -87,13 +86,12 @@ function parseStudentArray(raw: string | null): StudentRecord[] {
 }
 
 export type LoadStudentsOptions = {
-  /** İlk kurulumda demo seed yaz (öğrenciler sayfası). Dashboard için false. */
+  /** @deprecated Demo seed kaldırıldı — yok sayılır */
   seedIfEmpty?: boolean;
 };
 
-export function loadStudentsFull(options: LoadStudentsOptions = {}): StudentRecord[] {
-  const { seedIfEmpty = true } = options;
-  if (typeof window === "undefined") return seedIfEmpty ? SEED_STUDENTS : [];
+export function loadStudentsFull(_options: LoadStudentsOptions = {}): StudentRecord[] {
+  if (typeof window === "undefined") return [];
 
   try {
     const primary = parseStudentArray(panelGetItem(STORAGE_KEY));
@@ -121,10 +119,7 @@ export function loadStudentsFull(options: LoadStudentsOptions = {}): StudentReco
     /* ignore */
   }
 
-  if (!seedIfEmpty) return [];
-
-  persistStudentsFull(SEED_STUDENTS, { silent: true });
-  return SEED_STUDENTS;
+  return [];
 }
 
 function syncStudentsToAppwrite(list: StudentRecord[]) {

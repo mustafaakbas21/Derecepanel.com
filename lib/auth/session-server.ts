@@ -94,13 +94,6 @@ export async function getServerAuthSession(): Promise<ServerAuthSession | null> 
       sessionSecret,
     };
   } catch {
-    // Girişte doğrulanmış httpOnly çerezlere güven; Appwrite ara sıra geç yanıt verebilir
-    return {
-      userId,
-      role,
-      email: username ? `${username}@session` : "",
-      username: username || undefined,
-      sessionSecret,
-    };
+    return null;
   }
 }

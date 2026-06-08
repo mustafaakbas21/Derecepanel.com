@@ -1,8 +1,8 @@
 "use client";
 
-import { Bell, ChevronDown, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileMenu } from "@/components/profile/profile-menu";
 import { getCurrentUser } from "@/lib/appointments/current-user";
 import { findStudentRecordForUser } from "@/lib/konu-takip/student-scope";
 import { studentProfile } from "@/lib/student/dummy-data";
@@ -15,13 +15,7 @@ function useStudentTopBarProfile() {
     record?.sinifBranch && record.alan
       ? `${record.sinifBranch} · ${record.alan}`
       : studentProfile.role;
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toLocaleUpperCase("tr") ?? "")
-    .join("");
-  return { name, role, initials: initials || studentProfile.avatarInitials };
+  return { name, role };
 }
 
 export function StudentTopBar() {
@@ -52,27 +46,12 @@ export function StudentTopBar() {
             style={{ background: "#f97316" }}
           />
         </button>
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded-full bg-white py-1 pl-1 pr-2 transition hover:shadow-md"
-          style={{ boxShadow: "var(--card-shadow-sm)" }}
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarFallback
-              className="rounded-full text-[13px] font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #f97316, #fb923c)" }}
-            >
-              {profile.initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="hidden min-w-0 text-left sm:block">
-            <p className="truncate text-[13px] font-semibold text-slate-800">
-              {profile.name}
-            </p>
-            <p className="truncate text-[11px] text-slate-400">{profile.role}</p>
-          </div>
-          <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 sm:block" />
-        </button>
+        <ProfileMenu
+          role="student"
+          fallbackName={profile.name}
+          fallbackSubtitle={profile.role}
+          showName
+        />
       </div>
     </header>
   );

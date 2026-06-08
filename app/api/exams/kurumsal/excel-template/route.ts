@@ -7,7 +7,7 @@ import * as XLSX from "xlsx";
 
 export async function GET(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const sinav = (new URL(request.url).searchParams.get("sinav") || "TYT") as SinavTipi;
     const layout = getExamLayout(sinav);
     const rows: string[][] = [

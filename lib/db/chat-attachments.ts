@@ -47,6 +47,24 @@ export async function saveChatImageAttachment(input: {
   return id;
 }
 
+export async function getChatAttachmentSessionId(
+  attachmentId: string
+): Promise<string | null> {
+  const id = attachmentId.trim();
+  if (!id || /[^a-zA-Z0-9-]/.test(id)) return null;
+
+  try {
+    const metaRaw = await readFile(
+      path.join(ATTACH_DIR, `${id}.meta.json`),
+      "utf8"
+    );
+    const meta = JSON.parse(metaRaw) as AttachmentMeta;
+    return meta.sessionId?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function readChatImageAttachment(
   attachmentId: string
 ): Promise<{ buffer: Buffer; mimeType: string } | null> {

@@ -6,17 +6,16 @@ import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
 
 export async function POST(request: Request) {
   try {
-    const session = await requireCoachAuth(request);
+    const session = await requireCoachAuth();
     if (!isAppwriteServerConfigured()) {
       return NextResponse.json({ error: "Appwrite yapılandırması eksik" }, { status: 503 });
     }
 
     const body = (await request.json().catch(() => ({}))) as {
-      coachId?: string;
       keys?: Record<string, string>;
     };
 
-    const coachId = body.coachId?.trim() || session.coachId;
+    const coachId = session.coachId;
     const keys = body.keys ?? {};
     let synced = 0;
 

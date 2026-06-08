@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 import {
+  getChatSessionStudentId,
   listChatMessages,
   listStudentChatSessions,
 } from "@/lib/db/chat-memory";
@@ -17,8 +18,13 @@ import {
   type OnyxChatHistoryTurn,
 } from "@/lib/onyx/chat-history-pruning";
 import { prependOnyxIntentRecognition } from "@/lib/onyx/intent-recognition";
+import { AuthError } from "@/lib/auth/require-coach";
+import {
+  assertOnyxStudentAccess,
+  requireOnyxAuth,
+} from "@/lib/auth/require-onyx";
+import { enforceRateLimit } from "@/lib/security/apply-rate-limit";
 import { OnyxGroqError } from "@/lib/onyx/groq-server";
-import { resolveOnyxRequestRole } from "@/lib/onyx/onyx-persona";
 import { resolveOnyxGroqModelSafe } from "@/lib/onyx/resolve-groq-model";
 import {
   onyxStreamErrorResponse,
@@ -101,28 +107,52 @@ async function resolveRecentChatHistory(
  * GET `?sessionId=` · `?studentId=`
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const sessionId = searchParams.get("sessionId")?.trim();
-  const studentId = searchParams.get("studentId")?.trim();
+  try {
+    const ctx = await requireOnyxAuth();
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get("sessionId")?.trim();
+    const studentId = searchParams.get("studentId")?.trim();
 
-  if (sessionId) {
-    const messages = await listChatMessages(sessionId);
-    return NextResponse.json({ sessionId, messages });
+    if (sessionId) {
+      const ownerId = await getChatSessionStudentId(sessionId);
+      if (!ownerId) {
+        return NextResponse.json({ error: "Oturum bulunamadı" }, { status: 404 });
+      }
+      await assertOnyxStudentAccess(ctx, ownerId);
+      const messages = await listChatMessages(sessionId);
+      return NextResponse.json({ sessionId, messages });
+    }
+
+    if (studentId) {
+      await assertOnyxStudentAccess(ctx, studentId);
+      const sessions = await listStudentChatSessions(studentId, 30);
+      return NextResponse.json({ studentId, sessions });
+    }
+
+    return NextResponse.json(
+      { error: "sessionId veya studentId query gerekli" },
+      { status: 400 }
+    );
+  } catch (e) {
+    if (e instanceof AuthError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
-
-  if (studentId) {
-    const sessions = await listStudentChatSessions(studentId, 30);
-    return NextResponse.json({ studentId, sessions });
-  }
-
-  return NextResponse.json(
-    { error: "sessionId veya studentId query gerekli" },
-    { status: 400 }
-  );
 }
 
 export async function POST(request: Request) {
   try {
+    const ctx = await requireOnyxAuth();
+    const rateLimited = await enforceRateLimit(
+      request,
+      "onyx",
+      30,
+      60,
+      ctx.userId
+    );
+    if (rateLimited) return rateLimited;
+
     const body = (await request.json()) as OnyxPostBody;
     const prompt = String(body?.prompt ?? "").trim();
     const vision = body?.vision;
@@ -141,12 +171,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const role = resolveOnyxRequestRole(body);
+    const role = ctx.onyxRole;
     const isCoach = role === "coach";
 
     const targetStudentId = String(
-      body?.targetStudentId ?? body?.studentId ?? ""
+      body?.targetStudentId ??
+        body?.studentId ??
+        (ctx.role === "student" ? ctx.userId : "")
     ).trim();
+
+    if (targetStudentId) {
+      await assertOnyxStudentAccess(ctx, targetStudentId);
+    }
 
     let action = (body?.action ?? "general") as OnyxEngineAction;
     const careerExplicit = action === "kariyer-tercih";
@@ -352,6 +388,9 @@ export async function POST(request: Request) {
       return onyxStreamErrorResponse(streamErr);
     }
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     if (err instanceof OnyxGroqError) {
       const status =
         err.code === "MISSING_API_KEY"

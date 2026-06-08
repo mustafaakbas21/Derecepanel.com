@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { AuthError } from "@/lib/auth/require-coach";
+import { getServerAuthSession } from "@/lib/auth/session-server";
+import { enforceRateLimit } from "@/lib/security/apply-rate-limit";
 import {
   generateCacheKey,
   getCachedResponse,
@@ -7,7 +10,7 @@ import {
 } from "@/lib/cache-service";
 import { ONYX_COMPLETION_TEMPERATURE } from "@/lib/onyx/constants";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export type ChatPostBody = {
   prompt?: string;
@@ -73,6 +76,23 @@ export async function POST(request: Request) {
   let prompt = "";
 
   try {
+    const session = await getServerAuthSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Oturum gerekli", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
+
+    const rateLimited = await enforceRateLimit(
+      request,
+      "api-chat",
+      20,
+      60,
+      session.userId
+    );
+    if (rateLimited) return rateLimited;
+
     const body = (await request.json()) as ChatPostBody;
     prompt = String(body?.prompt ?? "").trim();
   } catch {
@@ -114,6 +134,12 @@ export async function POST(request: Request) {
       headers: { "x-cache-hit": "false" },
     });
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json(
+        { error: err.message, code: "UNAUTHORIZED" },
+        { status: err.status }
+      );
+    }
     const message =
       err instanceof Error ? err.message : "Yapay zeka yanıtı alınamadı";
     return NextResponse.json(

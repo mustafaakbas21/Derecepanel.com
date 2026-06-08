@@ -8,7 +8,7 @@ import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
  */
 export async function GET(request: Request) {
   try {
-    const session = await requireCoachAuth(request);
+    const session = await requireCoachAuth();
     const coachId = new URL(request.url).searchParams.get("coachId");
     if (session.role === "coach" && coachId && coachId !== session.coachId) {
       return NextResponse.json({ error: "Yetkisiz coachId" }, { status: 403 });

@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
 import { loadUpcomingKurumDenemelerForStudent } from "@/lib/exams/exam-storage";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const exams = loadUpcomingKurumDenemelerForStudent();
     return NextResponse.json({ exams });
   } catch (e) {

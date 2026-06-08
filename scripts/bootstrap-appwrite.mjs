@@ -308,6 +308,9 @@ try {
   await ensureDatabase();
   await ensureCollections();
   await ensureBuckets();
+  console.log("\n— Admin1 —");
+  const { main: provisionAdmin1 } = await import("./provision-admin1.mjs");
+  await provisionAdmin1();
   console.log("\n✅ Appwrite bootstrap tamamlandı.");
 } catch (err) {
   console.error("\n❌ Bootstrap hatası:", err?.message || err);

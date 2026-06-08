@@ -7,6 +7,7 @@ import { AdminInfoBanner } from "@/components/admin/admin-ui";
 import { AdminTopNav } from "@/components/admin/admin-top-nav";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { CoachScrollReset } from "@/components/coach/coach-scroll-reset";
+import { isAdminLoginPath } from "@/lib/auth/local-auth";
 import { setMaintenanceModeLocal } from "@/lib/admin/maintenance";
 import { useAdminLiveRefresh } from "@/hooks/use-admin-live-refresh";
 
@@ -59,7 +60,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/admin/giris";
+  const isLoginPage = isAdminLoginPath(pathname);
 
   if (isLoginPage) {
     return <>{children}</>;

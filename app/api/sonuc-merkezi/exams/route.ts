@@ -5,9 +5,9 @@ import { readCoachScopedExamResults } from "@/lib/exams/exam-results-storage";
 import { loadMergedExams } from "@/lib/exams/exam-storage";
 import { computeResultsAgg } from "@/lib/exams/results-agg";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const results = readCoachScopedExamResults();
     const exams = loadMergedExams();
     const agg = computeResultsAgg(results);

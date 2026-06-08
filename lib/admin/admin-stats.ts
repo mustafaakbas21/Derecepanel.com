@@ -49,7 +49,7 @@ const MONTH_LABELS = [
   "Ara",
 ];
 
-function buildMonthlyRegistrations(students: StudentRecord[]): MonthlyRegistration[] {
+export function buildMonthlyRegistrations(students: StudentRecord[]): MonthlyRegistration[] {
   const now = new Date();
   const buckets: MonthlyRegistration[] = [];
 
@@ -75,7 +75,7 @@ function buildMonthlyRegistrations(students: StudentRecord[]): MonthlyRegistrati
   return buckets;
 }
 
-function buildStatusBreakdown(students: StudentRecord[]): StatusBreakdown {
+export function buildStatusBreakdown(students: StudentRecord[]): StatusBreakdown {
   const breakdown: StatusBreakdown = {
     aktif: 0,
     donduruldu: 0,

@@ -8,7 +8,7 @@ import { AuthError, requireCoachAuth } from "@/lib/auth/require-coach-server";
  */
 export async function GET(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const scope = new URL(request.url).searchParams.get("scope") || "all";
     return NextResponse.json({
       scope,

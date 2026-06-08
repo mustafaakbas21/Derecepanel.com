@@ -10,7 +10,7 @@ import { computeResultsAgg, countExamsWithResults } from "@/lib/exams/results-ag
 
 export async function GET(request: Request) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const results = readCoachScopedExamResults();
     const exams = loadMergedExams();
     const agg = computeResultsAgg(results);

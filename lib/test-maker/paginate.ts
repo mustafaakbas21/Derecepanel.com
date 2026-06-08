@@ -31,7 +31,20 @@ export type QuestionSheetPage = {
 /** @deprecated MeasuredQuestionPage kullanın */
 export type DynamicQuestionPage = QuestionSheetPage;
 
-const FALLBACK_QUESTION_HEIGHT_PX = 300;
+export const FALLBACK_QUESTION_HEIGHT_PX = 300;
+
+export function buildHeightsWithFallback(
+  questions: TMQuestion[],
+  measuredHeights: Record<string, number>
+): Record<string, number> {
+  const heights: Record<string, number> = { ...measuredHeights };
+  for (const q of questions) {
+    if (typeof heights[q.id] !== "number") {
+      heights[q.id] = FALLBACK_QUESTION_HEIGHT_PX;
+    }
+  }
+  return heights;
+}
 
 type ColumnSlot = {
   items: TMQuestion[];
@@ -253,9 +266,274 @@ function pushToColumn(
   else page.right.push(q);
 }
 
+function contentPages(pages: MeasuredQuestionPage[]): MeasuredQuestionPage[] {
+  return pages.filter((page) => !page.isOpticPage);
+}
+
+/** Ekrandaki veya son kararlı dizgiden önceki yerleşimi seç — yeni kırpmada geriye dönme. */
+export function pickPreviousLayout(
+  questions: TMQuestion[],
+  displayPages: MeasuredQuestionPage[],
+  stablePages: MeasuredQuestionPage[]
+): MeasuredQuestionPage[] | null {
+  const candidates = [contentPages(displayPages), contentPages(stablePages)];
+
+  for (const pages of candidates) {
+    if (pages.length === 0) continue;
+    const layoutIds = flattenPagesQuestionIds(pages);
+    if (layoutIds.length === 0 || layoutIds.length > questions.length) continue;
+    const prefix = questions.slice(0, layoutIds.length).map((q) => q.id);
+    if (layoutIds.every((id, index) => id === prefix[index])) {
+      return pages;
+    }
+  }
+
+  return null;
+}
+
+/** Sayfa sütunlarından soru kimlikleri — sol üstten alta, sonra sağ */
+export function flattenPagesQuestionIds(pages: MeasuredQuestionPage[]): string[] {
+  const ids: string[] = [];
+  for (const page of pages) {
+    if (page.isOpticPage) continue;
+    ids.push(...page.left.map((q) => q.id), ...page.right.map((q) => q.id));
+  }
+  return ids;
+}
+
+function buildMinPageIndex(pages: MeasuredQuestionPage[]): Map<string, number> {
+  const minPageIndex = new Map<string, number>();
+  pages.forEach((page, pageIdx) => {
+    if (page.isOpticPage) return;
+    for (const q of [...page.left, ...page.right]) {
+      minPageIndex.set(q.id, pageIdx);
+    }
+  });
+  return minPageIndex;
+}
+
+function appendQuestionsToLayout(
+  pages: MeasuredQuestionPage[],
+  newQuestions: TMQuestion[],
+  heights: Record<string, number>,
+  maxColumnHeight: number
+): MeasuredQuestionPage[] {
+  if (newQuestions.length === 0) return pages;
+
+  const result = clonePages(pages);
+  if (result.length === 0) result.push(emptyPage());
+
+  let pageIdx = result.length - 1;
+  let leftItems = [...result[pageIdx]!.left];
+  let rightItems = [...result[pageIdx]!.right];
+  let leftUsed = sumColumnHeightsFromItems(leftItems, heights);
+  let rightUsed = sumColumnHeightsFromItems(rightItems, heights);
+
+  const syncLastPage = () => {
+    result[pageIdx] = {
+      left: leftItems,
+      right: rightItems,
+      leftH: leftUsed,
+      rightH: rightUsed,
+    };
+  };
+
+  const tryPlaceOnCurrentPage = (q: TMQuestion): boolean => {
+    const contentH = heights[q.id] ?? FALLBACK_QUESTION_HEIGHT_PX;
+
+    if (leftItems.length === 0) {
+      const block = getQuestionBlockHeight(contentH, 0);
+      if (block > maxColumnHeight) return false;
+      leftItems = [q];
+      leftUsed = block;
+      syncLastPage();
+      return true;
+    }
+
+    const leftBlock = getQuestionBlockHeight(contentH, leftItems.length);
+    if (leftUsed + leftBlock <= maxColumnHeight) {
+      leftItems.push(q);
+      leftUsed += leftBlock;
+      syncLastPage();
+      return true;
+    }
+
+    const rightBlock = getQuestionBlockHeight(contentH, rightItems.length);
+    if (rightUsed + rightBlock <= maxColumnHeight) {
+      rightItems.push(q);
+      rightUsed += rightBlock;
+      syncLastPage();
+      return true;
+    }
+
+    return false;
+  };
+
+  for (const q of newQuestions) {
+    if (tryPlaceOnCurrentPage(q)) continue;
+
+    pageIdx += 1;
+    result.push(emptyPage());
+    leftItems = [];
+    rightItems = [];
+    leftUsed = 0;
+    rightUsed = 0;
+
+    const contentH = heights[q.id] ?? FALLBACK_QUESTION_HEIGHT_PX;
+    const block = getQuestionBlockHeight(contentH, 0);
+    leftItems = [q];
+    leftUsed = block;
+    syncLastPage();
+  }
+
+  return result;
+}
+
 /**
- * Render sonrası dizgi rafine — taşmayı gider, boş sayfaları sil,
- * sonraki sayfadan önceki sayfaya DOM ile gerçek sığma kontrolü.
+ * Yeni sayfaya geçildikten sonra eski sayfalara geri doldurma yapma.
+ * Önceki dizgiyi baz al: yalnızca sona ekle veya taşmayı ileri kaydır.
+ */
+export function paginateForwardOnly(
+  questions: TMQuestion[],
+  heights: Record<string, number>,
+  maxColumnHeight: number,
+  previousPages: MeasuredQuestionPage[] | null
+): MeasuredQuestionPage[] {
+  if (questions.length === 0) return [];
+  if (!previousPages?.length) {
+    return paginateByMeasuredHeights(questions, heights, maxColumnHeight);
+  }
+
+  const contentPages = previousPages.filter((page) => !page.isOpticPage);
+  const prevIds = flattenPagesQuestionIds(contentPages);
+  const currIds = questions.map((q) => q.id);
+
+  const isAppendOnly =
+    currIds.length > prevIds.length &&
+    prevIds.every((id, index) => currIds[index] === id);
+
+  if (isAppendOnly) {
+    const appended = questions.slice(prevIds.length);
+    return finalizeForwardPages(
+      appendQuestionsToLayout(clonePages(contentPages), appended, heights, maxColumnHeight),
+      heights
+    );
+  }
+
+  const sameOrder =
+    currIds.length === prevIds.length &&
+    currIds.every((id, index) => id === prevIds[index]);
+
+  if (sameOrder) {
+    return paginateWithMinPageConstraints(
+      questions,
+      heights,
+      maxColumnHeight,
+      buildMinPageIndex(contentPages)
+    );
+  }
+
+  return paginateByMeasuredHeights(questions, heights, maxColumnHeight);
+}
+
+function finalizeForwardPages(
+  pages: MeasuredQuestionPage[],
+  heights: Record<string, number>
+): MeasuredQuestionPage[] {
+  return pruneEmptyPages(normalizePagesLeftFirst(pages, heights));
+}
+
+function paginateWithMinPageConstraints(
+  questions: TMQuestion[],
+  heights: Record<string, number>,
+  maxColumnHeight: number,
+  minPageIndex: Map<string, number>
+): MeasuredQuestionPage[] {
+  if (questions.length === 0) return [];
+
+  const pages: MeasuredQuestionPage[] = [];
+  let left = emptyColumn();
+  let right = emptyColumn();
+  let pageIdx = 0;
+  let lastAssignedPage = 0;
+
+  const commitPage = () => {
+    if (left.items.length === 0 && right.items.length === 0) return;
+    while (pages.length <= pageIdx) pages.push(emptyPage());
+    syncPageFromColumns(pages[pageIdx]!, left, right);
+    pageIdx += 1;
+    left = emptyColumn();
+    right = emptyColumn();
+  };
+
+  const placeOnOpenPage = (q: TMQuestion): boolean => {
+    const contentH = heights[q.id] ?? FALLBACK_QUESTION_HEIGHT_PX;
+
+    if (left.items.length === 0) {
+      addToColumn(left, q, getQuestionBlockHeight(contentH, 0));
+      return true;
+    }
+
+    const leftBlock = getQuestionBlockHeight(contentH, left.items.length);
+    if (canAddToColumn(left, leftBlock, maxColumnHeight)) {
+      addToColumn(left, q, leftBlock);
+      return true;
+    }
+
+    const rightBlock = getQuestionBlockHeight(contentH, right.items.length);
+    if (canAddToColumn(right, rightBlock, maxColumnHeight)) {
+      addToColumn(right, q, rightBlock);
+      return true;
+    }
+
+    return false;
+  };
+
+  for (const q of questions) {
+    const minPage = minPageIndex.has(q.id) ? minPageIndex.get(q.id)! : lastAssignedPage;
+
+    while (pageIdx < minPage) commitPage();
+
+    if (!placeOnOpenPage(q)) {
+      commitPage();
+      while (pageIdx < minPage) commitPage();
+      while (!placeOnOpenPage(q)) commitPage();
+    }
+
+    lastAssignedPage = Math.max(lastAssignedPage, pageIdx);
+  }
+
+  commitPage();
+  return finalizeForwardPages(pages, heights);
+}
+
+export function layoutFlatKey(pages: MeasuredQuestionPage[]): string {
+  return flattenPagesQuestionIds(contentPages(pages)).join("|");
+}
+
+/** Tek soru eklendiğinde mevcut ekran dizgisinin sonuna yerleştir. */
+export function appendQuestionToDisplayLayout(
+  questions: TMQuestion[],
+  heights: Record<string, number>,
+  maxColumnHeight: number,
+  displayPages: MeasuredQuestionPage[]
+): MeasuredQuestionPage[] | null {
+  const previous = pickPreviousLayout(questions, displayPages, []);
+  if (!previous) return null;
+
+  const prevIds = flattenPagesQuestionIds(previous);
+  const appended = questions.slice(prevIds.length);
+  if (appended.length === 0) return null;
+
+  return finalizeForwardPages(
+    appendQuestionsToLayout(clonePages(previous), appended, heights, maxColumnHeight),
+    heights
+  );
+}
+
+/**
+ * Render sonrası dizgi rafine — yalnızca taşmayı ileri kaydırır.
+ * Eski sayfalara geri doldurma yapılmaz (yeni sayfadan sonra geri sarma yok).
  */
 export function refineLayoutWithDom(
   pages: MeasuredQuestionPage[],
@@ -268,39 +546,7 @@ export function refineLayoutWithDom(
   const result = clonePages(pages);
   let changed = false;
 
-  // 1) Sonraki sayfadan önceki sayfaya çek — önce sağ, sonra sol (DOM kalan alan)
-  for (let pageIdx = 0; pageIdx < result.length - 1; pageIdx += 1) {
-    const metrics = pageMetrics[pageIdx];
-    const page = result[pageIdx]!;
-    const nextPage = result[pageIdx + 1]!;
-    if (!metrics) continue;
-
-    const targets: Array<"right" | "left"> =
-      page.left.length > 0 ? ["right", "left"] : ["left"];
-
-    while (nextPage.left.length > 0) {
-      const candidate = nextPage.left[0]!;
-      const blockH = heights[candidate.id] ?? FALLBACK_QUESTION_HEIGHT_PX;
-      let placed = false;
-
-      for (const side of targets) {
-        const colMetrics = side === "left" ? metrics.left : metrics.right;
-        if (!questionFitsColumnDom(colMetrics, blockH)) continue;
-
-        nextPage.left.shift();
-        pushToColumn(page, side, candidate);
-        resyncPageHeights(page, heights);
-        resyncPageHeights(nextPage, heights);
-        changed = true;
-        placed = true;
-        break;
-      }
-
-      if (!placed) break;
-    }
-  }
-
-  // 2) Taşan sütundan son soruyu önce aynı sayfanın diğer sütununa, olmazsa sonraki sayfaya aktar
+  // Taşan sütundan son soruyu önce aynı sayfanın diğer sütununa, olmazsa sonraki sayfaya aktar
   for (let pageIdx = 0; pageIdx < result.length; pageIdx += 1) {
     const metrics = pageMetrics[pageIdx];
     const page = result[pageIdx]!;

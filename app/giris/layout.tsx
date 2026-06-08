@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Giriş Yap — DerecePanel",
-  description: "Koç veya öğrenci paneline kullanıcı adı ve şifre ile giriş yapın.",
+  description: "Koç ve öğrenci paneline kullanıcı adı ve şifre ile giriş yapın.",
 };
 
 export default function GirisLayout({ children }: { children: React.ReactNode }) {

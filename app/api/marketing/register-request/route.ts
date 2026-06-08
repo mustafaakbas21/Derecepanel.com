@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { appendRegistrationRequest } from "@/lib/admin/registration-requests-server";
+import { enforceRateLimit } from "@/lib/security/apply-rate-limit";
 import type { RegisterRole } from "@/lib/marketing/registration-request";
 import { sendRegistrationRequestEmail } from "@/lib/marketing/registration-request";
 
@@ -20,6 +21,9 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const rateLimited = await enforceRateLimit(request, "register-request", 3, 60 * 60);
+  if (rateLimited) return rateLimited;
+
   let json: unknown;
   try {
     json = await request.json();

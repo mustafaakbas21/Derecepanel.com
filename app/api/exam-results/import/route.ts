@@ -6,7 +6,7 @@ import type { ExamResultImportRequest } from "@/lib/exams/import/types";
 
 export async function POST(request: Request) {
   try {
-    const session = await requireCoachAuth(request);
+    const session = await requireCoachAuth();
 
     let body: ExamResultImportRequest;
     try {

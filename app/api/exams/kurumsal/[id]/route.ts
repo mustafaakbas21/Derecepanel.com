@@ -9,7 +9,7 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, ctx: Ctx) {
   try {
-    const session = await requireCoachAuth(_request);
+    const session = await requireCoachAuth();
     const { id } = await ctx.params;
     const item = loadKurumDenemelerMerged().find((x) => x.id === id);
     if (!item) {
@@ -29,7 +29,7 @@ export async function GET(_request: Request, ctx: Ctx) {
 
 export async function PATCH(request: Request, ctx: Ctx) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const { id } = await ctx.params;
     const body = (await request.json()) as KurumDeneme;
     const enriched = enrichKurumDeneme({ ...body, id, scope: "kurumsal" });
@@ -44,7 +44,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
 
 export async function DELETE(request: Request, ctx: Ctx) {
   try {
-    await requireCoachAuth(request);
+    await requireCoachAuth();
     const { id } = await ctx.params;
     return NextResponse.json({
       ok: true,
