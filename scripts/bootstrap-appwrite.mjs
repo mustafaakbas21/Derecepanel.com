@@ -148,6 +148,7 @@ async function ensureCollections() {
     indexes: [
       { key: "by_coach", type: "key", attributes: ["coachId"] },
       { key: "by_email", type: "key", attributes: ["email"] },
+      { key: "by_username", type: "key", attributes: ["username"] },
     ],
   });
 

@@ -97,11 +97,14 @@ export function CoachForm({ mode, initial }: Props) {
         const data = (await res.json().catch(() => ({}))) as {
           error?: string;
           appwriteProvisioned?: boolean;
+          repaired?: boolean;
         };
         if (!res.ok) {
           throw new Error(data.error || "Koç hesabı oluşturulamadı");
         }
-        if (data.appwriteProvisioned === false) {
+        if (data.repaired) {
+          appToast.success("Koç hesabı güncellendi ve giriş bilgileri eşitlendi");
+        } else if (data.appwriteProvisioned === false) {
           appToast.success("Koç kaydedildi (demo mod — Appwrite girişi yapılandırılmadı)");
         } else {
           appToast.success("Koç hesabı oluşturuldu");

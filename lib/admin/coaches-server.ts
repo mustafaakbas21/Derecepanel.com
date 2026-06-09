@@ -36,7 +36,7 @@ function normalizeCoach(raw: Record<string, unknown>): LocalCoachAccount | null 
   if (!username || !password) return null;
 
   const coachId =
-    String(raw.coachId || raw.id || "").trim() || `coach-${crypto.randomUUID()}`;
+    String(raw.coachId || raw.id || "").trim() || crypto.randomUUID();
 
   return {
     id: String(raw.id || coachId).trim() || coachId,
@@ -117,7 +117,7 @@ async function upsertCoachDocument(input: CoachSaveInput): Promise<void> {
     await db.createDocument(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_COACHES,
-      input.coachId,
+      ID.unique(),
       payload
     );
   } catch (err) {
@@ -175,10 +175,13 @@ export async function saveCoachToPlatform(input: CoachSaveInput): Promise<LocalC
     (a.displayName || a.username).localeCompare(b.displayName || b.username, "tr")
   );
 
-  await Promise.all([
-    setPlatformData(COACHES_STORAGE_KEY, JSON.stringify(next)),
-    upsertCoachDocument(input),
-  ]);
+  await setPlatformData(COACHES_STORAGE_KEY, JSON.stringify(next));
+
+  try {
+    await upsertCoachDocument(input);
+  } catch (err) {
+    console.error("[coaches] Appwrite coaches doc upsert failed:", err);
+  }
 
   return record;
 }
@@ -253,4 +256,51 @@ export function resolveCoachUsername(username: string): string {
     throw new Error("Geçerli bir kullanıcı adı girin (harf, rakam, nokta, tire).");
   }
   return normalized;
+}
+
+/** Koç panel girişi — roster şifresi ile eşleşen hesap */
+export async function findCoachForLogin(
+  username: string,
+  password: string
+): Promise<LocalCoachAccount | null> {
+  const normalized = normalizeLoginUsername(username) || username.trim();
+  const pw = password.trim();
+  if (!normalized || !pw) return null;
+
+  const coaches = await loadPlatformCoaches();
+  return (
+    coaches.find((coach) => {
+      const coachUser = normalizeLoginUsername(coach.username) || coach.username.trim();
+      return coachUser === normalized && coach.password === pw;
+    }) ?? null
+  );
+}
+
+/** Roster doğrulandıktan sonra Appwrite Auth + users kaydını tamamlar */
+export async function completeCoachLogin(
+  coach: LocalCoachAccount,
+  plainPassword: string
+): Promise<{ appwriteUserId: string; email: string; coachId: string }> {
+  const password = plainPassword.trim();
+  if (password.length < 8) {
+    throw new Error("Şifre en az 8 karakter olmalı.");
+  }
+
+  const { provisionCoachWithAppwrite } = await import("@/lib/admin/provision-coach");
+  const { findAppwriteUserIdByEmail } = await import("@/lib/appwrite/auth-users-server");
+
+  const result = await provisionCoachWithAppwrite({
+    username: coach.username,
+    password,
+    displayName: coach.displayName?.trim() || coach.username,
+    coachId: coach.coachId,
+  });
+
+  const appwriteUserId =
+    result.appwriteUserId ?? (await findAppwriteUserIdByEmail(result.email));
+  if (!appwriteUserId) {
+    throw new Error("Geçersiz kullanıcı adı veya şifre");
+  }
+
+  return { appwriteUserId, email: result.email, coachId: coach.coachId };
 }

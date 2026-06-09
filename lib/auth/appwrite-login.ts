@@ -19,6 +19,10 @@ import {
   findStudentForLogin,
 } from "@/lib/appwrite/students-server";
 import {
+  completeCoachLogin,
+  findCoachForLogin,
+} from "@/lib/admin/coaches-server";
+import {
   getAdminDatabases,
   getAdminUsers,
   getSessionAccount,
@@ -98,11 +102,18 @@ async function resolveRoleFromUsers(
   email: string
 ): Promise<{ role: AppwriteLoginResult["role"]; username?: string; coachId?: string }> {
   const db = getAdminDatabases();
-  const byId = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
-    Query.equal("$id", appwriteUserId),
-    Query.limit(1),
-  ]);
-  let doc = byId.documents[0] as UserDoc | undefined;
+  let doc: UserDoc | undefined;
+
+  try {
+    doc = (await db.getDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_USERS,
+      appwriteUserId
+    )) as UserDoc;
+  } catch {
+    doc = undefined;
+  }
+
   if (!doc && email) {
     const byEmail = await db.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_USERS, [
       Query.equal("email", email),
@@ -373,6 +384,32 @@ export async function loginWithAppwrite(input: {
   }
 
   const normalized = normalizeLoginUsername(username) || username;
+
+  if (input.role === "coach") {
+    const coach = await findCoachForLogin(normalized, password);
+    if (coach) {
+      if (coach.status === "Pasif") {
+        throw new Error("Geçersiz kullanıcı adı veya şifre");
+      }
+
+      const { appwriteUserId, email, coachId } = await completeCoachLogin(coach, password);
+      const sessionSecret = await createServerSessionForUser(appwriteUserId);
+      const profile = await resolveRoleFromUsers(appwriteUserId, email);
+
+      if (profile.role === "student") {
+        throw new Error("Geçersiz kullanıcı adı veya şifre");
+      }
+
+      return {
+        sessionSecret,
+        userId: coachId || profile.coachId || appwriteUserId,
+        email,
+        role: "coach",
+        username: profile.username || coach.username || normalized,
+      };
+    }
+  }
+
   const email = resolveCoachLoginEmail(normalized);
   const allowBuiltinProvision =
     process.env.NODE_ENV !== "production" &&

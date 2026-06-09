@@ -82,6 +82,10 @@ export async function POST(request: Request) {
 
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
+    const passwordIssue = parsed.error.issues.find((issue) => issue.path[0] === "password");
+    if (passwordIssue) {
+      return NextResponse.json({ error: "Şifre en az 8 karakter olmalı." }, { status: 400 });
+    }
     return NextResponse.json({ error: "Form verileri geçersiz." }, { status: 400 });
   }
 
@@ -97,14 +101,41 @@ export async function POST(request: Request) {
     );
   }
 
-  const coachId = parsed.data.coachId?.trim() || `coach-${crypto.randomUUID()}`;
+  const coachId = parsed.data.coachId?.trim() || crypto.randomUUID();
 
   const existingCoaches = await loadPlatformCoaches();
-  if (existingCoaches.some((c) => c.username === username)) {
-    return NextResponse.json(
-      { error: "Bu kullanıcı adı zaten kullanılıyor." },
-      { status: 409 }
-    );
+  const duplicateCoach = existingCoaches.find((c) => c.username === username);
+  if (duplicateCoach) {
+    try {
+      const result = await provisionCoachWithAppwrite({
+        username,
+        password: parsed.data.password,
+        displayName: parsed.data.displayName,
+        coachId: duplicateCoach.coachId,
+      });
+
+      const coach = await saveCoachToPlatform({
+        coachId: duplicateCoach.coachId,
+        username,
+        password: parsed.data.password,
+        displayName: parsed.data.displayName.trim() || username,
+        email: result.email,
+        phone: parsed.data.phone,
+        specialty: parsed.data.specialty,
+        status: parsed.data.status,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        coach,
+        coachId: duplicateCoach.coachId,
+        email: result.email,
+        appwriteProvisioned: result.appwriteProvisioned,
+        repaired: true,
+      });
+    } catch (err) {
+      return coachErrorResponse(err);
+    }
   }
 
   try {
