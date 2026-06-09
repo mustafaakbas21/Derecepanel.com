@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 import { DereceLogo } from "@/components/coach/derece-logo";
+import { InstagramIcon } from "@/components/marketing/instagram-icon";
 import { LegalDocumentModal } from "@/components/marketing/legal-document-modal";
 import {
   LANDING_LOGIN_HREF,
@@ -18,6 +19,7 @@ import { fadeUp } from "@/components/marketing/landing/landing-motion";
 import {
   LANDING_FOOTER_LINKS,
   LANDING_FOOTER_TAGLINE,
+  LANDING_INSTAGRAM,
   TEKMER_PARTNER,
 } from "@/lib/marketing/landing-page-data";
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from "@/lib/marketing/legal-content";
@@ -165,6 +167,19 @@ export function LandingFooter() {
                   className="h-3.5 w-3.5 shrink-0 text-slate-600 transition-colors group-hover:text-orange-400"
                   strokeWidth={2}
                 />
+              </a>
+
+              <span className="h-5 w-px shrink-0 bg-slate-700" aria-hidden />
+
+              <a
+                href={LANDING_INSTAGRAM.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={LANDING_INSTAGRAM.label}
+                title={LANDING_INSTAGRAM.label}
+                className="group inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md border border-slate-800/80 bg-slate-900/30 text-slate-500 transition-colors hover:border-slate-700 hover:bg-slate-900/60 hover:text-orange-400"
+              >
+                <InstagramIcon />
               </a>
             </div>
 

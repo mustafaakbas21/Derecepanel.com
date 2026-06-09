@@ -194,3 +194,8 @@ export const TEKMER_PARTNER = {
   label: "Ar-Ge ve Kuluçka Partnerimiz",
 } as const;
 
+export const LANDING_INSTAGRAM = {
+  href: "https://www.instagram.com/derecepanel",
+  label: "DerecePanel Instagram",
+} as const;
+
