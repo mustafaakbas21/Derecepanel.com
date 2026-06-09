@@ -56,11 +56,11 @@ export function CoachForm({ mode, initial }: Props) {
     else if (!isValidPanelUsername(username)) {
       e.username = "Sadece harf, rakam, nokta, tire ve alt çizgi kullanın";
     }
-    if (mode === "create" && password.trim().length < 6) {
-      e.password = "Şifre en az 6 karakter olmalı";
+    if (mode === "create" && password.trim().length < 8) {
+      e.password = "Şifre en az 8 karakter olmalı";
     }
-    if (mode === "edit" && password.trim() && password.trim().length < 6) {
-      e.password = "Şifre en az 6 karakter olmalı";
+    if (mode === "edit" && password.trim() && password.trim().length < 8) {
+      e.password = "Şifre en az 8 karakter olmalı";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -204,6 +204,10 @@ export function CoachForm({ mode, initial }: Props) {
               </div>
               {errors.password ? (
                 <p className="text-[11px] text-red-600">{errors.password}</p>
+              ) : mode === "create" ? (
+                <p className="text-[11px] text-slate-400">
+                  Panel girişi için en az 8 karakter (Appwrite ile aynı şifre).
+                </p>
               ) : null}
             </div>
 

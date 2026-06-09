@@ -88,8 +88,13 @@ export async function createAppwriteAuthUser(params: {
   } catch (err) {
     const msg = String((err as Error)?.message || "").toLowerCase();
     if (/already exists|409|duplicate|user_already/i.test(msg)) {
-      const existing = await findAppwriteUserIdByEmail(email);
-      if (existing) return existing;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const existing = await findAppwriteUserIdByEmail(email);
+        if (existing) return existing;
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+        }
+      }
     }
     throw translateAppwriteUserError(err);
   }

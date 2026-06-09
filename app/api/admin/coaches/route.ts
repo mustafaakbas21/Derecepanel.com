@@ -15,10 +15,17 @@ import {
 } from "@/lib/appwrite/auth-users-server";
 import { AuthError, requireAdminAuth } from "@/lib/admin/require-admin";
 
+function coachErrorResponse(err: unknown) {
+  const raw = err instanceof Error ? err.message : String(err || "Koç hesabı oluşturulamadı.");
+  const message = translateAppwriteUserError(err instanceof Error ? err : new Error(raw)).message;
+  const isDuplicate = /zaten kullanılıyor|zaten kayıtlı/i.test(message);
+  return NextResponse.json({ error: message || raw }, { status: isDuplicate ? 409 : 500 });
+}
+
 const bodySchema = z.object({
   displayName: z.string().trim().min(1).max(120),
   username: z.string().trim().min(1).max(80),
-  password: z.string().min(6).max(200),
+  password: z.string().min(8).max(200),
   coachId: z.string().trim().optional(),
   phone: z.string().trim().max(30).optional(),
   specialty: z.string().trim().max(120).optional(),
@@ -29,7 +36,7 @@ const patchSchema = z.object({
   coachId: z.string().trim().min(1),
   displayName: z.string().trim().min(1).max(120),
   username: z.string().trim().min(1).max(80),
-  password: z.string().min(6).max(200).optional(),
+  password: z.string().min(8).max(200).optional(),
   phone: z.string().trim().max(30).optional(),
   specialty: z.string().trim().max(120).optional(),
   status: z.enum(["Aktif", "Pasif"]).optional(),
@@ -92,6 +99,14 @@ export async function POST(request: Request) {
 
   const coachId = parsed.data.coachId?.trim() || `coach-${crypto.randomUUID()}`;
 
+  const existingCoaches = await loadPlatformCoaches();
+  if (existingCoaches.some((c) => c.username === username)) {
+    return NextResponse.json(
+      { error: "Bu kullanıcı adı zaten kullanılıyor." },
+      { status: 409 }
+    );
+  }
+
   try {
     const result = await provisionCoachWithAppwrite({
       username,
@@ -123,11 +138,7 @@ export async function POST(request: Request) {
       appwriteProvisioned: result.appwriteProvisioned,
     });
   } catch (err) {
-    const translated = translateAppwriteUserError(err);
-    return NextResponse.json(
-      { error: translated.message || "Koç hesabı oluşturulamadı." },
-      { status: 500 }
-    );
+    return coachErrorResponse(err);
   }
 }
 
@@ -155,6 +166,22 @@ export async function PATCH(request: Request) {
 
   try {
     const username = resolveCoachUsername(parsed.data.username);
+    const existing = await loadPlatformCoaches().then((list) =>
+      list.find((c) => c.coachId === parsed.data.coachId)
+    );
+    if (!existing) {
+      return NextResponse.json({ error: "Koç bulunamadı." }, { status: 404 });
+    }
+
+    const password = parsed.data.password?.trim() || existing.password;
+
+    await provisionCoachWithAppwrite({
+      username,
+      password,
+      displayName: parsed.data.displayName,
+      coachId: parsed.data.coachId,
+    });
+
     const coach = await updateCoachOnPlatform({
       coachId: parsed.data.coachId,
       displayName: parsed.data.displayName,
@@ -166,10 +193,7 @@ export async function PATCH(request: Request) {
     });
     return NextResponse.json({ ok: true, coach });
   } catch (err) {
-    return NextResponse.json(
-      { error: String((err as Error)?.message || "Koç güncellenemedi.") },
-      { status: 500 }
-    );
+    return coachErrorResponse(err);
   }
 }
 

@@ -90,12 +90,26 @@ async function upsertCoachUserDoc(params: {
     return;
   }
 
-  await db.createDocument(
-    APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_USERS,
-    params.appwriteUserId,
-    payload
-  );
+  try {
+    await db.createDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_USERS,
+      params.appwriteUserId,
+      payload
+    );
+  } catch (err) {
+    const msg = String((err as Error)?.message || "").toLowerCase();
+    if (/already exists|duplicate|409/i.test(msg)) {
+      await db.updateDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_COLLECTION_USERS,
+        params.appwriteUserId,
+        payload
+      );
+      return;
+    }
+    throw err;
+  }
 }
 
 export async function provisionCoachWithAppwrite(
@@ -110,6 +124,7 @@ export async function provisionCoachWithAppwrite(
     usernameOrEmail: input.username,
     password: input.password,
     displayName: input.displayName,
+    syncPassword: true,
   });
 
   try {
