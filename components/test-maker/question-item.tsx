@@ -18,6 +18,8 @@ type QuestionItemProps = {
   config: TMConfig;
   showChoices: boolean;
   measurementOnly?: boolean;
+  /** A4 dizgisinde şık seçici yüksekliğe dahil edilmez (baskı ile aynı) */
+  choicesDetachedFromLayout?: boolean;
   onAnswer: (letter: QuestionAnswer) => void;
   onDelete: () => void;
   onCropClick?: () => void;
@@ -26,16 +28,25 @@ type QuestionItemProps = {
 function AnswerChoicePicker({
   question,
   showChoices,
+  detachedFromLayout,
   onAnswer,
 }: {
   question: TMQuestion;
   showChoices: boolean;
+  detachedFromLayout?: boolean;
   onAnswer: (letter: QuestionAnswer) => void;
 }) {
   if (!showChoices) return null;
 
   return (
-    <div className="tm-q-answer-picker teacher-only-ui mt-4 shrink-0 print:hidden">
+    <div
+      className={cn(
+        "tm-q-answer-picker teacher-only-ui print:hidden",
+        detachedFromLayout
+          ? "absolute inset-x-0 bottom-0 z-20 rounded-b-lg border-t border-slate-200 bg-white/95 px-3 py-2 shadow-sm"
+          : "mt-4 shrink-0"
+      )}
+    >
       <span className="mb-2 block text-sm font-semibold text-slate-700">Doğru şık</span>
       <div className="flex gap-2" role="group" aria-label="Doğru şık">
         {OPTION_LETTERS.map((option) => {
@@ -70,6 +81,7 @@ export function QuestionItem({
   config,
   showChoices,
   measurementOnly = false,
+  choicesDetachedFromLayout = false,
   onAnswer,
   onDelete,
   onCropClick,
@@ -111,7 +123,7 @@ export function QuestionItem({
         </span>
       </div>
 
-      <div className="tm-q-body">
+      <div className={cn("tm-q-body", choicesDetachedFromLayout && "relative")}>
         <div className="tm-q-content flex w-full flex-col justify-start gap-3">
           {hasImage ? (
             <div className="tm-q-img-wrap flex w-full flex-col items-start rounded border border-slate-200 bg-slate-50/80 px-2 py-1">
@@ -137,6 +149,7 @@ export function QuestionItem({
         <AnswerChoicePicker
           question={question}
           showChoices={showChoices}
+          detachedFromLayout={choicesDetachedFromLayout}
           onAnswer={onAnswer}
         />
       </div>

@@ -115,20 +115,6 @@ function pruneEmptyPages(pages: MeasuredQuestionPage[]): MeasuredQuestionPage[] 
   return pages.filter((page) => page.left.length > 0 || page.right.length > 0);
 }
 
-/** Sol sütun boş, sağ dolu sayfaları düzelt */
-function normalizePagesLeftFirst(
-  pages: MeasuredQuestionPage[],
-  heights: Record<string, number>
-): MeasuredQuestionPage[] {
-  for (const page of pages) {
-    while (page.left.length === 0 && page.right.length > 0) {
-      page.left.push(page.right.shift()!);
-    }
-    resyncPageHeights(page, heights);
-  }
-  return pages;
-}
-
 function sumColumnHeightsFromItems(
   items: TMQuestion[],
   heights: Record<string, number> | null
@@ -143,17 +129,10 @@ function sumColumnHeightsFromItems(
   return total;
 }
 
-function resyncPageHeights(
-  page: MeasuredQuestionPage,
-  heights: Record<string, number>
-): void {
-  page.leftH = sumColumnHeightsFromItems(page.left, heights);
-  page.rightH = sumColumnHeightsFromItems(page.right, heights);
-}
-
 /**
- * Dizgi motoru — katı sıra: sol sütun → sağ sütun → yeni sayfa (yine sol).
- * Her sayfa önce soldan başlar; sağa yalnızca sol dolunca geçilir.
+ * Dizgi motoru — sayfa başına sabit soru sayısı yok; her sorunun ölçülen yüksekliğine göre
+ * sütun tavanına (A4 gövde yüksekliği) kadar paketlenir. Büyük görsel = az soru, küçük = çok soru.
+ * Sıra: sol sütun → sağ sütun → yeni sayfa (yine sol).
  */
 export function paginateByMeasuredHeights(
   questions: TMQuestion[],
@@ -201,7 +180,7 @@ export function paginateByMeasuredHeights(
   }
 
   flushPage();
-  return pruneEmptyPages(normalizePagesLeftFirst(pages, heights));
+  return pruneEmptyPages(pages);
 }
 
 /** DOM sütun ölçümü */
@@ -236,34 +215,6 @@ export function questionFitsColumnDom(
 ): boolean {
   if (metrics.clientHeight <= 0) return false;
   return columnRemainingPx(metrics, bufferPx) >= questionHeightPx;
-}
-
-function popFromColumn(
-  page: MeasuredQuestionPage,
-  side: "left" | "right"
-): TMQuestion | null {
-  const col = side === "left" ? page.left : page.right;
-  if (col.length === 0) return null;
-  const q = col.pop()!;
-  return q;
-}
-
-function unshiftToColumn(
-  page: MeasuredQuestionPage,
-  side: "left" | "right",
-  q: TMQuestion
-): void {
-  if (side === "left") page.left.unshift(q);
-  else page.right.unshift(q);
-}
-
-function pushToColumn(
-  page: MeasuredQuestionPage,
-  side: "left" | "right",
-  q: TMQuestion
-): void {
-  if (side === "left") page.left.push(q);
-  else page.right.push(q);
 }
 
 function contentPages(pages: MeasuredQuestionPage[]): MeasuredQuestionPage[] {
@@ -301,17 +252,6 @@ export function flattenPagesQuestionIds(pages: MeasuredQuestionPage[]): string[]
   return ids;
 }
 
-function buildMinPageIndex(pages: MeasuredQuestionPage[]): Map<string, number> {
-  const minPageIndex = new Map<string, number>();
-  pages.forEach((page, pageIdx) => {
-    if (page.isOpticPage) return;
-    for (const q of [...page.left, ...page.right]) {
-      minPageIndex.set(q.id, pageIdx);
-    }
-  });
-  return minPageIndex;
-}
-
 function appendQuestionsToLayout(
   pages: MeasuredQuestionPage[],
   newQuestions: TMQuestion[],
@@ -343,7 +283,6 @@ function appendQuestionsToLayout(
 
     if (leftItems.length === 0) {
       const block = getQuestionBlockHeight(contentH, 0);
-      if (block > maxColumnHeight) return false;
       leftItems = [q];
       leftUsed = block;
       syncLastPage();
@@ -415,8 +354,7 @@ export function paginateForwardOnly(
   if (isAppendOnly) {
     const appended = questions.slice(prevIds.length);
     return finalizeForwardPages(
-      appendQuestionsToLayout(clonePages(contentPages), appended, heights, maxColumnHeight),
-      heights
+      appendQuestionsToLayout(clonePages(contentPages), appended, heights, maxColumnHeight)
     );
   }
 
@@ -425,86 +363,15 @@ export function paginateForwardOnly(
     currIds.every((id, index) => id === prevIds[index]);
 
   if (sameOrder) {
-    return paginateWithMinPageConstraints(
-      questions,
-      heights,
-      maxColumnHeight,
-      buildMinPageIndex(contentPages)
-    );
+    // Yerleşmiş soruların sayfa/sütun konumu değişmez (yükseklik güncellemesi dahil).
+    return finalizeForwardPages(clonePages(contentPages));
   }
 
   return paginateByMeasuredHeights(questions, heights, maxColumnHeight);
 }
 
-function finalizeForwardPages(
-  pages: MeasuredQuestionPage[],
-  heights: Record<string, number>
-): MeasuredQuestionPage[] {
-  return pruneEmptyPages(normalizePagesLeftFirst(pages, heights));
-}
-
-function paginateWithMinPageConstraints(
-  questions: TMQuestion[],
-  heights: Record<string, number>,
-  maxColumnHeight: number,
-  minPageIndex: Map<string, number>
-): MeasuredQuestionPage[] {
-  if (questions.length === 0) return [];
-
-  const pages: MeasuredQuestionPage[] = [];
-  let left = emptyColumn();
-  let right = emptyColumn();
-  let pageIdx = 0;
-  let lastAssignedPage = 0;
-
-  const commitPage = () => {
-    if (left.items.length === 0 && right.items.length === 0) return;
-    while (pages.length <= pageIdx) pages.push(emptyPage());
-    syncPageFromColumns(pages[pageIdx]!, left, right);
-    pageIdx += 1;
-    left = emptyColumn();
-    right = emptyColumn();
-  };
-
-  const placeOnOpenPage = (q: TMQuestion): boolean => {
-    const contentH = heights[q.id] ?? FALLBACK_QUESTION_HEIGHT_PX;
-
-    if (left.items.length === 0) {
-      addToColumn(left, q, getQuestionBlockHeight(contentH, 0));
-      return true;
-    }
-
-    const leftBlock = getQuestionBlockHeight(contentH, left.items.length);
-    if (canAddToColumn(left, leftBlock, maxColumnHeight)) {
-      addToColumn(left, q, leftBlock);
-      return true;
-    }
-
-    const rightBlock = getQuestionBlockHeight(contentH, right.items.length);
-    if (canAddToColumn(right, rightBlock, maxColumnHeight)) {
-      addToColumn(right, q, rightBlock);
-      return true;
-    }
-
-    return false;
-  };
-
-  for (const q of questions) {
-    const minPage = minPageIndex.has(q.id) ? minPageIndex.get(q.id)! : lastAssignedPage;
-
-    while (pageIdx < minPage) commitPage();
-
-    if (!placeOnOpenPage(q)) {
-      commitPage();
-      while (pageIdx < minPage) commitPage();
-      while (!placeOnOpenPage(q)) commitPage();
-    }
-
-    lastAssignedPage = Math.max(lastAssignedPage, pageIdx);
-  }
-
-  commitPage();
-  return finalizeForwardPages(pages, heights);
+function finalizeForwardPages(pages: MeasuredQuestionPage[]): MeasuredQuestionPage[] {
+  return pruneEmptyPages(pages);
 }
 
 export function layoutFlatKey(pages: MeasuredQuestionPage[]): string {
@@ -526,92 +393,20 @@ export function appendQuestionToDisplayLayout(
   if (appended.length === 0) return null;
 
   return finalizeForwardPages(
-    appendQuestionsToLayout(clonePages(previous), appended, heights, maxColumnHeight),
-    heights
+    appendQuestionsToLayout(clonePages(previous), appended, heights, maxColumnHeight)
   );
 }
 
 /**
- * Render sonrası dizgi rafine — yalnızca taşmayı ileri kaydırır.
- * Eski sayfalara geri doldurma yapılmaz (yeni sayfadan sonra geri sarma yok).
+ * Yerleşmiş sorular taşınmaz — dizgi yalnızca ekleme anında hesaplanır.
+ * @deprecated Yerleşim kilidi nedeniyle DOM rafine devre dışı; her zaman null döner.
  */
 export function refineLayoutWithDom(
-  pages: MeasuredQuestionPage[],
-  heights: Record<string, number>,
-  pageMetrics: Array<{ left: ColumnDomMetrics; right: ColumnDomMetrics }>
+  _pages: MeasuredQuestionPage[],
+  _heights: Record<string, number>,
+  _pageMetrics: Array<{ left: ColumnDomMetrics; right: ColumnDomMetrics }>
 ): MeasuredQuestionPage[] | null {
-  if (pages.length === 0) return null;
-  if (pageMetrics.length !== pages.length) return null;
-
-  const result = clonePages(pages);
-  let changed = false;
-
-  // Taşan sütundan son soruyu önce aynı sayfanın diğer sütununa, olmazsa sonraki sayfaya aktar
-  for (let pageIdx = 0; pageIdx < result.length; pageIdx += 1) {
-    const metrics = pageMetrics[pageIdx];
-    const page = result[pageIdx]!;
-    if (!metrics) continue;
-
-    for (const side of ["left", "right"] as const) {
-      const colMetrics = side === "left" ? metrics.left : metrics.right;
-      const col = side === "left" ? page.left : page.right;
-      if (col.length === 0) continue;
-
-      const max = colMetrics.clientHeight;
-      if (max <= 0) continue;
-
-      const used = colMetrics.usedHeight;
-      if (used <= max + 2) continue;
-
-      const overflowQ = popFromColumn(page, side);
-      if (!overflowQ) continue;
-
-      const blockH = heights[overflowQ.id] ?? FALLBACK_QUESTION_HEIGHT_PX;
-      let placed = false;
-
-      if (side === "left") {
-        const rightMetrics = metrics.right;
-        if (questionFitsColumnDom(rightMetrics, blockH)) {
-          pushToColumn(page, "right", overflowQ);
-          placed = true;
-        }
-      }
-
-      if (!placed) {
-        const nextPage =
-          result[pageIdx + 1] ??
-          (() => {
-            const fresh = emptyPage();
-            result.push(fresh);
-            return fresh;
-          })();
-
-        unshiftToColumn(nextPage, "left", overflowQ);
-        resyncPageHeights(nextPage, heights);
-      }
-
-      resyncPageHeights(page, heights);
-      changed = true;
-      break;
-    }
-  }
-
-  const normalized = normalizePagesLeftFirst(result, heights);
-  const pruned = pruneEmptyPages(normalized);
-
-  if (!changed && pruned.length === pages.length) {
-    const same = pruned.every((page, i) => {
-      const prev = pages[i];
-      if (!prev) return false;
-      return (
-        page.left.map((q) => q.id).join() === prev.left.map((q) => q.id).join() &&
-        page.right.map((q) => q.id).join() === prev.right.map((q) => q.id).join()
-      );
-    });
-    if (same) return null;
-  }
-
-  return pruned;
+  return null;
 }
 
 /** Sayfa sütunlarından soru sırası — sol üstten alta, sonra sağ */
